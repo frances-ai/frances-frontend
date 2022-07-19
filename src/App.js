@@ -7,6 +7,7 @@ import LoginPage from "./pages/login";
 import {AuthProvider} from "./contexts/authProvider";
 import RequireAuth from "./components/requireAuth";
 import PrivatePage from "./pages/privatePage";
+import PersistLogin from "./components/PersistLogin";
 
 function App() {
   return (
@@ -17,11 +18,13 @@ function App() {
               <Route path="register" element={<RegisterPage/>} />
 
               {/* Protected routes */}
-              <Route path="/protected" element={
-                  <RequireAuth>
-                      <PrivatePage/>
-                  </RequireAuth>
-              } />
+              <Route element={<PersistLogin/>}>
+                  <Route path="/protected" element={
+                      <RequireAuth>
+                          <PrivatePage/>
+                      </RequireAuth>
+                  } />
+              </Route>
           </Routes>
       </AuthProvider>
   );

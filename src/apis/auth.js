@@ -22,6 +22,10 @@ class AuthAPI {
             email: email,
         })
     }
+
+    async getProfile() {
+        return await axios.get("protected/auth/profile")
+    }
 }
 
 export default new AuthAPI()
