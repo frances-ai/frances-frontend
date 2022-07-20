@@ -1,8 +1,8 @@
 import {createContext, useState} from "react";
+import AuthAPI from "../apis/auth"
 
-const AuthContext = createContext();
+const AuthContext = createContext({});
 
-// Authentication Example from: https://reactrouter.com/docs/en/v6/examples/auth
 export function AuthProvider({children}) {
     const [auth, setAuth] = useState({});
 

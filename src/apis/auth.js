@@ -1,11 +1,11 @@
-import axios from "./axios";
+import axios, {axiosPrivate, axiosRefresh} from "./axios";
 
 class AuthAPI {
     login(email, password) {
         return axios.post( "/auth/login", {
             email: email,
             password: password
-        })
+        });
     }
 
     register(first_name, last_name, email, password) {
@@ -14,17 +14,21 @@ class AuthAPI {
             last_name: last_name,
             email: email,
             password: password
-        })
+        });
+    }
+
+    async refresh() {
+        return await axiosRefresh.post("/auth/token/refresh");
     }
 
     async emailRegistered(email) {
         return await axios.post("/auth/emailRegistered", {
             email: email,
-        })
+        });
     }
 
     async getProfile() {
-        return await axios.get("protected/auth/profile")
+        return await axiosPrivate.get("protected/auth/profile");
     }
 }
 

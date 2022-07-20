@@ -68,7 +68,6 @@ export default function LoginPage() {
             Auth.login(email, password).then(response => {
                 console.log(response)
                 const user = response?.data?.user;
-                console.log(auth)
                 setAuth({user});
                 navigate(from, { replace: true });
             }).catch(e => {
