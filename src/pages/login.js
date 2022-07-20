@@ -18,7 +18,7 @@ const theme = createTheme();
 
 export default function LoginPage() {
 
-    const {auth, setAuth} = useAuth();
+    const {setAuth} = useAuth();
 
     const navigate = useNavigate();
     const location = useLocation();

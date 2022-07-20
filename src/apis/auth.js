@@ -1,4 +1,5 @@
 import axios, {axiosPrivate} from "./axios";
+import Cookies from 'js-cookie'
 
 class AuthAPI {
     login(email, password) {
@@ -18,7 +19,11 @@ class AuthAPI {
     }
 
     async refresh() {
-        return await axios.post("/auth/token/refresh");
+        const options =  {
+            headers:
+                {"X-CSRF-TOKEN": Cookies.get('csrf_refresh_token')
+                }}
+        return await axios.post("/auth/token/refresh",{},  options);
     }
 
     async emailRegistered(email) {
@@ -30,6 +35,7 @@ class AuthAPI {
     async getProfile() {
         return await axiosPrivate.get("protected/auth/profile");
     }
+
 }
 
 export default new AuthAPI()

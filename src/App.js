@@ -2,7 +2,7 @@ import './App.css';
 import {Route, Routes} from "react-router-dom";
 import TermSearchPage from "./pages/termSearch";
 import RegisterPage from "./pages/register";
-import React from 'react'
+import React from 'react';
 import LoginPage from "./pages/login";
 import {AuthProvider} from "./contexts/authProvider";
 import RequireAuth from "./components/requireAuth";
