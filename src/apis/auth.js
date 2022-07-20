@@ -1,4 +1,4 @@
-import axios, {axiosPrivate, axiosRefresh} from "./axios";
+import axios, {axiosPrivate} from "./axios";
 
 class AuthAPI {
     login(email, password) {
@@ -18,7 +18,7 @@ class AuthAPI {
     }
 
     async refresh() {
-        return await axiosRefresh.post("/auth/token/refresh");
+        return await axios.post("/auth/token/refresh");
     }
 
     async emailRegistered(email) {

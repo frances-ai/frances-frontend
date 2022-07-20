@@ -3,19 +3,14 @@ import Config from '../config.json'
 import AuthAPI from "./auth";
 
 export default axios.create({
-    baseURL: Config.BACKEND_BASE_URL
+    baseURL: Config.BACKEND_BASE_URL,
+    withCredentials: true
 })
 
 export const axiosPrivate = axios.create({
     baseURL: Config.BACKEND_BASE_URL,
     withCredentials: true
 })
-
-export const axiosRefresh = axios.create({
-    baseURL: Config.BACKEND_BASE_URL,
-    withCredentials: true
-})
-
 
 axiosPrivate.interceptors.response.use(
     response => response,
