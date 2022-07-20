@@ -14,10 +14,16 @@ import Copyright from "../components/copyright";
 import FrancesLogo from "../components/frances-logo";
 import validator from "validator/es";
 import AuthAPI from '../apis/auth'
+import useAuth from "../hooks/useAuth";
+import {useNavigate} from "react-router-dom";
 
 const theme = createTheme();
 
 function RegisterPage() {
+
+    const {setAuth} = useAuth();
+
+    const navigate = useNavigate();
 
     const [firstName, setFirstName] = useState('');
     const [isValidFirstName, setIsValidFirstName] = useState(false);
@@ -141,7 +147,12 @@ function RegisterPage() {
             .then(response => {
                 console.log(response.data);
                 //login
-
+                AuthAPI.login(email, password).then(response => {
+                    console.log(response)
+                    const user = response?.data?.user;
+                    setAuth({user});
+                    navigate(-1, { replace: true });
+                })
             }).catch(error => {
                 console.log(error.response);
         })
