@@ -4,17 +4,17 @@ import Header from "../components/header";
 
 const theme = createTheme();
 
-function PrivatePage() {
+function DefoeQueryPage() {
 
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Header index={0}/>
+            <Header index={3}/>
             <Container maxWidth="xl">
-                Private Page
+                Defoe Query
             </Container>
         </ThemeProvider>
     )
 }
 
-export default PrivatePage;
+export default DefoeQueryPage;

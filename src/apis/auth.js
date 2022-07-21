@@ -36,6 +36,10 @@ class AuthAPI {
         return await axiosPrivate.get("protected/auth/profile");
     }
 
+    logout() {
+        return axios.post("/auth/logout");
+    }
+
 }
 
 export default new AuthAPI()

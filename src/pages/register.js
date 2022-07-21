@@ -15,7 +15,7 @@ import FrancesLogo from "../components/frances-logo";
 import validator from "validator/es";
 import AuthAPI from '../apis/auth'
 import useAuth from "../hooks/useAuth";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 
 const theme = createTheme();
 
@@ -24,6 +24,8 @@ function RegisterPage() {
     const {setAuth} = useAuth();
 
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/";
 
     const [firstName, setFirstName] = useState('');
     const [isValidFirstName, setIsValidFirstName] = useState(false);
@@ -151,7 +153,7 @@ function RegisterPage() {
                     console.log(response)
                     const user = response?.data?.user;
                     setAuth({user});
-                    navigate(-1, { replace: true });
+                    navigate(from, { replace: true });
                 })
             }).catch(error => {
                 console.log(error.response);
@@ -171,7 +173,7 @@ function RegisterPage() {
                         alignItems: 'center',
                     }}
                 >
-                    <FrancesLogo size={40} weight={"bold"}/>
+                    <FrancesLogo size={"3rem"} weight={"bold"}/>
                     <Typography component="h1" variant="h5" sx={{mt: 2}}>
                         Sign up
                     </Typography>

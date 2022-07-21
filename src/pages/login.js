@@ -90,7 +90,7 @@ export default function LoginPage() {
                         alignItems: 'center',
                     }}
                 >
-                    <FrancesLogo size={40} weight={"bold"}/>
+                    <FrancesLogo size={"3rem"} weight={"bold"}/>
                     <Typography component="h1" variant="h5" sx={{mt: 2}}>
                         Sign in
                     </Typography>

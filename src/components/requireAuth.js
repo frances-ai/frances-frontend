@@ -2,6 +2,7 @@ import useAuth from "../hooks/useAuth";
 import {useLocation, Navigate} from "react-router-dom";
 import AuthAPI from "../apis/auth";
 import {useEffect, useState} from "react";
+import {CircularProgress} from "@mui/material";
 
 function RequireAuth({ children }) {
     const {auth, setAuth} = useAuth();
@@ -27,7 +28,7 @@ function RequireAuth({ children }) {
     if (!isLoading) {
         return auth?.user ? children : <Navigate to="/login" state={{ from: location }} replace />;
     } else {
-        return <p>Loading....</p>
+        return <CircularProgress />
     }
 
 }

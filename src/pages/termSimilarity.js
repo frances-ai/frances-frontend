@@ -4,17 +4,17 @@ import Header from "../components/header";
 
 const theme = createTheme();
 
-function PrivatePage() {
+function TermSimilarityPage() {
 
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Header index={0}/>
+            <Header index={1}/>
             <Container maxWidth="xl">
-                Private Page
+                Term Similarity
             </Container>
         </ThemeProvider>
     )
 }
 
-export default PrivatePage;
+export default TermSimilarityPage;
