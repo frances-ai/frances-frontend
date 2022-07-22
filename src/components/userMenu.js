@@ -93,7 +93,7 @@ function UserMenu() {
     }, [])
 
     if (isLoading) {
-        return <CircularProgress />
+        return <CircularProgress sx={{mr: 5}}/>
     } else {
         if (auth?.user) {
             return (
