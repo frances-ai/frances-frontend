@@ -1,9 +1,10 @@
 import axios from "./axios";
 
 class QueryAPI {
-    searchTerm(term) {
+    searchTerm(term, page = 1) {
         return axios.post("/query/term_search", {
-            search: term
+            search: term,
+            page: page
         })
     }
 }
