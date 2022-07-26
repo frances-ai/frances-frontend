@@ -1,19 +1,14 @@
 import React from "react";
-import {Container, createTheme, CssBaseline, ThemeProvider} from "@mui/material";
-import Header from "../components/header";
+import {Container} from "@mui/material";
+import Box from "@mui/material/Box";
 
-const theme = createTheme();
 
 function DefoeQueryPage() {
 
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Header index={3}/>
-            <Container maxWidth="xl">
-                Defoe Query
-            </Container>
-        </ThemeProvider>
+        <Container maxWidth="xl">
+            Defoe Query
+        </Container>
     )
 }
 

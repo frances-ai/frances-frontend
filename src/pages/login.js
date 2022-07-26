@@ -3,18 +3,14 @@ import {useLocation, useNavigate} from "react-router-dom"
 import {
     Box,
     Button, Container,
-    createTheme,
-    CssBaseline, Grid, Link,
+    Grid, Link,
     TextField,
-    ThemeProvider,
     Typography
 } from "@mui/material";
 import Copyright from "../components/copyright";
 import FrancesLogo from "../components/frances-logo";
 import Auth from "../apis/auth";
 import useAuth from "../hooks/useAuth";
-
-const theme = createTheme();
 
 export default function LoginPage() {
 
@@ -79,9 +75,7 @@ export default function LoginPage() {
     };
 
     return (
-        <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
-                <CssBaseline />
                 <Box
                     sx={{
                         marginTop: 8,
@@ -145,6 +139,5 @@ export default function LoginPage() {
                 </Box>
                 <Copyright sx={{ mt: 8, mb: 4 }} />
             </Container>
-        </ThemeProvider>
     );
 }

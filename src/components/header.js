@@ -4,7 +4,7 @@ import FrancesLogo from "./frances-logo";
 import NavTabs from "./navTabs";
 import UserMenu from "./userMenu";
 
-const sections = [
+export const sections = [
     { title: 'Term Search', url: '/termSearch' },
     { title: 'Term Similarity', url: '/termSimilarity' },
     { title: 'Topic Modelling', url: '#' },

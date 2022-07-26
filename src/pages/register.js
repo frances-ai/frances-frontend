@@ -4,10 +4,8 @@ import {
     Button,
     Container,
     createTheme,
-    CssBaseline,
     Grid, Link,
     TextField,
-    ThemeProvider,
     Typography
 } from "@mui/material";
 import Copyright from "../components/copyright";
@@ -56,7 +54,6 @@ function RegisterPage() {
     });
 
     useEffect(() => {
-        console.log('first name ' + firstName);
         //validate first name
         if (fieldChecked.firstName) {
             if (firstName.length === 0) {
@@ -162,9 +159,7 @@ function RegisterPage() {
     };
 
     return (
-        <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
-                <CssBaseline />
                 <Box
                     sx={{
                         marginTop: 8,
@@ -299,7 +294,6 @@ function RegisterPage() {
                 </Box>
                 <Copyright sx={{ mt: 5 }} />
             </Container>
-        </ThemeProvider>
     );
 }
 
