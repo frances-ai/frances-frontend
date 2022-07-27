@@ -20,6 +20,7 @@ import SimilarTermsButton from "./buttons/similarTermsButton";
 import Plot from "react-plotly.js";
 import QueryAPI from "../apis/query";
 import {findTopicModelID} from "../utils/stringUtil";
+import CheckSpellButton from "./buttons/checkSpellButton";
 
 function TopicModellingResult(props) {
 
@@ -101,9 +102,10 @@ function TopicModellingResult(props) {
                                                 uri={key}
                                                 currentSearchInfo={currentSearchInfo}
                                             />
-                                            <Button>
-                                                Check Spell
-                                            </Button>
+                                            <CheckSpellButton
+                                                uri={key}
+                                                currentSearchInfo={currentSearchInfo}
+                                            />
                                             <SimilarTermsButton
                                                 resource_uri={key}
                                                 currentSearchInfo={currentSearchInfo}

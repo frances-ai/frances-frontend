@@ -19,6 +19,7 @@ import TermSearchButton from "./buttons/termSearchButton";
 import SimilarTermsButton from "./buttons/similarTermsButton";
 import VisualiseButton from "./buttons/visualiseButton";
 import TopicModelButton from "./buttons/topicModelButton";
+import CheckSpellButton from "./buttons/checkSpellButton";
 
 function TermSearchResult(props) {
     const originResult = props.result;
@@ -123,9 +124,10 @@ function TermSearchResult(props) {
                                                 uri={key}
                                                 currentSearchInfo={currentSearchInfo}
                                             />
-                                            <Button>
-                                                Check Spell
-                                            </Button>
+                                            <CheckSpellButton
+                                                uri={key}
+                                                currentSearchInfo={currentSearchInfo}
+                                            />
                                             <SimilarTermsButton
                                                 resource_uri={key}
                                                 currentSearchInfo={currentSearchInfo}

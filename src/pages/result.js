@@ -7,6 +7,7 @@ import TermSearchResult from "../components/termSearchResult";
 import VisualisationResult from "../components/visualisationResult";
 import TermSimilarityResult from "../components/termSimilarityResult";
 import TopicModellingResult from "../components/topicModellingResult";
+import SpellCheckResult from "../components/spellCheckResult";
 
 function ResultPage() {
 
@@ -54,6 +55,13 @@ function ResultPage() {
                     break;
                 case 'TopicModelling':
                     QueryAPI.searchTopicModels(key, page).then(response => {
+                        const result = response?.data;
+                        setSearchResult({result})
+                        setIsLoading(false);
+                    })
+                    break;
+                case 'SpellCheck':
+                    QueryAPI.checkSpell(key).then(response => {
                         const result = response?.data;
                         setSearchResult({result})
                         setIsLoading(false);
@@ -110,6 +118,11 @@ function ResultPage() {
                                 {
                                     currentParameters.type === 'TopicModelling'?
                                         <TopicModellingResult result={searchResult}/> :
+                                        null
+                                }
+                                {
+                                    currentParameters.type === 'SpellCheck'?
+                                        <SpellCheckResult result={searchResult}/> :
                                         null
                                 }
                                 {

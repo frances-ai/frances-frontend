@@ -21,6 +21,7 @@ import SimilarTermsButton from "./buttons/similarTermsButton";
 import VisualiseButton from "./buttons/visualiseButton";
 import TopicModelButton from "./buttons/topicModelButton";
 import {findTermLinkFromUri} from "../utils/stringUtil";
+import CheckSpellButton from "./buttons/checkSpellButton";
 
 function TermSimilarityResult(props) {
     const originResult = props.result;
@@ -106,9 +107,10 @@ function TermSimilarityResult(props) {
                                                 uri={key}
                                                 currentSearchInfo={currentSearchInfo}
                                             />
-                                            <Button>
-                                                Check Spell
-                                            </Button>
+                                            <CheckSpellButton
+                                                uri={key}
+                                                currentSearchInfo={currentSearchInfo}
+                                            />
                                             <SimilarTermsButton
                                                 resource_uri={key}
                                                 currentSearchInfo={currentSearchInfo}
