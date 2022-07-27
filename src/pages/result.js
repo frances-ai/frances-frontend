@@ -68,8 +68,11 @@ function ResultPage() {
                     })
                     break;
                 case 'Visualisation':
-                    console.log('Visual');
-                    setIsLoading(false);
+                    QueryAPI.visualise(key).then(response => {
+                        const result = response?.data;
+                        setSearchResult({result})
+                        setIsLoading(false);
+                    })
                     break;
             }
         }
@@ -127,7 +130,7 @@ function ResultPage() {
                                 }
                                 {
                                     currentParameters.type === 'Visualisation'?
-                                        <VisualisationResult/> :
+                                        <VisualisationResult result={searchResult}/> :
                                         null
                                 }
                             </Box>
