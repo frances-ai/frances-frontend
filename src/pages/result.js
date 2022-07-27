@@ -5,6 +5,7 @@ import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import TermSearchResult from "../components/termSearchResult";
 import VisualisationResult from "../components/visualisationResult";
+import TermSimilarityResult from "../components/termSimilarityResult";
 
 function ResultPage() {
 
@@ -12,10 +13,17 @@ function ResultPage() {
     const navigate = useNavigate();
     const noResult = location.state === null;
     const [isLoading, setIsLoading] = useState(true);
+    const [bufLocation, setBufLocation] = useState(location);
     const [searchResult, setSearchResult] = useState();
     const navStack = location.state?.navStack;
     const currentParameters = location.state?.to;
+    if (location !== bufLocation) {
+        setBufLocation(location);
+        setIsLoading(true);
+    }
     console.log(location);
+    console.log(bufLocation);
+    console.log(searchResult);
 
     useEffect(() => {
         setIsLoading(true);
@@ -23,12 +31,21 @@ function ResultPage() {
             setIsLoading(false);
         } else {
             const type = currentParameters.type;
+            const key = currentParameters.key;
+            const page = currentParameters.page ? currentParameters.page : 1;
+            console.log('Check type')
             switch (type) {
+                // TODO Save Search in Local Storage to get previous result quicker.
                 case 'TermSearch':
-                    const term = currentParameters.key;
-                    const page = currentParameters.page ? currentParameters.page : 1;
-                    console.log(term);
-                    QueryAPI.searchTerm(term, page).then(response => {
+                    console.log('Term Search')
+                    QueryAPI.searchTerm(key, page).then(response => {
+                        const result = response?.data;
+                        setSearchResult({result})
+                        setIsLoading(false);
+                    })
+                    break;
+                case 'TermSimilarity':
+                    QueryAPI.searchSimilarTerms(key, page).then(response => {
                         const result = response?.data;
                         setSearchResult({result})
                         setIsLoading(false);
@@ -75,6 +92,11 @@ function ResultPage() {
                                 {
                                     currentParameters.type === 'TermSearch'?
                                         <TermSearchResult result={searchResult}/> :
+                                        null
+                                }
+                                {
+                                    currentParameters.type === 'TermSimilarity'?
+                                        <TermSimilarityResult result={searchResult} text={currentParameters.key}/> :
                                         null
                                 }
                                 {

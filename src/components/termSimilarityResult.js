@@ -1,10 +1,9 @@
-import React, {useEffect, useState} from "react";
-import QueryAPI from "../apis/query";
-import Box from "@mui/material/Box";
+import React, {useEffect, useState} from 'react';
 import {
     Button,
     Link,
-    Paper, Stack,
+    Paper,
+    Stack,
     Table,
     TableBody,
     TableCell,
@@ -14,29 +13,33 @@ import {
     Typography
 } from "@mui/material";
 import TextMoreLess from "./textMoreLess";
+import Box from "@mui/material/Box";
 import Plot from "react-plotly.js";
+import QueryAPI from "../apis/query";
 import TermSearchButton from "./termSearchButton";
 import SimilarTermsButton from "./similarTermsButton";
 import VisualiseButton from "./visualiseButton";
 
-function TermSearchResult(props) {
+function TermSimilarityResult(props) {
     const originResult = props.result;
+    const text = props.text;
+    //TODO Sort result
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
     const headers = [
-        'Yeah', 'Edition', 'Volume', 'Start Page', 'End Page', 'Term Type',
-        'Definition', 'Related Terms', 'Topic Modelling ID', 'Sentiment Score', 'Advanced Options'
+        'Yeah', 'Edition', 'Volume', 'Term', 'Definition',
+        'Topic Modelling ID', 'Similitud rank', 'Sentiment Score', 'Advanced Options'
     ]
-
-    console.log(currentResult);
 
     useEffect(() => {
         setCurrentSearchInfo({
-            type: 'TermSearch',
-            key: currentResult.result.term,
+            type: 'TermSimilarity',
+            key: text,
             page: currentResult.result.pagination.page
         });
     }, [currentResult])
+
+    console.log(currentResult);
 
     const findTopicModelID = (model) => {
         const index = model.indexOf('_');
@@ -44,7 +47,7 @@ function TermSearchResult(props) {
     }
 
     const handPageChange = (event, newPage) => {
-        QueryAPI.searchTerm(currentResult?.result?.term, newPage + 1).then(response => {
+        QueryAPI.searchSimilarTerms(currentResult?.result?.term, newPage + 1).then(response => {
             const result = response?.data;
             setCurrentResult({result});
         })
@@ -53,7 +56,7 @@ function TermSearchResult(props) {
     return (
         <Box>
             <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
-                Results for <b>{currentResult.result.term}</b>
+                The first <b>20</b> most similar results. The result are sorted by <b>similitud rank</b>.
             </Typography>
             <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
                 Note that if you click over a <b>related term</b> , it will conduct a <b>term search</b>, showing
@@ -61,7 +64,7 @@ function TermSearchResult(props) {
                 you to the <b>Topic Modelling page</b>, listing all the terms belonging to that particular topic model.
             </Typography>
             <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 800 }} aria-label="term search result table">
+                <Table sx={{ minWidth: 800 }} aria-label="term similarity result table">
                     <TableHead>
                         <TableRow>
                             {
@@ -77,36 +80,24 @@ function TermSearchResult(props) {
                                 <TableRow
                                     key={key}
                                 >
-                                    <TableCell align={"center"}>{currentResult.result.results[key][0]}</TableCell>
                                     <TableCell align={"center"}>{currentResult.result.results[key][1]}</TableCell>
+                                    <TableCell align={"center"}>{currentResult.result.results[key][0]}</TableCell>
                                     <TableCell align={"center"}>{currentResult.result.results[key][2]}</TableCell>
                                     <TableCell align={"center"}>
-                                        <Link href={currentResult.result.results[key][3][0]}>
-                                            {currentResult.result.results[key][3][1]}
-                                        </Link>
+                                        <TermSearchButton
+                                            term={currentResult.result.results[key][3]}
+                                            currentSearchInfo={currentSearchInfo}
+                                        />
+
                                     </TableCell>
-                                    <TableCell align={"center"}>
-                                        <Link href={currentResult.result.results[key][4][0]}>
-                                            {currentResult.result.results[key][4][1]}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell align={"center"}>{currentResult.result.results[key][5]}</TableCell>
                                     <TableCell align={"left"}>
-                                        <TextMoreLess text={currentResult.result.results[key][6]} width={250}/>
+                                        <TextMoreLess text={currentResult.result.results[key][4]} width={250}/>
                                     </TableCell>
                                     <TableCell align={"center"}>
-                                        <Stack spacing={1}>
-                                            {
-                                                currentResult.result.results[key][7].map((item) => (
-                                                    <TermSearchButton key={item} term={item} currentSearchInfo={currentSearchInfo}/>
-                                                ))
-                                            }
-                                        </Stack>
+                                        {findTopicModelID(currentResult.result.results[key][5])}
                                     </TableCell>
-                                    <TableCell align={"center"}>
-                                        {findTopicModelID(currentResult.result.results[key][8])}
-                                    </TableCell>
-                                    <TableCell align={"center"}>{currentResult.result.results[key][9]}</TableCell>
+                                    <TableCell align={"center"}>{currentResult.result.results[key][6]}</TableCell>
+                                    <TableCell align={"center"}>{currentResult.result.results[key][7]}</TableCell>
                                     <TableCell align={"center"}>
                                         <Stack>
                                             <VisualiseButton
@@ -178,4 +169,4 @@ function TermSearchResult(props) {
     )
 }
 
-export default TermSearchResult;
+export default TermSimilarityResult;
