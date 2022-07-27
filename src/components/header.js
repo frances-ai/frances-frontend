@@ -7,7 +7,7 @@ import UserMenu from "./userMenu";
 export const sections = [
     { title: 'Term Search', url: '/termSearch' },
     { title: 'Term Similarity', url: '/termSimilarity' },
-    { title: 'Topic Modelling', url: '#' },
+    { title: 'Topic Modelling', url: '/topicModelling' },
     { title: 'Defoe Queries', url: '/defoeQuery' },
     { title: 'Collection Details', url: '#' }
 ];

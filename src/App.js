@@ -10,6 +10,7 @@ import TermSimilarityPage from "./pages/termSimilarity";
 import DefoeQueryPage from "./pages/defoeQuery";
 import HeaderLayout from "./pages/headerLayout";
 import ResultPage from "./pages/result";
+import TopicModellingPage from "./pages/topicModelling";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
                   <Route index element={<TermSearchPage/>} />
                   <Route path="termSearch" element={<TermSearchPage/>} />
                   <Route path="termSimilarity" element={<TermSimilarityPage/>} />
+                  <Route path="topicModelling" element={<TopicModellingPage/>} />
                   <Route path="result" element={<ResultPage/>} />
                   {/* Protected routes */}
                   <Route path="/defoeQuery" element={

@@ -16,13 +16,15 @@ import TextMoreLess from "./textMoreLess";
 import Box from "@mui/material/Box";
 import Plot from "react-plotly.js";
 import QueryAPI from "../apis/query";
-import TermSearchButton from "./termSearchButton";
-import SimilarTermsButton from "./similarTermsButton";
-import VisualiseButton from "./visualiseButton";
+import TermSearchButton from "./buttons/termSearchButton";
+import SimilarTermsButton from "./buttons/similarTermsButton";
+import VisualiseButton from "./buttons/visualiseButton";
+import TopicModelButton from "./buttons/topicModelButton";
+import {findTermLinkFromUri} from "../utils/stringUtil";
 
 function TermSimilarityResult(props) {
     const originResult = props.result;
-    const text = props.text;
+    const uri_or_text = props.uri_or_text;
     //TODO Sort result
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
@@ -32,19 +34,16 @@ function TermSimilarityResult(props) {
     ]
 
     useEffect(() => {
+        const text = uri_or_text.includes("https://") ? findTermLinkFromUri(uri_or_text) : uri_or_text;
         setCurrentSearchInfo({
             type: 'TermSimilarity',
-            key: text,
-            page: currentResult.result.pagination.page
+            key: uri_or_text,
+            page: currentResult.result.pagination.page,
+            name: 'TermSimilarity(' + text + ')'
         });
     }, [currentResult])
 
     console.log(currentResult);
-
-    const findTopicModelID = (model) => {
-        const index = model.indexOf('_');
-        return model.substring(0, index);
-    }
 
     const handPageChange = (event, newPage) => {
         QueryAPI.searchSimilarTerms(currentResult?.result?.term, newPage + 1).then(response => {
@@ -94,7 +93,10 @@ function TermSimilarityResult(props) {
                                         <TextMoreLess text={currentResult.result.results[key][4]} width={250}/>
                                     </TableCell>
                                     <TableCell align={"center"}>
-                                        {findTopicModelID(currentResult.result.results[key][5])}
+                                        <TopicModelButton
+                                            model_name={currentResult.result.results[key][5]}
+                                            currentSearchInfo={currentSearchInfo}
+                                        />
                                     </TableCell>
                                     <TableCell align={"center"}>{currentResult.result.results[key][6]}</TableCell>
                                     <TableCell align={"center"}>{currentResult.result.results[key][7]}</TableCell>

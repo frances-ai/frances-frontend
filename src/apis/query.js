@@ -21,6 +21,12 @@ class QueryAPI {
             page: page
         })
     }
+
+    checkSpell(uri) {
+        return axios.post("/query/spelling_checker", {
+            resource_uri: uri,
+        })
+    }
 }
 
 export default new QueryAPI();

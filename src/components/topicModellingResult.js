@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from "react";
-import QueryAPI from "../apis/query";
+import React, {useEffect, useState} from 'react';
 import Box from "@mui/material/Box";
 import {
     Button,
     Link,
-    Paper, Stack,
+    Paper,
+    Stack,
     Table,
     TableBody,
     TableCell,
@@ -14,35 +14,36 @@ import {
     Typography
 } from "@mui/material";
 import TextMoreLess from "./textMoreLess";
-import Plot from "react-plotly.js";
 import TermSearchButton from "./buttons/termSearchButton";
-import SimilarTermsButton from "./buttons/similarTermsButton";
 import VisualiseButton from "./buttons/visualiseButton";
-import TopicModelButton from "./buttons/topicModelButton";
+import SimilarTermsButton from "./buttons/similarTermsButton";
+import Plot from "react-plotly.js";
+import QueryAPI from "../apis/query";
+import {findTopicModelID} from "../utils/stringUtil";
 
-function TermSearchResult(props) {
+function TopicModellingResult(props) {
+
     const originResult = props.result;
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
     const headers = [
-        'Yeah', 'Edition', 'Volume', 'Start Page', 'End Page', 'Term Type',
-        'Definition / Summary', 'Related Terms', 'Topic Modelling ID', 'Sentiment Score', 'Advanced Options'
+        'Yeah', 'Edition', 'Volume', 'Term', 'Definition', 'Sentiment Score', 'Advanced Options'
     ]
 
     console.log(currentResult);
 
     useEffect(() => {
+        const modelID = findTopicModelID(currentResult.result.topic_name);
         setCurrentSearchInfo({
-            type: 'TermSearch',
-            key: currentResult.result.term,
+            type: 'TopicModelling',
+            key: currentResult.result.topic_name,
             page: currentResult.result.pagination.page,
-            name: 'TermSearch('+ currentResult.result.term + ')'
+            name: 'TopicModelling(' + modelID + ')'
         });
     }, [currentResult])
 
-
     const handPageChange = (event, newPage) => {
-        QueryAPI.searchTerm(currentResult?.result?.term, newPage + 1).then(response => {
+        QueryAPI.searchTopicModels(currentResult?.result?.term, newPage + 1).then(response => {
             const result = response?.data;
             setCurrentResult({result});
         })
@@ -51,22 +52,22 @@ function TermSearchResult(props) {
     return (
         <Box>
             <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
-                Results for <b>{currentResult.result.term}</b>
+                <b>{currentResult.result.num_results}</b> terms found for the topic
+                <b>{currentResult.result.topic_name}</b>
             </Typography>
             <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
-                Note that if you click over a <b>related term</b> , it will conduct a <b>term search</b>, showing
-                all the searching results for that term. And if you click over a <b>topic model id</b> if will take
-                you to the <b>Topic Modelling page</b>, listing all the terms belonging to that particular topic model.
+                Note that if you instead click over a <b>term</b>, it will take you to the <b>Term Search page</b>,
+                showing all the searching results for that term.
             </Typography>
             <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 800 }} aria-label="term search result table">
+                <Table sx={{ minWidth: 800 }} aria-label="topic modelling result table">
                     <TableHead>
                         <TableRow>
                             {
                                 headers.map((header) => (
                                     <TableCell
-                                        align={header === 'Definition / Summary'? "left" : "center"}
-                                            key={header}
+                                        align={header === 'Definition'? "left" : "center"}
+                                        key={header}
                                     >
                                         {header}
                                     </TableCell>
@@ -80,43 +81,20 @@ function TermSearchResult(props) {
                                 <TableRow
                                     key={key}
                                 >
-                                    <TableCell align={"center"}>{currentResult.result.results[key][0]}</TableCell>
                                     <TableCell align={"center"}>{currentResult.result.results[key][1]}</TableCell>
+                                    <TableCell align={"center"}>{currentResult.result.results[key][0]}</TableCell>
                                     <TableCell align={"center"}>{currentResult.result.results[key][2]}</TableCell>
                                     <TableCell align={"center"}>
-                                        <Link href={currentResult.result.results[key][3][0]}>
-                                            {currentResult.result.results[key][3][1]}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell align={"center"}>
-                                        <Link href={currentResult.result.results[key][4][0]}>
-                                            {currentResult.result.results[key][4][1]}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell align={"center"}>{currentResult.result.results[key][5]}</TableCell>
-                                    <TableCell align={"left"}>
-                                        <TextMoreLess text={currentResult.result.results[key][6]} width={250}/>
-                                    </TableCell>
-                                    <TableCell align={"center"}>
-                                        <Stack spacing={1}>
-                                            {
-                                                currentResult.result.results[key][7].map((item) => (
-                                                    <TermSearchButton
-                                                        key={item}
-                                                        term={item}
-                                                        currentSearchInfo={currentSearchInfo}
-                                                    />
-                                                ))
-                                            }
-                                        </Stack>
-                                    </TableCell>
-                                    <TableCell align={"center"}>
-                                        <TopicModelButton
-                                            model_name={currentResult.result.results[key][8]}
+                                        <TermSearchButton
+                                            term={currentResult.result.results[key][3]}
                                             currentSearchInfo={currentSearchInfo}
                                         />
+
                                     </TableCell>
-                                    <TableCell align={"center"}>{currentResult.result.results[key][9]}</TableCell>
+                                    <TableCell align={"left"}>
+                                        <TextMoreLess text={currentResult.result.results[key][4]} width={250}/>
+                                    </TableCell>
+                                    <TableCell align={"center"}>{currentResult.result.results[key][5]}</TableCell>
                                     <TableCell align={"center"}>
                                         <Stack>
                                             <VisualiseButton
@@ -142,7 +120,7 @@ function TermSearchResult(props) {
                 component="div"
                 rowsPerPageOptions = {[currentResult.result.pagination.perPage]}
                 rowsPerPage={currentResult.result.pagination.perPage}
-                count={currentResult.result.pagination.total}
+                count={currentResult.result.num_results}
                 page={currentResult.result.pagination.page -1}
                 onPageChange={handPageChange}
             />
@@ -170,22 +148,9 @@ function TermSearchResult(props) {
                     </Box> :
                     null
             }
-            {
-                currentResult.result.heatmap_plot?
-                    <Paper sx={{mt: 2, pt: 2, pl: 2, pr: 2}} elevation={4}>
-                        <Typography component="div" gutterBottom variant="body1">
-                            We are also going to visualize how similar each topic model is to each other.
-                        </Typography>
-                        <Plot
-                            data={currentResult.result.heatmap_plot.data}
-                            layout={currentResult.result.heatmap_plot.layout}
-                        />
-                    </Paper> :
-                    null
-            }
 
         </Box>
     )
 }
 
-export default TermSearchResult;
+export default TopicModellingResult;

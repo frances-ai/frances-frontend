@@ -1,13 +1,14 @@
-import React from 'react'
+import React from 'react';
 import {Button} from "@mui/material";
 import {useLocation, useNavigate} from "react-router-dom";
 
-function VisualiseButton(props) {
-    const {uri, currentSearchInfo} = props;
+
+function TermSearchButton(props) {
+    const {term, currentSearchInfo} = props;
     const location = useLocation();
     const navigate = useNavigate();
 
-    function handVisualiseClick() {
+    const handleTermSearchClick = () => {
         const navStack = location.state?.navStack ? location.state.navStack: [];
         navStack.push(currentSearchInfo);
 
@@ -15,19 +16,21 @@ function VisualiseButton(props) {
             {state:
                     {
                         to: {
-                            type: 'Visualisation',
-                            key: uri
+                            type: 'TermSearch',
+                            key: term,
+                            name: 'TermSearch(' + term + ')'
                         },
                         navStack: navStack
                     }
             })
     }
 
+
     return (
-        <Button onClick={handVisualiseClick}>
-            Visualise
+        <Button onClick={handleTermSearchClick}>
+            {term}
         </Button>
     )
 }
 
-export default VisualiseButton;
+export default TermSearchButton;

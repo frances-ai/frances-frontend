@@ -63,7 +63,7 @@ function TermSimilarityPage() {
             {/* Search Result */}
             {
                 !isSearching && searchResult?
-                    <TermSimilarityResult result={searchResult} text={searchText}/> :
+                    <TermSimilarityResult result={searchResult} uri_or_text={searchText}/> :
                     null
             }
         </Container>

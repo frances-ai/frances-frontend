@@ -6,6 +6,7 @@ import Box from "@mui/material/Box";
 import TermSearchResult from "../components/termSearchResult";
 import VisualisationResult from "../components/visualisationResult";
 import TermSimilarityResult from "../components/termSimilarityResult";
+import TopicModellingResult from "../components/topicModellingResult";
 
 function ResultPage() {
 
@@ -51,6 +52,13 @@ function ResultPage() {
                         setIsLoading(false);
                     })
                     break;
+                case 'TopicModelling':
+                    QueryAPI.searchTopicModels(key, page).then(response => {
+                        const result = response?.data;
+                        setSearchResult({result})
+                        setIsLoading(false);
+                    })
+                    break;
                 case 'Visualisation':
                     console.log('Visual');
                     setIsLoading(false);
@@ -81,11 +89,11 @@ function ResultPage() {
                                             key={index}
                                             sx={{textTransform: 'none'}}
                                         >
-                                            {nav.type + '(' + nav.key + ')'}
+                                            {nav.name}
                                         </Button>
                                     ))}
                                     <Typography color="text.primary">
-                                        {currentParameters.type + '(' + currentParameters.key + ')'}
+                                        {currentParameters.name}
                                     </Typography>
                                 </Breadcrumbs>
                                 <Divider />
@@ -96,7 +104,12 @@ function ResultPage() {
                                 }
                                 {
                                     currentParameters.type === 'TermSimilarity'?
-                                        <TermSimilarityResult result={searchResult} text={currentParameters.key}/> :
+                                        <TermSimilarityResult result={searchResult} uri_or_text={currentParameters.key}/> :
+                                        null
+                                }
+                                {
+                                    currentParameters.type === 'TopicModelling'?
+                                        <TopicModellingResult result={searchResult}/> :
                                         null
                                 }
                                 {
