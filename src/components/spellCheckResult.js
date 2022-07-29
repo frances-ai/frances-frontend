@@ -13,11 +13,8 @@ import {
 } from "@mui/material";
 import {escapeUnicode, findTermLinkFromUri} from "../utils/stringUtil";
 import DiffMatchPatch from 'diff-match-patch';
-import {Parser} from 'html-to-react';
-import TextMoreLess from "./textMoreLess";
-import TopicModelButton from "./buttons/topicModelButton";
+import parse from 'html-react-parser';
 import VisualiseButton from "./buttons/visualiseButton";
-import CheckSpellButton from "./buttons/checkSpellButton";
 import SimilarTermsButton from "./buttons/similarTermsButton";
 
 function TermInfo(props) {
@@ -104,8 +101,7 @@ function SpellCheckResult(props) {
         dmp.diff_cleanupSemantic(diff);
         dmp.Diff_Timeout = parseFloat(1);
         const diff_prettyHtml = dmp.diff_prettyHtml(diff);
-        const parser = new Parser();
-        setDifferenceMarkedDef(parser.parse(diff_prettyHtml));
+        setDifferenceMarkedDef(parse(diff_prettyHtml));
     }, [])
 
     return (

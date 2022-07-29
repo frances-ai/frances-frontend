@@ -1,0 +1,22 @@
+.node {
+    stroke: #fff;
+    fill:#ddd;
+    stroke-width: 1.5px;
+}
+
+.link {
+    stroke: #999;
+    stroke-opacity: .6;
+    stroke-width: 1px;
+}
+
+
+.node-text {
+    font: 12px sans-serif;
+    fill:black;
+}
+
+.link-text {
+    font: 12px sans-serif;
+    fill:blue;
+}
