@@ -37,7 +37,6 @@ function ResultPage() {
             const page = currentParameters.page ? currentParameters.page : 1;
             console.log('Check type')
             switch (type) {
-                // TODO Save Search in Local Storage to get previous result quicker.
                 case 'TermSearch':
                     console.log('Term Search')
                     QueryAPI.searchTerm(key, page).then(response => {
@@ -68,8 +67,11 @@ function ResultPage() {
                     })
                     break;
                 case 'Visualisation':
-                    console.log('Visual');
-                    setIsLoading(false);
+                    QueryAPI.visualise(key).then(response => {
+                        const result = response?.data;
+                        setSearchResult({result})
+                        setIsLoading(false);
+                    })
                     break;
             }
         }
@@ -127,7 +129,7 @@ function ResultPage() {
                                 }
                                 {
                                     currentParameters.type === 'Visualisation'?
-                                        <VisualisationResult/> :
+                                        <VisualisationResult result={searchResult}/> :
                                         null
                                 }
                             </Box>

@@ -1,15 +1,13 @@
-import React, {useEffect, useRef} from 'react'
-import Box from "@mui/material/Box";
-import {Typography} from "@mui/material";
-import {findTermLinkFromUri} from "../utils/stringUtil";
-import * as d3 from 'd3';
-import './visualisationResult.css';
+import React, {useEffect, useRef} from "react";
+import * as d3 from "d3";
 
-
+// Code from Rosa's frances project: https://github.com/francesNLP/frances/blob/main/web-app/query_app/templates/visualization_resources.html
 function filterNodesById(nodes,id){
     return nodes.filter(function(n) { return n.id === id; });
 }
 
+
+// Code from Rosa's frances project: https://github.com/francesNLP/frances/blob/main/web-app/query_app/templates/visualization_resources.html
 function triplesToGraph(triples){
     //Graph
     let graph={nodes:[], links:[]};
@@ -40,7 +38,7 @@ function triplesToGraph(triples){
     return graph;
 }
 
-
+// Code from Rosa's frances project: https://github.com/francesNLP/frances/blob/main/web-app/query_app/templates/visualization_resources.html
 function update(svg, graph, force){
     // ==================== Add Marker ====================
     svg.append("svg:defs").selectAll("marker")
@@ -153,17 +151,4 @@ function RDFGraph(props) {
     )
 }
 
-function VisualisationResult(props) {
-    const result = props.result;
-
-    return (
-        <Box>
-            <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
-                Visualisation RDF graph for the resource <b>{findTermLinkFromUri(result.result.uri)}</b>
-            </Typography>
-            <RDFGraph data={result.result.results}/>
-        </Box>
-    )
-}
-
-export default VisualisationResult;
+export default RDFGraph;
