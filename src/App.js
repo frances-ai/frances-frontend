@@ -25,11 +25,12 @@ function App() {
                   <Route path="result" element={<ResultPage/>} />
                   <Route path="collectionDetails" element={<CollectionDetailsPage/>} />
                   {/* Protected routes */}
-                  <Route path="/defoeQuery" element={
-                      <RequireAuth>
-                          <DefoeQueryPage />
-                      </RequireAuth>
-                  } />
+                  <Route path="defoeQuery" element={<DefoeQueryPage/>} />
+                  {/*<Route path="/defoeQuery" element={*/}
+                  {/*    <RequireAuth>*/}
+                  {/*        <DefoeQueryPage />*/}
+                  {/*    </RequireAuth>*/}
+                  {/*} />*/}
               </Route>
 
               <Route path="login" element={<LoginPage/>} />

@@ -211,6 +211,58 @@ class QueryAPI {
             return response;
         })*/
     }
+
+    getAllDefoeQueries() {
+        const key = "defoe-queries";
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return axios.get("http://34.125.20.38:5000/api/v1/query/defoe_list").then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+
+            return response;
+        })
+    }
+
+    uploadFile(file) {
+        return axios.post("http://34.125.20.38:5000/api/v1/query/upload", {
+            file: file,
+        },{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        }).then(response => {
+            return response;
+        })
+    }
+
+    submitDefoeQuery(data) {
+        return axios.post("http://34.125.20.38:5000/api/v1/query/defoe_submit", data).then(response => {
+            return response;
+        })
+    }
+
+    getDefoeQueryStatus(id) {
+        return axios.get("http://34.125.20.38:5000/api/v1/query/defoe_status", {
+            id: id,
+        }).then(response => {
+            return response;
+        })
+    }
+
 }
 
 export default new QueryAPI();
