@@ -1,15 +1,20 @@
 import axios from "axios";
-import Config from '../config.json'
 import AuthAPI from "./auth";
 import Cookies from 'js-cookie'
+import config from '../config.json'
+
+let baseUrl = config.BACKEND_BASE_URL;
+if (process.env.REACT_APP_FRANCES_API_ADDRESS !== undefined || process.env.REACT_APP_FRANCES_API_ADDRESS !== null) {
+    baseUrl = process.env.REACT_APP_FRANCES_API_ADDRESS;
+}
 
 export default axios.create({
-    baseURL: Config.BACKEND_BASE_URL,
+    baseURL: baseUrl,
     withCredentials: true
 })
 
 export const axiosPrivate = axios.create({
-    baseURL: Config.BACKEND_BASE_URL,
+    baseURL: baseUrl,
     withCredentials: true
 })
 
