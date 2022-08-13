@@ -29,7 +29,7 @@ function DefoeQueryPage() {
             })
     });
 
-    const [queryResult, setQueryResult] = useState("");
+    const [queryStatus, setQueryStatus] = useState({});
     const [isQuerying, setIsQuerying] = useState(false);
     const [queryID, setQueryID] = useState("");
     const handleQuerySubmit = (event) => {
@@ -53,13 +53,22 @@ function DefoeQueryPage() {
             }
             setQueryID(r.data.id);
             setInterval(() => {
+                // TODO fix query ID problem
+                // https://sebhastian.com/setinterval-react/
                 QueryAPI.getDefoeQueryStatus(queryID).then((r) => {
                    console.log(r);
+                   setQueryStatus(r.data);
                 });
             }, 500);
         })
     }
 
+    const updateQueryStatus = (id) => {
+        QueryAPI.getDefoeQueryStatus(id).then((r) => {
+            console.log(r);
+            setQueryStatus(r.data);
+        });
+    }
     const [queryType, setQueryType] = useState("");
     const [preProcess, setPreProcess] = useState("none");
     const [targetSentences, setTargetSentences] = useState("");
@@ -248,10 +257,13 @@ function DefoeQueryPage() {
                 <div>
                     Query ID: {queryID}
                     <div>
-                        Status: Running
-                    </div>
-                    <div>
-                        Last Updated:
+                        {queryStatus !== "" &&
+                        <div>
+                            <p>Done: {queryStatus.done}</p>
+                            <p>Result: {queryStatus.result}</p>
+                            <p>Error: {queryStatus.error}</p>
+                        </div>
+                        }
                     </div>
                 </div>
             }

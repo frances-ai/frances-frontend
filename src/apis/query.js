@@ -257,7 +257,9 @@ class QueryAPI {
 
     getDefoeQueryStatus(id) {
         return axios.get("http://34.125.20.38:5000/api/v1/query/defoe_status", {
-            id: id,
+            params: {
+                id: id,
+            },
         }).then(response => {
             return response;
         })
