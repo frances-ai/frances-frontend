@@ -9,7 +9,7 @@ export const sections = [
     { title: 'Term Similarity', url: '/termSimilarity' },
     { title: 'Topic Modelling', url: '/topicModelling' },
     { title: 'Defoe Queries', url: '/defoeQuery' },
-    { title: 'Collection Details', url: '#' }
+    { title: 'Collection Details', url: '/collectionDetails' }
 ];
 
 function Header(props) {

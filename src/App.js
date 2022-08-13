@@ -11,6 +11,7 @@ import DefoeQueryPage from "./pages/defoeQuery";
 import HeaderLayout from "./pages/headerLayout";
 import ResultPage from "./pages/result";
 import TopicModellingPage from "./pages/topicModelling";
+import CollectionDetailsPage from "./pages/collectionDetails";
 
 function App() {
   return (
@@ -22,12 +23,14 @@ function App() {
                   <Route path="termSimilarity" element={<TermSimilarityPage/>} />
                   <Route path="topicModelling" element={<TopicModellingPage/>} />
                   <Route path="result" element={<ResultPage/>} />
+                  <Route path="collectionDetails" element={<CollectionDetailsPage/>} />
                   {/* Protected routes */}
-                  <Route path="/defoeQuery" element={
-                      <RequireAuth>
-                          <DefoeQueryPage />
-                      </RequireAuth>
-                  } />
+                  <Route path="defoeQuery" element={<DefoeQueryPage/>} />
+                  {/*<Route path="/defoeQuery" element={*/}
+                  {/*    <RequireAuth>*/}
+                  {/*        <DefoeQueryPage />*/}
+                  {/*    </RequireAuth>*/}
+                  {/*} />*/}
               </Route>
 
               <Route path="login" element={<LoginPage/>} />

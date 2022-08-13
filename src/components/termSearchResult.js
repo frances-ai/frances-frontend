@@ -2,7 +2,6 @@ import React, {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import {
-    Button,
     Link,
     Paper, Stack,
     Table,

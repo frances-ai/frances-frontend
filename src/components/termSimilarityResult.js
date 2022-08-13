@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {
-    Button,
     Link,
     Paper,
     Stack,
@@ -23,6 +22,73 @@ import TopicModelButton from "./buttons/topicModelButton";
 import {findTermLinkFromUri} from "../utils/stringUtil";
 import CheckSpellButton from "./buttons/checkSpellButton";
 
+function TermInfo(props) {
+    const {termInfo, currentSearchInfo} = props;
+
+    const headers = [
+        'Term', 'Yeah', 'Edition', 'Volume', 'Definition / Summary',
+        'Topic Modelling ID', 'Sentiment Score', 'Advanced Options'
+    ]
+
+    return (
+        <Box>
+            <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
+                Similar terms for:
+            </Typography>
+            <Paper elevation={3}>
+                <TableContainer>
+                    <Table sx={{ minWidth: 800 }} aria-label="term info table">
+                        <TableHead>
+                            <TableRow>
+                                {
+                                    headers.map((header) => (
+                                        <TableCell
+                                            align={header === 'Definition / Summary'? "left" : "center"}
+                                            key={header}
+                                        >
+                                            {header}
+                                        </TableCell>
+                                    ))
+                                }
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell align={"center"}>{termInfo.term}</TableCell>
+                                <TableCell align={"center"}>{termInfo.year}</TableCell>
+                                <TableCell align={"center"}>{termInfo.edition}</TableCell>
+                                <TableCell align={"center"}>{termInfo.volume}</TableCell>
+                                <TableCell align={"left"}>
+                                    <TextMoreLess text={termInfo.definition} width={250}/>
+                                </TableCell>
+                                <TableCell align={"center"}>
+                                    <TopicModelButton
+                                        model_name={termInfo.topicName}
+                                        currentSearchInfo={currentSearchInfo}
+                                    />
+                                </TableCell>
+                                <TableCell align={"center"}>{termInfo.topicSentiment}</TableCell>
+                                <TableCell align={"center"}>
+                                    <Stack>
+                                        <VisualiseButton
+                                            uri={termInfo.uri}
+                                            currentSearchInfo={currentSearchInfo}
+                                        />
+                                        <CheckSpellButton
+                                            uri={termInfo.uri}
+                                            currentSearchInfo={currentSearchInfo}
+                                        />
+                                    </Stack>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Paper>
+        </Box>
+    )
+}
+
 function TermSimilarityResult(props) {
     const originResult = props.result;
     const uri_or_text = props.uri_or_text;
@@ -33,6 +99,17 @@ function TermSimilarityResult(props) {
         'Yeah', 'Edition', 'Volume', 'Term', 'Definition',
         'Topic Modelling ID', 'Similitud rank', 'Sentiment Score', 'Advanced Options'
     ]
+    const termInfo = currentResult.result.uri ?
+        {
+            term: currentResult.result.term,
+            year: currentResult.result.year,
+            edition: currentResult.result.enum,
+            volume: currentResult.result.vnum,
+            definition: currentResult.result.definition,
+            topicName: currentResult.result.topicName,
+            topicSentiment: currentResult.result.topicSentiment,
+            uri: currentResult.result.uri
+        } : null;
 
     useEffect(() => {
         const text = uri_or_text.includes("https://") ? findTermLinkFromUri(uri_or_text) : uri_or_text;
@@ -55,8 +132,13 @@ function TermSimilarityResult(props) {
 
     return (
         <Box>
+            {
+                currentResult.result.uri?
+                    <TermInfo termInfo={termInfo} currentSearchInfo={currentSearchInfo}/> :
+                    null
+            }
             <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
-                The first <b>20</b> most similar results. The result are sorted by <b>similitud rank</b>.
+                The first <b>20</b> most similar results. The results are sorted by <b>similitud rank</b>.
             </Typography>
             <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
                 Note that if you click over a <b>related term</b> , it will conduct a <b>term search</b>, showing
