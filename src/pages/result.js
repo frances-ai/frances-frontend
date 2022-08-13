@@ -37,7 +37,6 @@ function ResultPage() {
             const page = currentParameters.page ? currentParameters.page : 1;
             console.log('Check type')
             switch (type) {
-                // TODO Save Search in Local Storage to get previous result quicker.
                 case 'TermSearch':
                     console.log('Term Search')
                     QueryAPI.searchTerm(key, page).then(response => {

@@ -17,7 +17,7 @@ class QueryAPI {
             search: term,
             page: page
         }).then(response => {
-            console.log('test');
+            console.log('Server');
             try {
                 localStorage.setItem(key, JSON.stringify(response.data));
             } catch (e) {
@@ -45,7 +45,7 @@ class QueryAPI {
             resource_uri: resource_uri,
             page: page
         }).then(response => {
-            console.log('test');
+            console.log('Server');
             try {
                 localStorage.setItem(key, JSON.stringify(response.data));
             } catch (e) {
@@ -72,7 +72,7 @@ class QueryAPI {
             topic_name: model_name_or_number,
             page: page
         }).then(response => {
-            console.log('test');
+            console.log('Server');
             try {
                 localStorage.setItem(key, JSON.stringify(response.data));
             } catch (e) {
@@ -99,7 +99,7 @@ class QueryAPI {
         return axios.post("/query/spelling_checker", {
             resource_uri: uri,
         }).then(response => {
-            console.log('test');
+            console.log('Server');
             try {
                 localStorage.setItem(key, JSON.stringify(response.data));
             } catch (e) {
@@ -126,7 +126,7 @@ class QueryAPI {
         return axios.post("/query/visualization_resources", {
             resource_uri: uri,
         }).then(response => {
-            console.log('test');
+            console.log('server');
             try {
                 localStorage.setItem(key, JSON.stringify(response.data));
             } catch (e) {
@@ -136,6 +136,80 @@ class QueryAPI {
 
             return response;
         })
+    }
+
+    getAllCollectionName() {
+        const key = 'allCollectionNames';
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return new Promise((resolve => {
+            // fake server call
+            const collectionNames = [
+                'Encyclopaedia Britannica (1768-1860)',
+                'Chapbooks printed in Scotland',
+                'Ladies’ Edinburgh Debating Society'
+            ]
+            resolve({
+                data: collectionNames
+            });
+        }));
+
+        /*return axios.post("/query/allCollectionName").then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+
+            return response;
+        })*/
+    }
+
+    getAllEditionNameFromEB() {
+        const key = 'allEditionNamesFromEB';
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return new Promise((resolve => {
+            // fake server call
+            const editionNames = [
+                'Encyclopaedia Britannica (1768-1860)',
+                'Chapbooks printed in Scotland',
+                'Ladies’ Edinburgh Debating Society'
+            ]
+            resolve({
+                data: editionNames
+            });
+        }));
+
+        /*return axios.post("/query/allEditionNames").then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+
+            return response;
+        })*/
     }
 }
 
