@@ -200,11 +200,6 @@ function DefoeQueryPage() {
     };
 
     const getQueryResult = () => {
-        const resultStyle = {
-            overflowY: "auto",
-            maxHeight: "50%",
-        };
-
         if (queryStatus !== {}) {
             return (
                 <div>
@@ -222,11 +217,9 @@ function DefoeQueryPage() {
                     }
                     {
                         queryStatus.results &&
-                        <div style={resultStyle}>
-                            <SyntaxHighlighter language="json" style={lightfair}>
-                                {JSON.stringify(queryStatus.results, null, 2)}
-                            </SyntaxHighlighter>
-                        </div>
+                        <SyntaxHighlighter language="json" style={lightfair}>
+                            {JSON.stringify(queryStatus.results, null, 2)}
+                        </SyntaxHighlighter>
                     }
                     {
                         queryStatus.error &&
