@@ -8,11 +8,8 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import LoadingButton from '@mui/lab/LoadingButton';
 import Box from "@mui/material/Box";
 import QueryAPI from "../apis/query"
-import {Search} from "@mui/icons-material";
-import DefoeResult from "../components/termSearchResult";
 
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
