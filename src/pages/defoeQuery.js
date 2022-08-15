@@ -53,6 +53,15 @@ function DefoeQueryPage() {
         }
     };
 
+    // descriptions of preprocess functions
+    const preProcessDescriptions = {
+        none: "It does not apply any type of treatment to the text.",
+        normalize: "It converts all words to lower-case removing all characters that are not 'a',...,'z'.",
+        normalize_num: "It converts all words to lower-case removing all characters that are not 'a',...,'z' or '1',..,'9'.",
+        lemmatize: "It normalizes the text first and lemmatizes it later, returning the base (lemma) of each word.",
+        stem: "It normalizes the text first and applies stemming later, reducing words to their stem.",
+    }
+
     // query list state
     const [queryListLoaded, setQueryListLoaded] = useState(false);
     const [queryList, setQueryList] = useState([]);
@@ -68,7 +77,7 @@ function DefoeQueryPage() {
                 const result = response?.data;
                 setQueryListLoaded(true);
                 setQueryList(result.queries);
-                setQueryType(result.queries[0]);
+                setQueryTypeWithUI(result.queries[0]);
             });
         }
 
@@ -146,8 +155,9 @@ function DefoeQueryPage() {
     const [uploadEnabled, setUploadEnabled] = useState(false);
     const [windowEnabled, setWindowEnabled] = useState(false);
 
-    const handleQueryTypeChange = (event) => {
-        setQueryType(event.target.value);
+    // update the query type and interface around it.
+    const setQueryTypeWithUI = (name) => {
+        setQueryType(name);
         const inputToFunction = {
             "preprocess": setPreProcessEnabled,
             "hitcount": setHitCountEnabled,
@@ -155,7 +165,7 @@ function DefoeQueryPage() {
             "upload": setUploadEnabled,
             "window": setWindowEnabled,
         }
-        const metadata = queryMetadata[event.target.value]
+        const metadata = queryMetadata[name]
         if (!metadata) {
             return;
         }
@@ -164,6 +174,10 @@ function DefoeQueryPage() {
             const enabled = metadata.inputs.includes(name)
             set(enabled);
         }
+    }
+
+    const handleQueryTypeChange = (event) => {
+        setQueryTypeWithUI(event.target.value);
     };
 
     const handlePreProcessChange = (event) => {
@@ -274,9 +288,9 @@ function DefoeQueryPage() {
                                             {/* Render query description */}
                                             {
                                                 queryType && queryMetadata[queryType] &&
-                                                <>
+                                                <Typography variant="caption" display="block" gutterBottom>
                                                     {queryMetadata[queryType].description}
-                                                </>
+                                                </Typography>
                                             }
                                         </div>
                                     </div>
@@ -285,25 +299,30 @@ function DefoeQueryPage() {
                             {
                                 preProcessEnabled &&
                                 <Grid item xs={12} id="prep_div">
-                                        <strong>Preprocess Treatment</strong>
-                                        <RadioGroup
-                                            aria-labelledby="demo-radio-buttons-group-label"
-                                            defaultValue="none"
-                                            name="preprocess"
-                                            onChange={handlePreProcessChange}
-                                        >
-                                            <FormControlLabel value="none" control={<Radio />} label="None" />
-                                            <FormControlLabel value="normalize" control={<Radio />} label="Normalize" />
-                                            <FormControlLabel value="normalize_num" control={<Radio />} label="Normalize & Numbers" />
-                                            <FormControlLabel value="lemmatize" control={<Radio />} label="Normalize & Lemmatize" />
-                                            <FormControlLabel value="stem" control={<Radio />} label="Normalize & Stemming" />
-                                        </RadioGroup>
+                                    <strong>Preprocess Treatment</strong>
+                                    <RadioGroup
+                                        aria-labelledby="demo-radio-buttons-group-label"
+                                        defaultValue="none"
+                                        name="preprocess"
+                                        onChange={handlePreProcessChange}
+                                    >
+                                        <FormControlLabel value="none" control={<Radio />} label="None" />
+                                        <FormControlLabel value="normalize" control={<Radio />} label="Normalize" />
+                                        <FormControlLabel value="normalize_num" control={<Radio />} label="Normalize & Numbers" />
+                                        <FormControlLabel value="lemmatize" control={<Radio />} label="Normalize & Lemmatize" />
+                                        <FormControlLabel value="stem" control={<Radio />} label="Normalize & Stemming" />
+                                    </RadioGroup>
+                                    {/* Draw description of current preprocess treatment */}
+                                    <Typography variant="caption" display="block" gutterBottom>
+                                        { preProcessDescriptions[preProcess] }
+                                    </Typography>
                                 </Grid>
                             }
                             {
                                 hitCountEnabled &&
                                 <Grid item xs={12} id="hit_count_div">
-                                        <label htmlFor="hit_count">Select the hit count</label>
+                                    <strong>Hit Count</strong>
+                                    <div>
                                         <Select
                                             value={hitCount}
                                             label="Hit count"
@@ -313,66 +332,70 @@ function DefoeQueryPage() {
                                             <MenuItem value="term" key="term">Term</MenuItem>
                                             <MenuItem value="word" key="word">Word</MenuItem>
                                         </Select>
+                                    </div>
+                                    <Typography variant="caption" display="block" gutterBottom>
+                                        It counts the number of times a keyword/keysentece appears in a term (article or topic).
+                                    </Typography>
                                 </Grid>
                             }
                             {
                                 uploadEnabled &&
                                 <Grid item xs={12} id="upload_div">
-                                        <strong>Lexicon File</strong>
-                                        <div>
-                                            <Button variant="outlined" component="label">
-                                                Upload
-                                                <input hidden accept="text/plain" type="file" name="file" onInput={onFileUpload}/>
-                                            </Button>
-                                            {
-                                                fileID !== "" &&
-                                                <span>{fileID}</span>
-                                            }
-                                        </div>
-                                        <div>
-                                            The file should contain a line per keyword and/or keysentence that you want to use in your query.
-                                        </div>
+                                    <strong>Lexicon File</strong>
+                                    <div>
+                                        <Button variant="outlined" component="label">
+                                            Upload
+                                            <input hidden accept="text/plain" type="file" name="file" onInput={onFileUpload}/>
+                                        </Button>
+                                        {
+                                            fileID !== "" &&
+                                            <div>Upload ID: {fileID}</div>
+                                        }
+                                    </div>
+                                    <Typography variant="caption" display="block" gutterBottom>
+                                        The file should contain a line per keyword and/or keysentence that you want to use in your query.
+                                    </Typography>
                                 </Grid>
                             }
                             {
                                 filterEnabled &&
                                 <Grid item xs={12} id="filter_div">
-                                        <p><strong>Filtering Options</strong></p>
+                                    <p><strong>Filtering Options</strong></p>
 
+                                    <div>
+                                        <label htmlFor="target_sentences">Target words/sentences (comma separated)
+                                            (Optional)</label>
                                         <div>
-                                            <label htmlFor="target_sentences">Target words/sentences (comma separated)
-                                                (Optional)</label>
-                                            <div>
-                                                <TextField
-                                                    id="target_sentences"
-                                                    label='flower,garden,plant'
-                                                    name="target_sentences"
-                                                    multiline
-                                                    rows={4}
-                                                    onChange={handleTargetSentencesChange}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                Those are the list of words and/or sentences that must appear in a term in order to select it. Leave it empty to select all.
-                                            </div>
+                                            <TextField
+                                                id="target_sentences"
+                                                label='flower,garden,plant'
+                                                name="target_sentences"
+                                                multiline
+                                                rows={4}
+                                                onChange={handleTargetSentencesChange}
+                                            />
                                         </div>
 
-                                        <strong> Select term which contains </strong>
-                                        <RadioGroup
-                                            aria-labelledby="demo-radio-buttons-group-label"
-                                            defaultValue="or"
-                                            name="target_filter"
-                                            onChange={handleTargetFilterChange}
-                                        >
-                                            <FormControlLabel value="or" control={<Radio />} label="Or" />
-                                            <FormControlLabel value="and" control={<Radio />} label="And" />
-                                        </RadioGroup>
+                                        <Typography variant="caption" display="block" gutterBottom>
+                                            Those are the list of words and/or sentences that must appear in a term in order to select it. Leave it empty to select all.
+                                        </Typography>
+                                    </div>
 
-                                        <div>
-                                            <TextField id="start_year" onChange={handleStartYearChange} label="Start Year (Optional)" name="start_year" variant="outlined" />
-                                            <TextField id="end_year" onChange={handleEndYearChange} label="End Year (Optional)" name="end_year" variant="outlined" />
-                                        </div>
+                                    <label> Select term which contains </label>
+                                    <RadioGroup
+                                        aria-labelledby="demo-radio-buttons-group-label"
+                                        defaultValue="or"
+                                        name="target_filter"
+                                        onChange={handleTargetFilterChange}
+                                    >
+                                        <FormControlLabel value="or" control={<Radio />} label="Or" />
+                                        <FormControlLabel value="and" control={<Radio />} label="And" />
+                                    </RadioGroup>
+
+                                    <div>
+                                        <TextField id="start_year" onChange={handleStartYearChange} label="Start Year (Optional)" name="start_year" variant="outlined" />
+                                        <TextField id="end_year" onChange={handleEndYearChange} label="End Year (Optional)" name="end_year" variant="outlined" />
+                                    </div>
                                 </Grid>
                             }
                             {
