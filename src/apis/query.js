@@ -224,7 +224,7 @@ class QueryAPI {
             }));
         }
 
-        return axios.get("http://34.125.20.38:5000/api/v1/query/defoe_list").then(response => {
+        return axios.get("/query/defoe_list").then(response => {
             console.log('Server');
             try {
                 localStorage.setItem(key, JSON.stringify(response.data));
@@ -238,7 +238,7 @@ class QueryAPI {
     }
 
     uploadFile(file) {
-        return axios.post("http://34.125.20.38:5000/api/v1/query/upload", {
+        return axios.post("/query/upload", {
             file: file,
         },{
             headers: {
@@ -250,13 +250,13 @@ class QueryAPI {
     }
 
     submitDefoeQuery(data) {
-        return axios.post("http://34.125.20.38:5000/api/v1/query/defoe_submit", data).then(response => {
+        return axios.post("/query/defoe_submit", data).then(response => {
             return response;
         })
     }
 
     getDefoeQueryStatus(id) {
-        return axios.get("http://34.125.20.38:5000/api/v1/query/defoe_status", {
+        return axios.get("/query/defoe_status", {
             params: {
                 id: id,
             },
