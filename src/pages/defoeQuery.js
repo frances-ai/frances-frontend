@@ -27,7 +27,7 @@ function DefoeQueryPage() {
                 setQueryList(result.queries);
                 setQueryType(result.queries[0]);
             })
-    });
+    }, []);
 
     const [queryResult, setQueryResult] = useState("");
     const [isQuerying, setIsQuerying] = useState(false);
@@ -52,20 +52,39 @@ function DefoeQueryPage() {
                 alert("Defoe query failed to submit");
             }
             setQueryID(r.data.id);
-            setInterval(() => {
-                QueryAPI.getDefoeQueryStatus(queryID).then((r) => {
-                   console.log(r);
-                });
-            }, 500);
         })
     }
+
+    const [intervalID, setIntervalID] = useState();
+    const [queryStatus, setQueryStatus] = useState();
+
+    useEffect(() => {
+        if (queryID !== undefined && queryID !== "") {
+            const id = setInterval(() => {
+                console.log(queryID);
+                QueryAPI.getDefoeQueryStatus(queryID).then((r) => {
+                    if (r?.status == 200) {
+                        setQueryStatus(r.data);
+                    }
+                });
+            }, 10000);
+            setIntervalID(id);
+        }
+    }, [queryID]);
+
+    useEffect(() => {
+        if (queryStatus?.done == true && intervalID !== undefined) {
+            console.log(queryStatus);
+            clearInterval(intervalID);
+        }
+    }, [queryStatus])
 
     const [queryType, setQueryType] = useState("");
     const [preProcess, setPreProcess] = useState("none");
     const [targetSentences, setTargetSentences] = useState("");
     const [targetFilter, setTargetFilter] = useState("or");
-    const [startYear, setStartYear] = useState("");
-    const [endYear, setEndYear] = useState("");
+    const [startYear, setStartYear] = useState("1771");
+    const [endYear, setEndYear] = useState("1771");
     const [hitCount, setHitCount] = useState("term");
 
     const handleHitCountChange = (event) => {
@@ -229,8 +248,12 @@ function DefoeQueryPage() {
                                     </RadioGroup>
 
                                     <div>
-                                        <TextField id="start_year" onChange={handleStartYearChange} label="Start Year (Optional)" name="start_year" variant="outlined" />
-                                        <TextField id="end_year" onChange={handleEndYearChange} label="End Year (Optional)" name="end_year" variant="outlined" />
+                                        <TextField id="start_year" onChange={handleStartYearChange}
+                                                   label="Start Year (Optional)" name="start_year" variant="outlined"
+                                        />
+                                        <TextField id="end_year" onChange={handleEndYearChange}
+                                                   label="End Year (Optional)" name="end_year" variant="outlined"
+                                        />
                                     </div>
                                 </div>
                             </Grid>
@@ -253,6 +276,12 @@ function DefoeQueryPage() {
                     <div>
                         Last Updated:
                     </div>
+                    <div>
+                        {
+                            queryStatus?.results
+                        }
+                    </div>
+
                 </div>
             }
         </Container>
