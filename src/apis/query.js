@@ -1,4 +1,4 @@
-import axios from "./axios";
+import axios, {axiosPrivate} from "./axios";
 
 class QueryAPI {
     searchTerm(term, page = 1) {
@@ -238,7 +238,7 @@ class QueryAPI {
     }
 
     uploadFile(file) {
-        return axios.post("/query/upload", {
+        return axiosPrivate.post("/query/upload", {
             file: file,
         },{
             headers: {
@@ -250,16 +250,14 @@ class QueryAPI {
     }
 
     submitDefoeQuery(data) {
-        return axios.post("/query/defoe_submit", data).then(response => {
+        return axiosPrivate.post("/query/defoe_submit", data).then(response => {
             return response;
         })
     }
 
     getDefoeQueryStatus(id) {
-        return axios.get("/query/defoe_status", {
-            params: {
-                id: id,
-            },
+        return axios.post("/query/defoe_status", {
+            id: id,
         }).then(response => {
             return response;
         })
