@@ -1,4 +1,5 @@
-import axios from "./axios";
+import axios, {axiosPrivate} from "./axios";
+import {queryMeta} from './queryMeta.js'
 
 class QueryAPI {
     searchTerm(term, page = 1) {
@@ -212,7 +213,7 @@ class QueryAPI {
         })*/
     }
 
-    getAllDefoeQueries() {
+    getAllDefoeQueryTypes() {
         const key = "defoe-queries";
         const result = localStorage.getItem(key);
         if (result) {
@@ -238,7 +239,7 @@ class QueryAPI {
     }
 
     uploadFile(file) {
-        return axios.post("/query/upload", {
+        return axiosPrivate.post("/protected/query/upload", {
             file: file,
         },{
             headers: {
@@ -250,7 +251,7 @@ class QueryAPI {
     }
 
     submitDefoeQuery(data) {
-        return axios.post("/query/defoe_submit", data).then(response => {
+        return axiosPrivate.post("/protected/query/defoe_submit", data).then(response => {
             return response;
         })
     }
@@ -263,6 +264,14 @@ class QueryAPI {
         }).then(response => {
             return response;
         })
+    }
+
+    getQueryMeta(collection) {
+        if (collection === 'Encyclopaedia Britannica (1768-1860)') {
+            return queryMeta['EB'];
+        } else {
+            return queryMeta['NLS'];
+        }
     }
 
 }

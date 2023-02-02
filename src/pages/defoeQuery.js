@@ -1,108 +1,178 @@
-import React, {useState, useEffect} from "react";
+import React from 'react';
 import {
-    Alert,
     Button,
     CircularProgress,
     Container,
-    Divider, FormControl, FormControlLabel, FormLabel, Grid, MenuItem, Radio, RadioGroup, Select, SelectChangeEvent,
-    TextField,
+    Divider,
+    FormControl,
+    FormHelperText,
+    Grid, InputBase,
+    InputLabel,
+    MenuItem,
+    Paper,
+    Select,
+    Stack,
+    Switch, TextField,
     Typography
 } from "@mui/material";
+import {useEffect, useState} from "react";
+import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
-import QueryAPI from "../apis/query"
+import {preprocess} from "../apis/queryMeta";
 
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
-import { lightfair } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-
-SyntaxHighlighter.registerLanguage('json', json);
 
 function DefoeQueryPage() {
-    // extra query info if possible
-    const queryMetadata = {
-        frequency_keysearch_by_year: {
-            description: "It counts the number of terms/words in which appear your selected kewyords/keysentences. It groups results by years.",
-            inputs: [
-                "preprocess", "hitcount", "upload", "filter"
-            ]
-        },
-        publication_normalized: {
-            description: "It extracts the number of volumes (books), pages and words per year.",
-            inputs: []
-        },
-        uris_keysearch: {
-            description: "It extracts uris of terms in which appear your selected kewyords/keysentences. It groups results by uris.",
-            inputs: [
-                "preprocess", "upload", "filter"
-            ]
-        },
-        terms_snippet_keysearch_by_year: {
-            description: "It extracts snippets of terms definitions in which appear your selected kewyords/keysentences groupping results by years.",
-            inputs: [
-                "preprocess", "upload", "filter", "window"
-            ]
-        },
-        terms_fulltext_keysearch_by_year: {
-            description: "It extracts full text of terms definitions in which appear your selected kewyords/keysentences. It groups results by years.",
-            inputs: [
-                "preprocess", "upload", "filter"
-            ]
-        }
+    const initConfig = {
+        defoe_selection: '',
+        preprocess: '',
+        target_sentences: '',
+        target_filter: null,
+        start_year: -1000,
+        end_year: 999999,
+        hit_count: null,
+        window: -1,
+        file: '',
     };
 
-    // descriptions of preprocess functions
-    const preProcessDescriptions = {
-        none: "It does not apply any type of treatment to the text.",
-        normalize: "It converts all words to lower-case removing all characters that are not 'a',...,'z'.",
-        normalize_num: "It converts all words to lower-case removing all characters that are not 'a',...,'z' or '1',..,'9'.",
-        lemmatize: "It normalizes the text first and lemmatizes it later, returning the base (lemma) of each word.",
-        stem: "It normalizes the text first and applies stemming later, reducing words to their stem.",
-    }
-
-    // query list state
-    const [queryListLoaded, setQueryListLoaded] = useState(false);
-    const [queryList, setQueryList] = useState([]);
-
-    // query result state
-    const [queryID, setQueryID] = useState("");
-    const [queryStatus, setQueryStatus] = useState({});
-    const [isQuerying, setIsQuerying] = useState(false);
+    const [collections, setCollections] = useState([]);
+    const [defaultQueryYear, setDefaultQueryYear] = useState(1771);
+    const [selectedCollection, setSelectedCollection] = useState('');
+    const [queryMeta, setQueryMeta] = useState();
+    const [queryTypes, setQueryTypes] = useState([]);
+    const [selectedQueryType, setSelectQueryType] = useState(initConfig['defoe_selection']);
+    const [pageLoading, setPageLoading] = useState(true);
+    const [submitDisable, setSubmitDisable] = useState(true);
+    const [selectedPreprocessIndex, setSelectedPreprocessIndex] = useState(0);
+    const [hitCountChecked, setHitCountChecked] = useState(true);
+    const [targetAllChecked, setTargetAllChecked] = useState(true);
+    const [startYear, setStartYear] = useState(defaultQueryYear);
+    const [endYear, setEndYear] = useState(defaultQueryYear);
+    const [targets, setTargets] = useState([]);
+    const [currentTarget, setCurrentTarget] = useState("");
+    const [fileID, setFileID] = useState(initConfig['file']);
+    const [config, setConfig] = useState();
 
     useEffect(() => {
-        if (!queryListLoaded) {
-            QueryAPI.getAllDefoeQueries().then(response => {
-                const result = response?.data;
-                setQueryListLoaded(true);
-                setQueryList(result.queries);
-                setQueryTypeWithUI(result.queries[0]);
-            });
+        //Loading all avaible configuration metadata
+        QueryAPI.getAllCollectionName().then(response => {
+            const data = response?.data
+            setCollections(data);
+            setSelectedCollection(data[0]);
+        })
+        QueryAPI.getAllDefoeQueryTypes().then(response => {
+            const data = response?.data?.queries;
+            setQueryTypes(data);
+            setSelectQueryType(data[0]);
+        })
+    }, []);
+
+    useEffect(() => {
+        console.log(selectedCollection);
+        if (selectedCollection !== undefined && selectedCollection !== '') {
+            console.log(selectedCollection);
+            setQueryMeta(QueryAPI.getQueryMeta(selectedCollection));
         }
+    }, [selectedCollection]);
 
-        const timerID = setInterval(() => {
-            if (queryID !== "" && !queryStatus.done) {
-                QueryAPI.getDefoeQueryStatus(queryID).then((r) => {
-                    console.log(r);
-                    setQueryStatus(r.data);
-                });
-            }
-        }, 1000);
-        return () => {
-            clearInterval(timerID);
-        };
-    }, [queryID]);
 
-    const handleQuerySubmit = (event) => {
-        setIsQuerying(true);
-        event.preventDefault();
-        const data = {
-            defoe_selection: queryType,
-            preprocess: preProcess,
-            target_sentences: targetSentences,
-            target_filter: targetFilter,
+    useEffect(() => {
+        if (selectedCollection !== '' && selectedQueryType !== '' && queryMeta !== undefined) {
+            setPageLoading(false);
+            console.log(queryMeta);
+        }
+    }, [selectedCollection, selectedQueryType, queryMeta]);
+
+    useEffect(() => {
+        //Format the configuration data
+        const configData = {
+            defoe_selection: selectedQueryType,
+            preprocess: preprocess[selectedPreprocessIndex][0],
+            target_sentences: targets.join(","),
+            target_filter: targetAllChecked? "or" : "and",
             start_year: startYear,
             end_year: endYear,
-            hit_count: hitCount,
-            window: window,
+            hit_count: hitCountChecked,
+            window: 10,
+            file: fileID
+        }
+        setConfig(configData);
+        //Check if all required configuration are made.
+        setSubmitDisable(!hasAllRequiredConfigDone(initConfig, configData, queryMeta));
+    }, [queryMeta, selectedCollection, selectedQueryType, 
+        selectedPreprocessIndex, targets, targetAllChecked, startYear, endYear, hitCountChecked, fileID]);
+
+    function hasAllRequiredConfigDone(initConfig, currentConfig, queryMeta) {
+        if (queryMeta === undefined || selectedQueryType === '') {
+            return false;
+        }
+        const fields = queryMeta[selectedQueryType]['inputs'];
+        console.log(initConfig);
+        console.log(currentConfig)
+        console.log(fields);
+        for (let field in fields) {
+            if (field === "filter") {
+                console.log('here');
+                const filters = fields[field];
+                for (let filter in filters) {
+                    if (filters[filter] !== false && currentConfig[filter] === initConfig[filter]) {
+                        console.log("filter false");
+                        console.log(filter);
+                        return false;
+                    }
+                }
+            } else {
+                if (fields[field] !== false && currentConfig[field] === initConfig[field]) {
+                    console.log("false");
+                    return false;
+                }
+            }
+        }
+        console.log('ready to submit');
+        return true;
+    } 
+
+    const onFileUpload = (event) => {
+        const file = event.target.files[0];
+        QueryAPI.uploadFile(file).then((response) => {
+            if (!response.data.success) {
+                alert("File upload failed")
+                return;
+            }
+            setFileID(response.data.file);
+            setSubmitDisable(false);
+        });
+    };
+
+    const handledTargetClick = (index) => {
+        console.log(index);
+        setTargets(current =>
+            current.filter((_, i) => {
+                return i !== index;
+            })
+        );
+    }
+
+    const handleAddTargetClick = () => {
+        if (currentTarget !== '' && targets.indexOf(currentTarget) === -1) {
+
+            setTargets(current =>
+                [...current, currentTarget]
+            );
+            setCurrentTarget('');
+        }
+    }
+
+    const handleQuerySubmit = () => {
+
+        const data = {
+            defoe_selection: selectedQueryType,
+            preprocess: preprocess[selectedPreprocessIndex][0],
+            target_sentences: targets.join(","),
+            target_filter: targetAllChecked? "or" : "and",
+            start_year: startYear,
+            end_year: endYear,
+            hit_count: hitCountChecked,
+            window: 10,
             file: fileID,
         };
         console.log(data);
@@ -114,320 +184,264 @@ function DefoeQueryPage() {
             }
             if (r.data.id != null) {
                 // computed in real time
-                setQueryID(r.data.id);
                 return;
             }
             if (r.data.results != null) {
                 // precomputed query
-                setQueryStatus({
-                    id: "precomputed",
-                    done: true,
-                    results: r.data.results,
-                });
+
                 return;
             }
         })
     }
 
-    const updateQueryStatus = (id) => {
-        QueryAPI.getDefoeQueryStatus(id).then((r) => {
-            setQueryStatus(r.data);
-        });
-    }
-
-    // form parameters
-    const [queryType, setQueryType] = useState("");
-    const [preProcess, setPreProcess] = useState("none");
-    const [targetSentences, setTargetSentences] = useState("");
-    const [targetFilter, setTargetFilter] = useState("or");
-    const [startYear, setStartYear] = useState("");
-    const [endYear, setEndYear] = useState("");
-    const [hitCount, setHitCount] = useState("term");
-    const [window, setWindow] = useState(10);
-
-    // enable parameter flags
-    const [preProcessEnabled, setPreProcessEnabled] = useState(false);
-    const [hitCountEnabled, setHitCountEnabled] = useState(false);
-    const [filterEnabled, setFilterEnabled] = useState(false);
-    const [uploadEnabled, setUploadEnabled] = useState(false);
-    const [windowEnabled, setWindowEnabled] = useState(false);
-
-    // update the query type and interface around it.
-    const setQueryTypeWithUI = (name) => {
-        setQueryType(name);
-        const inputToFunction = {
-            "preprocess": setPreProcessEnabled,
-            "hitcount": setHitCountEnabled,
-            "filter": setFilterEnabled,
-            "upload": setUploadEnabled,
-            "window": setWindowEnabled,
-        }
-        const metadata = queryMetadata[name]
-        if (!metadata) {
-            return;
-        }
-        console.log(metadata.inputs);
-        for (const [name, set] of Object.entries(inputToFunction)) {
-            const enabled = metadata.inputs.includes(name)
-            set(enabled);
-        }
-    }
-
-    const handleQueryTypeChange = (event) => {
-        setQueryTypeWithUI(event.target.value);
-    };
-
-    const handlePreProcessChange = (event) => {
-        setPreProcess(event.target.value)
-    };
-    const handleTargetSentencesChange = (event) => {
-        setTargetSentences(event.target.value);
-    };
-    const handleTargetFilterChange = (event) => {
-        setTargetFilter(event.target.value);
-    };
-    const handleStartYearChange = (event) => {
-        setStartYear(event.target.value);
-    };
-    const handleEndYearChange = (event) => {
-        setEndYear(event.target.value);
-    };
-    const handleHitCountChange = (event) => {
-        setHitCount(event.target.value);
-    };
-    const handleWindowChange = (event) => {
-        setWindow(event.target.value);
-    };
-
-    const [fileID, setFileID] = useState("");
-    const onFileUpload = (event) => {
-        const file = event.target.files[0];
-        QueryAPI.uploadFile(file).then((r) => {
-            if (!r.data.success) {
-                alert("File upload failed")
-            }
-            setFileID(r.data.file);
-        });
-    };
-
-    const getQueryResult = () => {
-        if (queryStatus !== {}) {
-            return (
-                <div>
-                    <p>ID: {queryStatus.id}</p>
-                    {
-                        !queryStatus.done &&
-                        <>
-                            <div>Query Running...</div>
-                            <CircularProgress />
-                        </>
-                    }
-                    {
-                        queryStatus.done && !queryStatus.error &&
-                        <Alert severity="success">Query Complete</Alert>
-                    }
-                    {
-                        queryStatus.results &&
-                        <SyntaxHighlighter language="json" style={lightfair}>
-                            {JSON.stringify(queryStatus.results, null, 2)}
-                        </SyntaxHighlighter>
-                    }
-                    {
-                        queryStatus.error &&
-                        <Alert severity="error">Query Failed: {queryStatus.error}</Alert>
-                    }
-                </div>
-            );
-        }
-        if (queryID !== "") {
-            return (
-                <div>
-                    ID: {queryStatus.id}
-                </div>
-            );
-        }
-        return (
-            <div>
-                No Query
-            </div>
-        );
-    };
-
     return (
         <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
-            { !isQuerying &&
-                <div>
-                    <Typography component="div" gutterBottom variant="h4" sx={{mt: 5}}>
-                        Exploring the Encyclopaedia Britannica (1768-1860)
-                    </Typography>
-                    <Typography component="div" gutterBottom variant="h5" sx={{mt: 5}}>
-                        Defoe Query
-                    </Typography>
-                    <Divider/>
-
-                    <Box component="form" onSubmit={handleQuerySubmit} noValidate sx={{ mt: 1 }}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12}>
-                                <div>
-                                    <strong>Query</strong>
-                                    <div>
-                                        <Select
-                                            value={queryType}
-                                            label="Query selection"
-                                            onChange={handleQueryTypeChange}
-                                            disabled={!queryListLoaded}
-                                        >
-                                            {queryList.map(item => (
-                                                <MenuItem value={item} key={item}>{item}</MenuItem>
-                                            ))}
-                                        </Select>
-                                        <div>
-                                            {/* Render query description */}
-                                            {
-                                                queryType && queryMetadata[queryType] &&
-                                                <Typography variant="caption" display="block" gutterBottom>
-                                                    {queryMetadata[queryType].description}
-                                                </Typography>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </Grid>
-                            {
-                                preProcessEnabled &&
-                                <Grid item xs={12} id="prep_div">
-                                    <strong>Preprocess Treatment</strong>
-                                    <RadioGroup
-                                        aria-labelledby="demo-radio-buttons-group-label"
-                                        defaultValue="none"
-                                        name="preprocess"
-                                        onChange={handlePreProcessChange}
-                                    >
-                                        <FormControlLabel value="none" control={<Radio />} label="None" />
-                                        <FormControlLabel value="normalize" control={<Radio />} label="Normalize" />
-                                        <FormControlLabel value="normalize_num" control={<Radio />} label="Normalize & Numbers" />
-                                        <FormControlLabel value="lemmatize" control={<Radio />} label="Normalize & Lemmatize" />
-                                        <FormControlLabel value="stem" control={<Radio />} label="Normalize & Stemming" />
-                                    </RadioGroup>
-                                    {/* Draw description of current preprocess treatment */}
-                                    <Typography variant="caption" display="block" gutterBottom>
-                                        { preProcessDescriptions[preProcess] }
-                                    </Typography>
-                                </Grid>
-                            }
-                            {
-                                hitCountEnabled &&
-                                <Grid item xs={12} id="hit_count_div">
-                                    <strong>Hit Count</strong>
-                                    <div>
-                                        <Select
-                                            value={hitCount}
-                                            label="Hit count"
-                                            onChange={handleHitCountChange}
-                                            name="hit_count"
-                                        >
-                                            <MenuItem value="term" key="term">Term</MenuItem>
-                                            <MenuItem value="word" key="word">Word</MenuItem>
-                                        </Select>
-                                    </div>
-                                    <Typography variant="caption" display="block" gutterBottom>
-                                        It counts the number of times a keyword/keysentece appears in a term (article or topic).
-                                    </Typography>
-                                </Grid>
-                            }
-                            {
-                                uploadEnabled &&
-                                <Grid item xs={12} id="upload_div">
-                                    <strong>Lexicon File</strong>
-                                    <div>
-                                        <Button variant="outlined" component="label">
-                                            Upload
-                                            <input hidden accept="text/plain" type="file" name="file" onInput={onFileUpload}/>
-                                        </Button>
-                                        {
-                                            fileID !== "" &&
-                                            <div>Upload ID: {fileID}</div>
-                                        }
-                                    </div>
-                                    <Typography variant="caption" display="block" gutterBottom>
-                                        The file should contain a line per keyword and/or keysentence that you want to use in your query.
-                                    </Typography>
-                                </Grid>
-                            }
-                            {
-                                filterEnabled &&
-                                <Grid item xs={12} id="filter_div">
-                                    <p><strong>Filtering Options</strong></p>
-
-                                    <div>
-                                        <label htmlFor="target_sentences">Target words/sentences (comma separated)
-                                            (Optional)</label>
-                                        <div>
-                                            <TextField
-                                                id="target_sentences"
-                                                label='flower,garden,plant'
-                                                name="target_sentences"
-                                                multiline
-                                                rows={4}
-                                                onChange={handleTargetSentencesChange}
-                                            />
-                                        </div>
-
-                                        <Typography variant="caption" display="block" gutterBottom>
-                                            Those are the list of words and/or sentences that must appear in a term in order to select it. Leave it empty to select all.
-                                        </Typography>
-                                    </div>
-
-                                    <label> Select term which contains </label>
-                                    <RadioGroup
-                                        aria-labelledby="demo-radio-buttons-group-label"
-                                        defaultValue="or"
-                                        name="target_filter"
-                                        onChange={handleTargetFilterChange}
-                                    >
-                                        <FormControlLabel value="or" control={<Radio />} label="Or" />
-                                        <FormControlLabel value="and" control={<Radio />} label="And" />
-                                    </RadioGroup>
-
-                                    <div>
-                                        <TextField id="start_year" onChange={handleStartYearChange} label="Start Year (Optional)" name="start_year" variant="outlined" />
-                                        <TextField id="end_year" onChange={handleEndYearChange} label="End Year (Optional)" name="end_year" variant="outlined" />
-                                    </div>
-                                </Grid>
-                            }
-                            {
-                                windowEnabled &&
-                                <>
-                                    <Grid item xs={12} id="snippet_div">
-                                        <strong>Snippet Window</strong>
-                                        <div>
-                                            <TextField
-                                                id="window"
-                                                label="10"
-                                                default="10"
-                                                name="window"
-                                                multiline
-                                                rows={4}
-                                                onChange={handleWindowChange}
-                                            />
-                                        </div>
-                                    </Grid>
-                                </>
-                            }
-                            <Grid item xs={12}>
-                                <Button type="submit" variant="contained">Submit Query</Button>
-                            </Grid>
-                        </Grid>
-                    </Box>
-                </div>
-            }
-
-            {/* Search Result */}
             {
-                isQuerying && getQueryResult()
+                !pageLoading?
+                    (
+                        <Box>
+                            <Typography component="div" gutterBottom variant="h4" sx={{mt: 5}}>
+                                Defoe Queries
+                            </Typography>
+                            <Divider/>
+                            <FormControl sx={{ mt: 3, minWidth: 200 }}>
+                                <InputLabel id="collection-label">Collection</InputLabel>
+                                <Select
+                                    labelId="collection-label"
+                                    id="collection-select"
+                                    label="collection"
+                                    value={selectedCollection ? selectedCollection : collections[0]}
+                                    autoWidth
+                                    onChange={(e) => setSelectedCollection(e.target.value)}
+                                >
+                                    {
+                                        collections.map((item, index) => (
+                                            <MenuItem key={index} value={item}>{item}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                            </FormControl>
+
+                            <FormControl sx={{ mt: 3, ml: 3, minWidth: 200 }}>
+                                <InputLabel id="query-type-label">Query type</InputLabel>
+                                <Select
+                                    labelId="query-type-label"
+                                    id="query-ype-select"
+                                    label="query type"
+                                    value={selectedQueryType}
+                                    autoWidth
+                                    onChange={(e) => setSelectQueryType(e.target.value)}
+                                >
+                                    {
+                                        queryTypes.map((item, index) => (
+                                            <MenuItem key={index} value={item}>{item}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                                <FormHelperText>{queryMeta[selectedQueryType].description}</FormHelperText>
+                            </FormControl>
+                            <Paper
+                                elevation={3}
+                                sx={{mt: 3}}
+                                hidden={Object.keys(queryMeta[selectedQueryType].inputs).length === 0}>
+                                <Grid container>
+                                    {
+                                        "preprocess" in queryMeta[selectedQueryType].inputs ?
+                                            <React.Fragment>
+                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                    <Typography component="div" gutterBottom variant="subtitle1">
+                                                        Preprocess Treatment
+                                                    </Typography>
+                                                    <Typography component="div" variant="body2" color="text.disabled">
+                                                        {
+                                                            preprocess[selectedPreprocessIndex][2]
+                                                        }
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid item xs textAlign={"right"}  sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                                                    <Select
+                                                        id="preprocess-treatment"
+                                                        value={selectedPreprocessIndex}
+                                                        autoWidth
+                                                        onChange={(e) => setSelectedPreprocessIndex(e.target.value)}
+                                                    >
+                                                        {
+                                                            preprocess.map((item, index) => (
+                                                                <MenuItem key={index} value={index}>{item[1]}</MenuItem>
+                                                            ))
+                                                        }
+                                                    </Select>
+                                                </Grid>
+                                                <Grid item xs={12}><Divider/></Grid>
+                                            </React.Fragment>
+                                        : null
+                                    }
+                                    {
+                                        "hit_count" in queryMeta[selectedQueryType].inputs ?
+                                            <React.Fragment>
+                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                    <Typography component="div" gutterBottom variant="subtitle1">
+                                                        Hit Count
+                                                    </Typography>
+                                                    <Typography component="div" variant="body2" color="text.disabled">
+                                                        {queryMeta[selectedQueryType].inputs.hit_count[hitCountChecked? 1 : 0][2]}
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                                                    <Stack direction="row" spacing={1} alignItems="center"
+                                                           justifyContent={"right"}>
+                                                        <Typography>{queryMeta[selectedQueryType].inputs.hit_count[0][1]}</Typography>
+                                                        <Switch checked={hitCountChecked}
+                                                                onChange={(e) => setHitCountChecked(e.target.checked)}
+                                                        />
+                                                        <Typography>{queryMeta[selectedQueryType].inputs.hit_count[1][1]}</Typography>
+                                                    </Stack>
+                                                </Grid>
+                                                <Grid item xs={12}><Divider/></Grid>
+                                            </React.Fragment>
+                                            : null
+                                    }
+                                    {
+                                        "file" in queryMeta[selectedQueryType].inputs ?
+                                            <React.Fragment>
+                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                    <Typography component="div" gutterBottom variant="subtitle1">
+                                                        Upload Lexicon File
+                                                    </Typography>
+                                                    <Typography component="div" variant="body2" color="text.disabled">
+                                                        The file should contain a line per keyword and/or key sentence that you want to use in your query.
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid item xs sx={{mr: 5, mt: 2, textAlign: 'right'}}>
+                                                    <Button
+                                                        variant="outlined"
+                                                        component="label"
+                                                    >
+                                                        Upload File
+                                                        <input
+                                                            type="file"
+                                                            hidden
+                                                            accept=".txt"
+                                                            onInput={onFileUpload}
+                                                        />
+                                                    </Button>
+                                                    <Typography component="div" variant="body2" marginTop={1}>
+                                                        {
+                                                            fileID
+                                                        }
+                                                    </Typography>
+                                                </Grid>
+                                                <Grid item xs={12}><Divider/></Grid>
+                                            </React.Fragment>
+                                            : null
+                                    }
+                                    {
+                                        "filter" in queryMeta[selectedQueryType].inputs ?
+                                            <React.Fragment>
+                                                <Typography
+                                                    component="div"
+                                                    gutterBottom
+                                                    variant="subtitle1"
+                                                    sx={{m: 2}}
+                                                    color="text.secondary"
+                                                >
+                                                    Filtering Options (Optional)
+                                                </Typography>
+                                                <Grid container sx={{ml: 2}}>
+                                                    <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                        <Typography component="div" gutterBottom variant="subtitle1">
+                                                            Target words or sentences
+                                                        </Typography>
+                                                        <Grid container spacing={1}>
+                                                            {
+                                                                targets.map((item, index) => (
+                                                                    <Grid item xs="auto">
+                                                                        <Button
+                                                                            key={index} 
+                                                                            sx={{textTransform: 'none'}}
+                                                                            onClick={() => handledTargetClick(index)}>{item}
+                                                                        </Button>
+                                                                    </Grid>
+                                                                ))
+                                                            }
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                                                        <Paper>
+                                                            <Grid container height={40} justifyContent={"right"}>
+                                                                <Grid item xs>
+                                                                    <InputBase
+                                                                        sx={{pl:1, mt: 0.5}}
+                                                                        fullWidth
+                                                                        value = {currentTarget}
+                                                                        onChange={(e) => setCurrentTarget(e.target.value)}
+                                                                        placeholder="Word or Sentence"
+                                                                    />
+                                                                </Grid>
+                                                                <Grid item xs="auto">
+                                                                    <Button
+                                                                        sx={{height: 40}}
+                                                                        onClick={handleAddTargetClick}
+                                                                    >
+                                                                        Add
+                                                                    </Button>
+                                                                </Grid>
+                                                            </Grid>
+                                                        </Paper>
+                                                    </Grid>
+                                                    <Grid item xs={12}><Divider/></Grid>
+                                                    <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                        <Typography component="div" gutterBottom variant="subtitle1">
+                                                            Select term which contains <b>Any</b> the target words/sentences
+                                                        </Typography>
+                                                        <Typography component="div" variant="body2" color="text.disabled">
+                                                            Or contains <b>All</b> of the target words/sentences.
+                                                        </Typography>
+                                                    </Grid>
+                                                    <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}} textAlign={"right"}>
+                                                        <Switch checked={targetAllChecked}
+                                                                onChange={(e) => setTargetAllChecked(e.target.checked)}
+                                                        />
+                                                    </Grid>
+                                                    <Grid item xs={12}><Divider/></Grid>
+                                                    <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                        <Typography component="div" gutterBottom variant="subtitle1">
+                                                            Year Range
+                                                        </Typography>
+                                                    </Grid>
+                                                    <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto', pt: 1, pb: 1}} textAlign={"right"}>
+                                                        <Stack direction="row" spacing={2} alignItems="center"
+                                                               justifyContent={"right"}>
+                                                            <TextField id="start_year" value={startYear} onChange={(e) => setStartYear(e.target.value)}/>
+                                                            <Typography>To</Typography>
+                                                            <TextField id="end_year" value={endYear} onChange={(e) => setEndYear(e.target.value)} />
+                                                        </Stack>
+                                                    </Grid>
+                                                    <Grid item xs={12}><Divider/></Grid>
+                                                </Grid>
+                                            </React.Fragment>
+                                            : null
+                                    }
+                                </Grid>
+                            </Paper>
+                            <Box  sx={{mt: 3}} textAlign={"center"}>
+                                <Button
+                                    type={"submit"}
+                                    variant={"contained"}
+                                    disabled={submitDisable}
+                                    onClick={handleQuerySubmit}
+                                >
+                                    Submit Query
+                                </Button>
+                            </Box>
+                        </Box>
+                    )
+                    :
+                    <CircularProgress />
             }
         </Container>
     )
 }
+
 
 export default DefoeQueryPage
