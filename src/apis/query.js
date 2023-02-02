@@ -239,7 +239,7 @@ class QueryAPI {
     }
 
     uploadFile(file) {
-        return axiosPrivate.post("/protected/query/upload", {
+        return axiosPrivate.post("/query/upload", {
             file: file,
         },{
             headers: {
@@ -251,7 +251,7 @@ class QueryAPI {
     }
 
     submitDefoeQuery(data) {
-        return axiosPrivate.post("/protected/query/defoe_submit", data).then(response => {
+        return axiosPrivate.post("/query/defoe_submit", data).then(response => {
             return response;
         })
     }
