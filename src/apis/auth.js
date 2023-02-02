@@ -33,7 +33,7 @@ class AuthAPI {
     }
 
     async getProfile() {
-        return await axiosPrivate.get("protected/auth/profile");
+        return await axiosPrivate.get("auth/profile");
     }
 
     logout() {

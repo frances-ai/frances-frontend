@@ -14,7 +14,7 @@ export default axios.create({
 })
 
 export const axiosPrivate = axios.create({
-    baseURL: baseUrl,
+    baseURL: baseUrl + '/protected',
     withCredentials: true
 })
 
