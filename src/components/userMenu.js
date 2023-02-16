@@ -61,11 +61,15 @@ function UserMenu() {
     };
 
     const handleNavigateToSignInPage =() => {
-        navigate("/login", {state: {from: location}, replace: true})
+        navigate("/login", {state: {from: location}, replace: true});
     }
 
     const handleNavigateToRegisterPage =() => {
-        navigate("/register", {state: {from: location}, replace: true})
+        navigate("/register", {state: {from: location}, replace: true});
+    }
+
+    const handleTasksClick = () => {
+        navigate("/defoeQueryTasks");
     }
 
     const handleSignOut = () => {
@@ -131,7 +135,7 @@ function UserMenu() {
                             </ListItemIcon>
                             <ListItemText>Saved</ListItemText>
                         </MenuItem>
-                        <MenuItem onClick={handleCloseUserMenu}>
+                        <MenuItem onClick={handleTasksClick}>
                             <ListItemIcon>
                                 <Cloud fontSize="small" />
                             </ListItemIcon>

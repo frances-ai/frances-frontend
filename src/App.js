@@ -12,6 +12,8 @@ import HeaderLayout from "./pages/headerLayout";
 import ResultPage from "./pages/result";
 import TopicModellingPage from "./pages/topicModelling";
 import CollectionDetailsPage from "./pages/collectionDetails";
+import DefoeQueryResult from "./pages/defoeQueryResult";
+import DefoeQueryTasksPage from "./pages/defoeQueryTasks";
 
 function App() {
   return (
@@ -29,6 +31,16 @@ function App() {
                   <Route path="/defoeQuery" element={
                       <RequireAuth>
                           <DefoeQueryPage />
+                      </RequireAuth>}
+                  />
+                  <Route path="/defoeQueryResult" element={
+                      <RequireAuth>
+                          <DefoeQueryResult />
+                      </RequireAuth>}
+                  />
+                  <Route path="/defoeQueryTasks" element={
+                      <RequireAuth>
+                          <DefoeQueryTasksPage />
                       </RequireAuth>}
                   />
               </Route>

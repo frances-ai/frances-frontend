@@ -19,10 +19,12 @@ import {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import {preprocess} from "../apis/queryMeta";
+import {useNavigate} from "react-router-dom";
 
 
 function DefoeQueryPage() {
     const initConfig = {
+        collection: '',
         defoe_selection: '',
         preprocess: '',
         target_sentences: '',
@@ -85,6 +87,7 @@ function DefoeQueryPage() {
     useEffect(() => {
         //Format the configuration data
         const configData = {
+            collection: selectedCollection,
             defoe_selection: selectedQueryType,
             preprocess: preprocess[selectedPreprocessIndex][0],
             target_sentences: targets.join(","),
@@ -162,35 +165,19 @@ function DefoeQueryPage() {
         }
     }
 
+    const navigate = useNavigate();
+
     const handleQuerySubmit = () => {
 
-        const data = {
-            defoe_selection: selectedQueryType,
-            preprocess: preprocess[selectedPreprocessIndex][0],
-            target_sentences: targets.join(","),
-            target_filter: targetAllChecked? "or" : "and",
-            start_year: startYear,
-            end_year: endYear,
-            hit_count: hitCountChecked,
-            window: 10,
-            file: fileID,
-        };
-        console.log(data);
-        QueryAPI.submitDefoeQuery(data).then((r) => {
+        console.log(config);
+        QueryAPI.submitDefoeQuery(config).then((r) => {
             console.log(r);
             if (!r.data.success) {
                 alert("Defoe query failed to submit");
                 return;
             }
-            if (r.data.id != null) {
-                // computed in real time
-                return;
-            }
-            if (r.data.results != null) {
-                // precomputed query
 
-                return;
-            }
+            navigate("/defoeQueryResult", {state: {taskId: r.data.id}})
         })
     }
 

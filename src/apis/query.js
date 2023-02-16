@@ -1,5 +1,6 @@
 import axios, {axiosPrivate} from "./axios";
 import {queryMeta} from './queryMeta.js'
+import FileDownload from 'js-file-download';
 
 class QueryAPI {
     searchTerm(term, page = 1) {
@@ -252,15 +253,40 @@ class QueryAPI {
 
     submitDefoeQuery(data) {
         return axiosPrivate.post("/query/defoe_submit", data).then(response => {
+            //TODO remove it when this endpoint is refined.
+
+            // Fake bug fix for publication_normailisation query submission. 
+            if (response.data.success && response.data.results != null) {
+                // publication_normailisation query
+                response.data = {
+                    success: true,
+                    id: "publication_normalisation"
+                }
+                return response;
+            }
+            return response;
+        })
+    }
+
+    getDefoeQueryTaskByTaskID(task_id) {
+        return axiosPrivate.post("/query/defoe_query_task", {
+            task_id: task_id
+        }).then(response => {
             return response;
         })
     }
 
     getDefoeQueryStatus(id) {
-        return axios.get("/query/defoe_status", {
-            params: {
-                id: id,
-            },
+        return axiosPrivate.post("/query/defoe_status", {
+            id: id
+        }).then(response => {
+            return response;
+        })
+    }
+
+    getDefoeQueryResult(result_filepath) {
+        return axiosPrivate.post("/query/defoe_query_result", {
+            result_filepath: result_filepath
         }).then(response => {
             return response;
         })
@@ -272,6 +298,23 @@ class QueryAPI {
         } else {
             return queryMeta['NLS'];
         }
+    }
+
+    getAllDefoeQueryTasks() {
+        return axiosPrivate.post("/query/defoe_query_tasks").then(response => {
+            return response;
+        })
+    }
+
+    download(resultFilePath, downloadFileName) {
+        return axiosPrivate.post("/query/download", {
+            result_file_path: resultFilePath
+        }, {
+            responseType: 'blob'
+        }).then(response => {
+            FileDownload(response.data, downloadFileName)
+            return response;
+        })
     }
 
 }
