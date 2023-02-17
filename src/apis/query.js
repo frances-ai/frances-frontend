@@ -284,9 +284,9 @@ class QueryAPI {
         })
     }
 
-    getDefoeQueryResult(result_filepath) {
+    getDefoeQueryResult(result_filename) {
         return axiosPrivate.post("/query/defoe_query_result", {
-            result_filepath: result_filepath
+            result_filename: result_filename
         }).then(response => {
             return response;
         })
@@ -306,9 +306,9 @@ class QueryAPI {
         })
     }
 
-    download(resultFilePath, downloadFileName) {
+    download(resultFileName, downloadFileName) {
         return axiosPrivate.post("/query/download", {
-            result_file_path: resultFilePath
+            result_filename: resultFileName
         }, {
             responseType: 'blob'
         }).then(response => {

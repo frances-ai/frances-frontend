@@ -215,11 +215,10 @@ function DefoeQueryResult() {
     }
 
     function download(resultFilePath) {
-        let fileNamePath = task.config.lexiconFile;
-        if (fileNamePath.substring(fileNamePath.length - 3) !== 'txt') {
-            fileNamePath = resultFilePath;
+        let fileName = task.config.lexiconFile;
+        if (fileName === '' || fileName.substring(fileName.length - 3) !== 'txt') {
+            fileName = resultFilePath.split('\\').pop().split('/').pop();
         }
-        const fileName = fileNamePath.split('\\').pop().split('/').pop();
         const downloadFileName = fileName.substring(0, fileName.length - 4) + '_result.yml';
         QueryAPI.download(resultFilePath, downloadFileName);
     }
