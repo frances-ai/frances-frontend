@@ -18,9 +18,11 @@ function HeaderLayout() {
 
     return (
         <Box>
-            <Header index={currentIndex}/>
-            <Outlet/>
-            <Copyright sx={{ mt: 4, mb: 4 }}/>
+            <Box minHeight={'90vh'}>
+                <Header index={currentIndex}/>
+                <Outlet/>
+            </Box>
+            <Copyright sx={{ mt: 4, mb: 4}}/>
         </Box>
     )
 }

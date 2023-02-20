@@ -25,10 +25,7 @@ function TermInfo(props) {
     ]
 
     return (
-        <Box>
-            <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
-                Spell check for:
-            </Typography>
+        <Box sx={{mt:5}}>
             <Paper elevation={3}>
                 <TableContainer>
                     <Table sx={{ minWidth: 800 }} aria-label="term info table">
@@ -107,13 +104,16 @@ function SpellCheckResult(props) {
     return (
         <Box>
             <TermInfo termInfo={termInfo} currentSearchInfo={currentSearchInfo}/>
-            <Typography component="div" gutterBottom variant="h5" sx={{mt: 2}}>
-                <b>Original Definition</b>
-            </Typography>
-            <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
-                {escapeUnicode(result.result.definition)}
-            </Typography>
-            <Box>
+            <Box sx={{mt: 5}}>
+                <Typography component="div" gutterBottom variant="h5" sx={{mt: 2}}>
+                    <b>Original Definition</b>
+                </Typography>
+                <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
+                    {escapeUnicode(result.result.definition)}
+                </Typography>
+            </Box>
+
+            <Box sx={{mt: 5}}>
                 <Typography component="span" gutterBottom variant="h5" sx={{mt: 2}}>
                     <b>Cleaned Definition</b>
                 </Typography>
