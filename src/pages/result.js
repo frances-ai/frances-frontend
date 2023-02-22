@@ -79,8 +79,13 @@ function ResultPage() {
 
     const handleStackClick = (index) => {
         const to = navStack[index];
-        navStack.splice(index);
-        navigate("/result", {state: {to: to, navStack: navStack}});
+        // If go to defoe query task, then remove all state info
+        if (to.type === 'DefoeQueryTask') {
+            navigate("/defoeQueryResult", {state: {taskId: to.key}})
+        } else {
+            navStack.splice(index);
+            navigate("/result", {state: {to: to, navStack: navStack}});
+        }
     }
 
     return (

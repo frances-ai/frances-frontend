@@ -9,11 +9,12 @@ import {
     TableContainer, TableHead, TableRow,
     Typography
 } from "@mui/material";
-import {useLocation} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import DownloadIcon from '@mui/icons-material/Download';
+import {findTermLinkFromUri} from "../utils/stringUtil";
 
 function DefoeQueryResult() {
 
@@ -22,6 +23,32 @@ function DefoeQueryResult() {
     const [result, setResult] = useState();
     // Summary of this task, including config data, and submit time.
     const [task, setTask] = useState();
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const currentTaskInfo = {
+        type: 'DefoeQueryTask',
+        key: taskID,
+        page: 0, //TODO change after paging
+        name: 'Task('+ taskID + ')'
+    };
+
+    function handVisualiseClick(uri) {
+        const navStack = location.state?.navStack ? location.state.navStack: [];
+        navStack.push(currentTaskInfo);
+        const termLink = findTermLinkFromUri(uri);
+        navigate("/result",
+            {state:
+                    {
+                        to: {
+                            type: 'Visualisation',
+                            key: uri,
+                            name: 'Visualisation(' + termLink + ')'
+                        },
+                        navStack: navStack
+                    }
+            })
+    }
 
 
     useEffect(() => {
@@ -214,6 +241,157 @@ function DefoeQueryResult() {
         );
     }
 
+    function TermSnippetKeySearchByYearResult() {
+        const termDetailsResult = result.terms_details;
+        const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Snippet'];
+        const col_key = {
+            'KeySearch Term': 'keysearch-term',
+            'Term': 'term',
+            'Edition': 'edition',
+            'Volume': 'volume',
+            'Page': 'page number',
+            'Header': 'header',
+            'Letters': 'letters',
+            'Part': 'part',
+            'Snippet': 'snippet'
+        }
+
+        return (
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell >Year</TableCell>
+                            {
+                                cols.map((col, index) => (
+                                    <TableCell key={index}> {col}</TableCell>
+                                ))
+                            }
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {termDetailsResult.map((recordPerYear, key) => (
+                            recordPerYear[1].map((record, index) => (
+                                <TableRow key={'' + key + index}>
+                                    {
+                                        (index == 0) ?
+                                            <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
+                                                {recordPerYear[0]}
+                                            </TableCell>
+                                            : null
+                                    }
+                                    {
+                                        cols.map((col) => (
+                                            <TableCell key={'' + key + index + col} >
+                                                {
+                                                    col === 'Term'?
+                                                        <Button variant={"text"} onClick={() => handVisualiseClick(record['uri'])}>{record[col_key[col]]}</Button>
+                                                       : record[col_key[col]]
+                                                }
+                                            </TableCell>
+                                        ))
+                                    }
+                                </TableRow>
+                            ))
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        )
+    }
+
+    function UrisKeySearchResult() {
+        return (
+            <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="uris key search result table">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Uri</TableCell>
+                        <TableCell>KeySearch Term</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {Object.keys(result).map((value, key) => (
+                        result[value].map((record, index) => (
+                            <TableRow key={'' + key + index}>
+                                {
+                                    (index == 0) ? <TableCell rowSpan={result[value].length}>
+                                        {
+                                            <Button variant={"text"} onClick={() => handVisualiseClick(value)}>
+                                                {value}
+                                            </Button>
+                                        }
+                                    </TableCell> : null
+                                }
+                                <TableCell rowSpan={1}>{record}</TableCell>
+                            </TableRow>
+                        ))
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
+        )
+    }
+
+    function TermFullTextKeySearchByYearResult() {
+        const termDetailsResult = result.terms_details;
+        const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Definition'];
+        const col_key = {
+            'KeySearch Term': 'keysearch-term',
+            'Term': 'term',
+            'Edition': 'edition',
+            'Volume': 'volume',
+            'Page': 'page number',
+            'Header': 'header',
+            'Letters': 'letters',
+            'Part': 'part',
+            'Definition': 'term-definition'
+        }
+
+        return (
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell >Year</TableCell>
+                            {
+                                cols.map((col, index) => (
+                                    <TableCell key={index}> {col}</TableCell>
+                                ))
+                            }
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {termDetailsResult.map((recordPerYear, key) => (
+                            recordPerYear[1].map((record, index) => (
+                                <TableRow key={'' + key + index}>
+                                    {
+                                        (index == 0) ?
+                                            <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
+                                                {recordPerYear[0]}
+                                            </TableCell>
+                                            : null
+                                    }
+                                    {
+                                        cols.map((col) => (
+                                            <TableCell key={'' + key + index + col} >
+                                                {
+                                                    col === 'Term'?
+                                                        <Button variant={"text"} onClick={() => handVisualiseClick(record['uri'])}>{record[col_key[col]]}</Button>
+                                                        : record[col_key[col]]
+                                                }
+                                            </TableCell>
+                                        ))
+                                    }
+                                </TableRow>
+                            ))
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        )
+    }
+
     function download(resultFilePath) {
         let fileName = task.config.lexiconFile;
         if (fileName === '' || fileName.substring(fileName.length - 3) !== 'txt') {
@@ -234,9 +412,9 @@ function DefoeQueryResult() {
             case "terms_fulltext_keysearch_by_year":
                 break;
             case "uris_keysearch":
-                break;
+                return <UrisKeySearchResult/>
             case "terms_snippet_keysearch_by_year":
-                break;
+                return <TermSnippetKeySearchByYearResult/>;
             default:
                 return (<Box>
                     No Such Query Type!
