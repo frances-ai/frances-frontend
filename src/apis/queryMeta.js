@@ -26,6 +26,12 @@ export const preprocess = [
   ]
 ]
 
+export const collections_year_range = {
+  'Encyclopaedia Britannica (1768-1860)': [1771, 1853],
+  'Chapbooks printed in Scotland': [1671, 1893],
+  'Ladies’ Edinburgh Debating Society': [1771, 1853]
+}
+
 const hit_count_eb = [
     [
         "word",
@@ -95,7 +101,7 @@ export const queryMeta = {
           "target_filter": false,
           "start_year": false,
           "end_year": false,
-          "window": true
+          "window": false
         }
       }
     },
@@ -155,7 +161,7 @@ export const queryMeta = {
           "target_filter": false,
           "start_year": false,
           "end_year": false,
-          "window": true
+          "window": false
         }
       }
     },

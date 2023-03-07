@@ -14,7 +14,160 @@ import React, {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import DownloadIcon from '@mui/icons-material/Download';
-import {findTermLinkFromUri} from "../utils/stringUtil";
+import {findTermLinkFromUri, getLexiconFileOriginalName} from "../utils/stringUtil";
+
+export function Task(props) {
+    const {task, showCollection, showQueryType, showSubmitTime, inputs} = props;
+    const refined_inputs = inputs !== undefined? inputs : QueryAPI.getQueryMeta(task?.config?.collection)[task?.config?.queryType].inputs;
+
+    function showConfig(config_name, config_value) {
+
+        if (config_name in refined_inputs && (refined_inputs[config_name] != false)) {
+            return true;
+        }
+        if ("filter" in refined_inputs && config_name in refined_inputs["filter"] && (config_value !== null && config_value !== "")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    return (
+        <Grid container spacing={2}>
+            {
+                showCollection?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Collection:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.collection}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+            {
+                showQueryType?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Query Type:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.queryType}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
+            {
+                showConfig("file", task.config.lexiconFile)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Lexicon Filename:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {getLexiconFileOriginalName(task.config.lexiconFile)}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
+            {
+                showConfig("preprocess", task.config.preprocess)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Preprocess:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.preprocess}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
+            {
+                showConfig("hit_count", task.config.hitCount)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            HitCount:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.hitCount}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
+            {
+                showConfig("target_sentences", task.config.targetSentences)?
+                    <React.Fragment>
+                        <Grid item xs={6}>
+                            <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                                Target Sentences:
+                            </Typography>
+                            <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                                {task.config.targetSentences}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                                Target filter (any | all):
+                            </Typography>
+                            <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                                {
+                                    (task.config.targetFilter === 'or') ? 'any' : 'all'
+                                }
+                            </Typography>
+                        </Grid>
+                    </React.Fragment>
+                    : null
+            }
+
+            {
+                showConfig("start_year", task.config.startYear)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Year range:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {
+                                task.config.startYear + ' - ' + task.config.endYear
+                            }
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
+            {
+                showConfig("window", task.config.window)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Snippet Window:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {
+                                task.config.window
+                            }
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+            {
+                showSubmitTime ?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Submitted time:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.submit_time}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
+        </Grid>
+    )
+}
 
 function DefoeQueryResult() {
 
@@ -98,87 +251,6 @@ function DefoeQueryResult() {
         }
     }, [status])
 
-
-    function Task() {
-        return (
-            <Grid container spacing={2}>
-                <Grid item xs={6}>
-                    <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                        Collection:
-                    </Typography>
-                    <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                        {task.config.collection}
-                    </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                    <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                        Query Type:
-                    </Typography>
-                    <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                        {task.config.queryType}
-                    </Typography>
-                </Grid>
-                {
-                    ("publication_normalized" !== task.config.queryType) ?
-                        <React.Fragment>
-                            <Grid item xs={6}>
-                                <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                                    Preprocess:
-                                </Typography>
-                                <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                                    {task.config.preprocess}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                                    HitCount:
-                                </Typography>
-                                <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                                    {task.config.hitCount}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                                    Target Sentences:
-                                </Typography>
-                                <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                                    {task.config.targetSentences}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                                    Target filter (any | all):
-                                </Typography>
-                                <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                                    {
-                                        (task.config.targetFilter === 'or') ? 'any' : 'all'
-                                    }
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                                    Year range:
-                                </Typography>
-                                <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                                    {
-                                        task.config.startYear + ' - ' + task.config.endYear
-                                    }
-                                </Typography>
-                            </Grid>
-                        </React.Fragment>
-                        : null
-                }
-                <Grid item xs={6}>
-                    <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                        Submitted time:
-                    </Typography>
-                    <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                        {task.submit_time}
-                    </Typography>
-                </Grid>
-            </Grid>
-        )
-    }
 
     function PublicationNormalisedResult() {
         return (
@@ -397,7 +469,7 @@ function DefoeQueryResult() {
         if (fileName === '' || fileName.substring(fileName.length - 3) !== 'txt') {
             fileName = resultFilePath.split('\\').pop().split('/').pop();
         }
-        const downloadFileName = fileName.substring(0, fileName.length - 4) + '_result.yml';
+        const downloadFileName = fileName.substring(0, fileName.length - 4) + '_result.zip';
         QueryAPI.download(resultFilePath, downloadFileName);
     }
 
@@ -423,6 +495,7 @@ function DefoeQueryResult() {
 
     }
 
+
     return (
         <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
             <Typography component="div" gutterBottom variant="h4" sx={{mt: 5}}>
@@ -432,7 +505,7 @@ function DefoeQueryResult() {
             {
                 (task !== undefined)?
                     (<Box mt={5} mb={5}>
-                        {Task()}
+                        <Task task={task} showCollection={true} showQueryType={true} showSubmitTime={true}/>
                         <Stack direction="row" spacing={3} mt={5} justifyContent={"center"}>
                             <Button variant="outlined" href={"/defoeQuery"}>
                                 Create another query

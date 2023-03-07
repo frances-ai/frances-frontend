@@ -13,3 +13,9 @@ export const escapeUnicode = (str) => {
         return "\\u" + ("000" + c.charCodeAt().toString(16)).slice(-4)
     });
 }
+
+export function getLexiconFileOriginalName(lexiconFilename) {
+    const spiltChar = '_';
+    const startIndex = lexiconFilename.indexOf(spiltChar) + 1;
+    return lexiconFilename.substring(startIndex);
+}

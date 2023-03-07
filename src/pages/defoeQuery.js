@@ -18,7 +18,7 @@ import {
 import {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
-import {preprocess} from "../apis/queryMeta";
+import {preprocess, collections_year_range} from "../apis/queryMeta";
 import {useNavigate} from "react-router-dom";
 
 
@@ -29,16 +29,17 @@ function DefoeQueryPage() {
         preprocess: '',
         target_sentences: '',
         target_filter: null,
-        start_year: -1000,
-        end_year: 999999,
+        start_year: null,
+        end_year: null,
         hit_count: null,
-        window: -1,
+        window: null,
         file: '',
     };
 
+    const DEFAULT_SNIPPET_WINDOW = 0;
+
     const [collections, setCollections] = useState([]);
-    const [defaultQueryYear, setDefaultQueryYear] = useState(1771);
-    const [selectedCollection, setSelectedCollection] = useState('');
+    const [selectedCollection, setSelectedCollection] = useState(initConfig['collection']);
     const [queryMeta, setQueryMeta] = useState();
     const [queryTypes, setQueryTypes] = useState([]);
     const [selectedQueryType, setSelectQueryType] = useState(initConfig['defoe_selection']);
@@ -47,15 +48,18 @@ function DefoeQueryPage() {
     const [selectedPreprocessIndex, setSelectedPreprocessIndex] = useState(0);
     const [hitCountChecked, setHitCountChecked] = useState(true);
     const [targetAllChecked, setTargetAllChecked] = useState(true);
-    const [startYear, setStartYear] = useState(defaultQueryYear);
-    const [endYear, setEndYear] = useState(defaultQueryYear);
+    const [startYear, setStartYear] = useState(initConfig['start_year']);
+    const [endYear, setEndYear] = useState(initConfig['end_year']);
+    const [earliestYear, setEarliestYear] = useState();
+    const [latestYear, setLatestYear] = useState();
     const [targets, setTargets] = useState([]);
     const [currentTarget, setCurrentTarget] = useState("");
     const [fileID, setFileID] = useState(initConfig['file']);
+    const [window, setWindow] = useState(DEFAULT_SNIPPET_WINDOW);
     const [config, setConfig] = useState();
 
     useEffect(() => {
-        //Loading all avaible configuration metadata
+        //Loading all available configuration metadata
         QueryAPI.getAllCollectionName().then(response => {
             const data = response?.data
             setCollections(data);
@@ -72,37 +76,84 @@ function DefoeQueryPage() {
         console.log(selectedCollection);
         if (selectedCollection !== undefined && selectedCollection !== '') {
             console.log(selectedCollection);
+            const earliest = collections_year_range[selectedCollection][0];
+            const latest = collections_year_range[selectedCollection][1];
+            setEarliestYear(earliest);
+            setLatestYear(latest);
+            setStartYear(earliest)
+            setEndYear(latest)
             setQueryMeta(QueryAPI.getQueryMeta(selectedCollection));
         }
     }, [selectedCollection]);
 
 
     useEffect(() => {
+        console.log("check loading")
         if (selectedCollection !== '' && selectedQueryType !== '' && queryMeta !== undefined) {
             setPageLoading(false);
             console.log(queryMeta);
         }
     }, [selectedCollection, selectedQueryType, queryMeta]);
 
-    useEffect(() => {
+    function formatConfigData() {
         //Format the configuration data
-        const configData = {
-            collection: selectedCollection,
-            defoe_selection: selectedQueryType,
-            preprocess: preprocess[selectedPreprocessIndex][0],
-            target_sentences: targets.join(","),
-            target_filter: targetAllChecked? "or" : "and",
-            start_year: startYear,
-            end_year: endYear,
-            hit_count: hitCountChecked,
-            window: 10,
-            file: fileID
+        let configData = {...initConfig};
+        configData.collection = selectedCollection;
+        configData.defoe_selection = selectedQueryType;
+
+        const inputs = queryMeta[selectedQueryType].inputs;
+
+        console.log(configData)
+
+        if ("preprocess" in inputs) {
+            configData.preprocess = preprocess[selectedPreprocessIndex][0];
         }
+
+        if ("hit_count" in inputs) {
+            configData.hit_count = hitCountChecked ? inputs['hit_count'][1][0] : inputs['hit_count'][0][0];
+        }
+
+        if ("file" in inputs) {
+            configData.file = fileID;
+        }
+
+        if ("filter" in inputs) {
+            if ("target_sentences" in inputs["filter"]) {
+                console.log(targets);
+                configData.target_sentences = targets.join(",");
+            }
+
+            if ("target_filter" in inputs["filter"] && targets.length > 0) {
+                configData.target_filter = targetAllChecked ? "or" : "and";
+            }
+
+            if ("start_year" in inputs["filter"]) {
+                configData.start_year = startYear;
+            }
+
+            if ("end_year" in inputs["filter"]) {
+                configData.end_year = endYear;
+            }
+
+            if ("window" in inputs["filter"]) {
+                configData.window = window;
+            }
+        }
+        return configData;
+    }
+
+    useEffect(() => {
+        console.log("check config")
+        if (pageLoading) {
+            return;
+        }
+
+        const configData = formatConfigData();
         setConfig(configData);
         //Check if all required configuration are made.
         setSubmitDisable(!hasAllRequiredConfigDone(initConfig, configData, queryMeta));
     }, [queryMeta, selectedCollection, selectedQueryType, 
-        selectedPreprocessIndex, targets, targetAllChecked, startYear, endYear, hitCountChecked, fileID]);
+        selectedPreprocessIndex, targets, targetAllChecked, startYear, endYear, hitCountChecked, fileID, window]);
 
     function hasAllRequiredConfigDone(initConfig, currentConfig, queryMeta) {
         if (queryMeta === undefined || selectedQueryType === '') {
@@ -142,7 +193,6 @@ function DefoeQueryPage() {
                 return;
             }
             setFileID(response.data.file);
-            setSubmitDisable(false);
         });
     };
 
@@ -180,6 +230,119 @@ function DefoeQueryPage() {
             navigate("/defoeQueryResult", {state: {taskId: r.data.id}})
         })
     }
+
+    const handleStartYearInputChange = (event) => {
+        let start_year = parseInt(event.target.value);
+        if (isNaN(start_year)) {
+            start_year = earliestYear;
+        }
+        setStartYear(start_year);
+    }
+
+    const handleEndYearInputChange = (event) => {
+        let end_year = parseInt(event.target.value);
+        if (isNaN(end_year)) {
+            end_year = latestYear;
+        }
+        setEndYear(end_year);
+    }
+
+    const handleWindowInputChange = (event) => {
+        let snippet_window = parseInt(event.target.value);
+        if (isNaN(snippet_window)) {
+            snippet_window = DEFAULT_SNIPPET_WINDOW;
+        }
+        setWindow(snippet_window);
+    }
+
+
+    function ProcessesConfig() {
+        return <React.Fragment>
+            <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                <Typography component="div" gutterBottom variant="subtitle1">
+                    Preprocess Treatment
+                </Typography>
+                <Typography component="div" variant="body2" color="text.disabled">
+                    {
+                        preprocess[selectedPreprocessIndex][2]
+                    }
+                </Typography>
+            </Grid>
+            <Grid item xs textAlign={"right"} sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                <Select
+                    id="preprocess-treatment"
+                    value={selectedPreprocessIndex}
+                    autoWidth
+                    onChange={(e) => setSelectedPreprocessIndex(e.target.value)}
+                >
+                    {
+                        preprocess.map((item, index) => (
+                            <MenuItem key={index} value={index}>{item[1]}</MenuItem>
+                        ))
+                    }
+                </Select>
+            </Grid>
+            <Grid item xs={12}><Divider/></Grid>
+        </React.Fragment>;
+    }
+
+    function HitCountConfig() {
+        return <React.Fragment>
+            <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                <Typography component="div" gutterBottom variant="subtitle1">
+                    Hit Count
+                </Typography>
+                <Typography component="div" variant="body2" color="text.disabled">
+                    {queryMeta[selectedQueryType].inputs.hit_count[hitCountChecked ? 1 : 0][2]}
+                </Typography>
+            </Grid>
+            <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                <Stack direction="row" spacing={1} alignItems="center"
+                       justifyContent={"right"}>
+                    <Typography>{queryMeta[selectedQueryType].inputs.hit_count[0][1]}</Typography>
+                    <Switch checked={hitCountChecked}
+                            onChange={(e) => setHitCountChecked(e.target.checked)}
+                    />
+                    <Typography>{queryMeta[selectedQueryType].inputs.hit_count[1][1]}</Typography>
+                </Stack>
+            </Grid>
+            <Grid item xs={12}><Divider/></Grid>
+        </React.Fragment>;
+    }
+
+    function FileConfig() {
+        return <React.Fragment>
+            <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                <Typography component="div" gutterBottom variant="subtitle1">
+                    Upload Lexicon File
+                </Typography>
+                <Typography component="div" variant="body2" color="text.disabled">
+                    The file should contain a line per keyword and/or key sentence that you want to use in your query.
+                </Typography>
+            </Grid>
+            <Grid item xs sx={{mr: 5, mt: 2, textAlign: 'right'}}>
+                <Button
+                    variant="outlined"
+                    component="label"
+                >
+                    Upload File
+                    <input
+                        type="file"
+                        hidden
+                        accept=".txt"
+                        onInput={onFileUpload}
+                    />
+                </Button>
+                <Typography component="div" variant="body2" marginTop={1}>
+                    {
+                        fileID
+                    }
+                </Typography>
+            </Grid>
+            <Grid item xs={12}><Divider/></Grid>
+        </React.Fragment>;
+    }
+
 
     return (
         <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
@@ -234,92 +397,17 @@ function DefoeQueryPage() {
                                 <Grid container>
                                     {
                                         "preprocess" in queryMeta[selectedQueryType].inputs ?
-                                            <React.Fragment>
-                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
-                                                    <Typography component="div" gutterBottom variant="subtitle1">
-                                                        Preprocess Treatment
-                                                    </Typography>
-                                                    <Typography component="div" variant="body2" color="text.disabled">
-                                                        {
-                                                            preprocess[selectedPreprocessIndex][2]
-                                                        }
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs textAlign={"right"}  sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
-                                                    <Select
-                                                        id="preprocess-treatment"
-                                                        value={selectedPreprocessIndex}
-                                                        autoWidth
-                                                        onChange={(e) => setSelectedPreprocessIndex(e.target.value)}
-                                                    >
-                                                        {
-                                                            preprocess.map((item, index) => (
-                                                                <MenuItem key={index} value={index}>{item[1]}</MenuItem>
-                                                            ))
-                                                        }
-                                                    </Select>
-                                                </Grid>
-                                                <Grid item xs={12}><Divider/></Grid>
-                                            </React.Fragment>
+                                            <ProcessesConfig/>
                                         : null
                                     }
                                     {
                                         "hit_count" in queryMeta[selectedQueryType].inputs ?
-                                            <React.Fragment>
-                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
-                                                    <Typography component="div" gutterBottom variant="subtitle1">
-                                                        Hit Count
-                                                    </Typography>
-                                                    <Typography component="div" variant="body2" color="text.disabled">
-                                                        {queryMeta[selectedQueryType].inputs.hit_count[hitCountChecked? 1 : 0][2]}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
-                                                    <Stack direction="row" spacing={1} alignItems="center"
-                                                           justifyContent={"right"}>
-                                                        <Typography>{queryMeta[selectedQueryType].inputs.hit_count[0][1]}</Typography>
-                                                        <Switch checked={hitCountChecked}
-                                                                onChange={(e) => setHitCountChecked(e.target.checked)}
-                                                        />
-                                                        <Typography>{queryMeta[selectedQueryType].inputs.hit_count[1][1]}</Typography>
-                                                    </Stack>
-                                                </Grid>
-                                                <Grid item xs={12}><Divider/></Grid>
-                                            </React.Fragment>
+                                            <HitCountConfig/>
                                             : null
                                     }
                                     {
                                         "file" in queryMeta[selectedQueryType].inputs ?
-                                            <React.Fragment>
-                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
-                                                    <Typography component="div" gutterBottom variant="subtitle1">
-                                                        Upload Lexicon File
-                                                    </Typography>
-                                                    <Typography component="div" variant="body2" color="text.disabled">
-                                                        The file should contain a line per keyword and/or key sentence that you want to use in your query.
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs sx={{mr: 5, mt: 2, textAlign: 'right'}}>
-                                                    <Button
-                                                        variant="outlined"
-                                                        component="label"
-                                                    >
-                                                        Upload File
-                                                        <input
-                                                            type="file"
-                                                            hidden
-                                                            accept=".txt"
-                                                            onInput={onFileUpload}
-                                                        />
-                                                    </Button>
-                                                    <Typography component="div" variant="body2" marginTop={1}>
-                                                        {
-                                                            fileID
-                                                        }
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={12}><Divider/></Grid>
-                                            </React.Fragment>
+                                            <FileConfig/>
                                             : null
                                     }
                                     {
@@ -342,9 +430,8 @@ function DefoeQueryPage() {
                                                         <Grid container spacing={1}>
                                                             {
                                                                 targets.map((item, index) => (
-                                                                    <Grid item xs="auto">
+                                                                    <Grid item xs="auto" key={index}>
                                                                         <Button
-                                                                            key={index} 
                                                                             sx={{textTransform: 'none'}}
                                                                             onClick={() => handledTargetClick(index)}>{item}
                                                                         </Button>
@@ -399,13 +486,55 @@ function DefoeQueryPage() {
                                                     <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto', pt: 1, pb: 1}} textAlign={"right"}>
                                                         <Stack direction="row" spacing={2} alignItems="center"
                                                                justifyContent={"right"}>
-                                                            <TextField id="start_year" value={startYear} onChange={(e) => setStartYear(e.target.value)}/>
+                                                            <TextField id="start_year"
+                                                                       type={"number"}
+                                                                       InputProps={{
+                                                                           inputProps: {
+                                                                               max: 1900, min: 1771
+                                                                           }
+                                                                       }}
+                                                                       value={startYear}
+                                                                       onChange={(e) => handleStartYearInputChange(e)}
+                                                            />
                                                             <Typography>To</Typography>
-                                                            <TextField id="end_year" value={endYear} onChange={(e) => setEndYear(e.target.value)} />
+                                                            <TextField id="end_year"
+                                                                       type={"number"}
+                                                                       InputProps={{
+                                                                           inputProps: {
+                                                                               max: 1900, min: 1771
+                                                                           }
+                                                                       }}
+                                                                       value={endYear}
+                                                                       onChange={(e) => handleEndYearInputChange(e)} />
                                                         </Stack>
                                                     </Grid>
                                                     <Grid item xs={12}><Divider/></Grid>
                                                 </Grid>
+                                                {
+                                                    "window" in queryMeta[selectedQueryType].inputs['filter'] ?
+                                                        <React.Fragment>
+                                                            <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                                <Typography component="div" gutterBottom variant="subtitle1">
+                                                                    Snippet Window
+                                                                </Typography>
+                                                            </Grid>
+                                                            <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto', pt: 1, pb: 1}} textAlign={"right"}>
+                                                                <Stack direction="row" spacing={2} alignItems="center"
+                                                                       justifyContent={"right"}>
+                                                                    <TextField id="window" type={"number"}
+                                                                               InputProps={{
+                                                                                   inputProps: {
+                                                                                       min: 0
+                                                                                   }
+                                                                               }}
+                                                                               value={window}
+                                                                               onChange={(e) => handleWindowInputChange(e)}/>
+                                                                </Stack>
+                                                            </Grid>
+                                                            <Grid item xs={12}><Divider/></Grid>
+                                                        </React.Fragment>
+                                                        : null
+                                                }
                                             </React.Fragment>
                                             : null
                                     }
