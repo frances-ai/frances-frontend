@@ -15,6 +15,7 @@ import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import DownloadIcon from '@mui/icons-material/Download';
 import {findTermLinkFromUri, getLexiconFileOriginalName} from "../utils/stringUtil";
+import TextMoreLess from "../components/textMoreLess";
 
 export function Task(props) {
     const {task, showCollection, showQueryType, showSubmitTime, inputs} = props;
@@ -450,7 +451,11 @@ function DefoeQueryResult() {
                                                 {
                                                     col === 'Term'?
                                                         <Button variant={"text"} onClick={() => handVisualiseClick(record['uri'])}>{record[col_key[col]]}</Button>
-                                                        : record[col_key[col]]
+                                                        : (
+                                                            col === 'Definition'?
+                                                            <TextMoreLess text={record[col_key[col]]} />
+                                                            : record[col_key[col]]
+                                                        )
                                                 }
                                             </TableCell>
                                         ))
@@ -482,7 +487,7 @@ function DefoeQueryResult() {
             case "frequency_keysearch_by_year":
                 return <FrequencyKeySearchByYearResult/>
             case "terms_fulltext_keysearch_by_year":
-                break;
+                return <TermFullTextKeySearchByYearResult/>;
             case "uris_keysearch":
                 return <UrisKeySearchResult/>
             case "terms_snippet_keysearch_by_year":
