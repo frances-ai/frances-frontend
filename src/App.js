@@ -16,6 +16,14 @@ import DefoeQueryResult from "./pages/defoeQueryResult";
 import DefoeQueryTasksPage from "./pages/defoeQueryTasks";
 
 function App() {
+
+    const update = localStorage.getItem("update-v1");
+    if (!update) {
+        localStorage.clear();
+        localStorage.setItem("update-v1", "0");
+    }
+
+
   return (
       <AuthProvider>
           <Routes>
