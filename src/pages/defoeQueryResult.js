@@ -16,6 +16,8 @@ import Box from "@mui/material/Box";
 import DownloadIcon from '@mui/icons-material/Download';
 import {findTermLinkFromUri, getLexiconFileOriginalName} from "../utils/stringUtil";
 import TextMoreLess from "../components/textMoreLess";
+import Plot from "react-plotly.js";
+import {get_plot_frequency_count_data} from "../utils/plotUtil";
 
 export function Task(props) {
     const {task, showCollection, showQueryType, showSubmitTime, inputs} = props;
@@ -287,30 +289,50 @@ function DefoeQueryResult() {
 
     function FrequencyKeySearchByYearResult() {
         return (
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell colSpan={1} align={"center"}>Year</TableCell>
-                            <TableCell align={"center"}>Lexicon</TableCell>
-                            <TableCell align={"center"}>Frequency</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {Object.keys(result).map((value, key) => (
-                            result[value].map((record, index) => (
-                                <TableRow key={'' + key + index}>
-                                    {
-                                        (index == 0) ? <TableCell align={"center"} colSpan={1} rowSpan={result[value].length}>{value}</TableCell> : null
-                                    }
-                                    <TableCell align={"center"} rowSpan={1}>{record[0]}</TableCell>
-                                    <TableCell align={"center"} rowSpan={1}>{record[1]}</TableCell>
-                                </TableRow>
-                            ))
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Box>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell colSpan={1} align={"center"}>Year</TableCell>
+                                <TableCell align={"center"}>Lexicon</TableCell>
+                                <TableCell align={"center"}>Frequency</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {Object.keys(result).map((value, key) => (
+                                result[value].map((record, index) => (
+                                    <TableRow key={'' + key + index}>
+                                        {
+                                            (index == 0) ? <TableCell align={"center"} colSpan={1} rowSpan={result[value].length}>{value}</TableCell> : null
+                                        }
+                                        <TableCell align={"center"} rowSpan={1}>{record[0]}</TableCell>
+                                        <TableCell align={"center"} rowSpan={1}>{record[1]}</TableCell>
+                                    </TableRow>
+                                ))
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <Plot
+                    data={get_plot_frequency_count_data(result)}
+                    layout={
+                        {
+                            title: 'Frequency of Lexicon Terms per Years',
+                            xaxis: {
+                                title: 'Year'
+                            },
+                            yaxis: {
+                                title: 'Frequency'
+                            },
+                            autosize: true
+                        }
+                    }
+                    useResizeHandler={true}
+                    style={{ width: '100%', height: '100%' }}
+                />
+            </Box>
+
         );
     }
 
@@ -406,6 +428,12 @@ function DefoeQueryResult() {
         )
     }
 
+    function GeoParserByYearResult() {
+        return (
+            <Box>Result....</Box>
+        )
+    }
+
     function TermFullTextKeySearchByYearResult() {
         const termDetailsResult = result.terms_details;
         const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Definition'];
@@ -492,6 +520,8 @@ function DefoeQueryResult() {
                 return <UrisKeySearchResult/>
             case "terms_snippet_keysearch_by_year":
                 return <TermSnippetKeySearchByYearResult/>;
+            case "geoparser_by_year":
+                return <GeoParserByYearResult/>;
             default:
                 return (<Box>
                     No Such Query Type!
