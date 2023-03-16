@@ -60,6 +60,20 @@ const hit_count_nls = [
 
 export const queryMeta = {
   "EB": {
+    "geoparser_by_year": {
+      "description": "It geo-locates locations in terms definitions and geo-resolves them using the Edinburgh Geoparser. It groups results by years.",
+      "inputs": {
+        "preprocess": true,
+        "file": true,
+        "filter": {
+          "target_sentences": false,
+          "target_filter": false,
+          "start_year": false,
+          "end_year": false,
+          "bounding_box": false
+        }
+      }
+    },
     "frequency_keysearch_by_year": {
       "description": "It counts the number of terms/words in which appear your selected kewyords/keysentences. It groups results by years.",
       "inputs": {
@@ -120,6 +134,20 @@ export const queryMeta = {
     }
   },
   "NLS": {
+    "geoparser_by_year": {
+      "description": "It geo-locates locations in terms definitions and geo-resolves them using the Edinburgh Geoparser. It groups results by years.",
+      "inputs": {
+        "preprocess": true,
+        "file": true,
+        "filter": {
+          "target_sentences": false,
+          "target_filter": false,
+          "start_year": false,
+          "end_year": false,
+          "bounding_box": false
+        }
+      }
+    },
     "frequency_keysearch_by_year": {
       "description": "It counts the number of pages/words in which appear your selected kewyords/keysentences. It groups results by years.",
       "inputs": {

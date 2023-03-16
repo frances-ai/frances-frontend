@@ -68,6 +68,7 @@ function DefoeQueryPage() {
         QueryAPI.getAllDefoeQueryTypes().then(response => {
             const data = response?.data?.queries;
             setQueryTypes(data);
+            console.log(queryTypes)
             setSelectQueryType(data[0]);
         })
     }, []);
