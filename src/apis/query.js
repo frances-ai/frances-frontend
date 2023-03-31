@@ -113,8 +113,8 @@ class QueryAPI {
         })
     }
 
-    visualise(uri) {
-        const key = 'visualise' + uri;
+    visualise(uri, collection) {
+        const key = 'visualise' + uri + collection;
         const result = localStorage.getItem(key);
         if (result) {
             return new Promise((resolve => {
@@ -127,6 +127,7 @@ class QueryAPI {
 
         return axios.post("/query/visualization_resources", {
             resource_uri: uri,
+            collection: collection
         }).then(response => {
             console.log('server');
             try {

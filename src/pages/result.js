@@ -34,6 +34,7 @@ function ResultPage() {
         } else {
             const type = currentParameters.type;
             const key = currentParameters.key;
+            const collection = currentParameters.collection ? currentParameters.collection : "Encyclopaedia Britannica (1768-1860)"
             const page = currentParameters.page ? currentParameters.page : 1;
             console.log('Check type')
             switch (type) {
@@ -67,7 +68,7 @@ function ResultPage() {
                     })
                     break;
                 case 'Visualisation':
-                    QueryAPI.visualise(key).then(response => {
+                    QueryAPI.visualise(key, collection).then(response => {
                         const result = response?.data;
                         setSearchResult({result})
                         setIsLoading(false);

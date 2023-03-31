@@ -1,34 +1,49 @@
-import React from 'react'
-import {Button} from "@mui/material";
-import {useLocation, useNavigate} from "react-router-dom";
-import {findTermLinkFromUri} from "../../utils/stringUtil";
+import React, {useState} from 'react'
+import {Button, Modal, Typography} from "@mui/material";
+import Box from "@mui/material/Box";
+import VisualisationResult from "../visualisationResult";
 
 function VisualiseButton(props) {
-    const {uri, currentSearchInfo} = props;
-    const location = useLocation();
-    const navigate = useNavigate();
 
-    function handVisualiseClick() {
-        const navStack = location.state?.navStack ? location.state.navStack: [];
-        navStack.push(currentSearchInfo);
-        const termLink = findTermLinkFromUri(uri);
-        navigate("/result",
-            {state:
-                    {
-                        to: {
-                            type: 'Visualisation',
-                            key: uri,
-                            name: 'Visualisation(' + termLink + ')'
-                        },
-                        navStack: navStack
-                    }
-            })
+    const uri = props.uri;
+    const collection = props.collection;
+    const [open, setOpen] = useState(false);
+
+
+    const handleClose = () => setOpen(false);
+
+    const handleOpen = () => {
+        setOpen(true)
     }
 
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        bgcolor: 'background.paper',
+        boxShadow: 24,
+        width: '60%',
+        height: '800',
+        p: 2,
+    };
+
     return (
-        <Button onClick={handVisualiseClick}>
-            Visualise
-        </Button>
+        <React.Fragment>
+            <Button onClick={handleOpen}>
+                {props.children}
+            </Button>
+            <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={style}>
+                    <VisualisationResult uri={uri} collection={collection}/>
+                </Box>
+            </Modal>
+        </React.Fragment>
     )
 }
 

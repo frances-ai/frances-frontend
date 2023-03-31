@@ -19,6 +19,7 @@ import SimilarTermsButton from "./buttons/similarTermsButton";
 
 function TermInfo(props) {
     const {termInfo,currentSearchInfo} = props;
+    const collection = "Encyclopaedia Britannica (1768-1860)";
 
     const headers = [
         'Yeah', 'Edition', 'Volume', 'Term', 'Advanced Options'
@@ -53,8 +54,10 @@ function TermInfo(props) {
                                     <Stack>
                                         <VisualiseButton
                                             uri={termInfo.uri}
-                                            currentSearchInfo={currentSearchInfo}
-                                        />
+                                            collection={collection}
+                                        >
+                                            Visualise
+                                        </VisualiseButton>
                                         <SimilarTermsButton
                                             resource_uri={termInfo.uri}
                                             currentSearchInfo={currentSearchInfo}

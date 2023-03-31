@@ -1,76 +1,119 @@
 import React, {useEffect, useState} from 'react';
-import {Container, Divider, FormControl, InputLabel, MenuItem, Select, Typography} from "@mui/material";
-import QueryAPI from '../apis/query';
+import {
+    Card,
+    CardActionArea,
+    CardContent,
+    CardMedia,
+    CircularProgress,
+    Container,
+    Divider,
+    Grid, Paper,
+    Typography
+} from "@mui/material";
+import CollectionAPI from '../apis/collection';
+import Box from "@mui/material/Box";
+import background from './background.jpg'
+
+
+function CollectionCard(props) {
+    const {collection} = props;
+    const [elevation, setElevation] = useState(3);
+
+
+    return (
+        <Card sx={{ maxWidth: 500 }} elevation={elevation}
+              onMouseOver={() => setElevation(10)}
+              onMouseOut={() => setElevation(3)}
+        >
+            <CardActionArea>
+                <CardMedia
+                    component="img"
+                    height="235"
+                    image={CollectionAPI.get_image_url(collection.image_name)}
+                    alt={collection.image_name}
+                />
+                <CardContent sx={{backgroundColor: '#fffde7'}}>
+                    <Typography gutterBottom sx={{font: '27 black', fontWeight: 'bold', textAlign: 'center'}} component="div">
+                        {collection.name + ',' + collection.year_range[0] + '-' + collection.year_range[1]}
+                    </Typography>
+                </CardContent>
+            </CardActionArea>
+        </Card>
+    )
+}
+
+function CollectionCards(props) {
+    const {collections, sx} = props;
+
+    return (
+        <Box sx={sx}>
+            <Grid container rowSpacing={2} columnSpacing={{ xs: 1, sm: 2, md: 5 }}>
+                {
+                    collections.map((collection, key) => (
+                        <Grid item xs={6} sm={4} md={4} key={key}>
+                            <CollectionCard collection={collection}/>
+                        </Grid>
+                    ))
+                }
+            </Grid>
+        </Box>
+    )
+}
 
 
 function CollectionDetailsPage() {
 
     const [collections, setCollections] = useState([]);
-    const [selectedCollection, setSelectedCollection] = useState('');
-    const [editions, setEditions] = useState([]);
-    const [selectedEdition, setSelectedEdition] = useState('');
-
+    const [isPageLoading, setPageIsLoading] = useState(true);
 
     useEffect(() => {
-        QueryAPI.getAllCollectionName().then(response => {
-            setCollections(response?.data);
+        CollectionAPI.get_collections().then(r => {
+            console.log(r.data.collections)
+            setCollections(r?.data?.collections)
         })
-    }, []);
+    },[])
 
     useEffect(() => {
-        QueryAPI.getAllEditionNameFromEB().then(response => {
-            setEditions(response?.data);
-        })
-    }, [selectedCollection])
+        if (collections.length !== 0) {
+            setPageIsLoading(false);
+        }
+    }, [collections])
+
 
     return (
-        <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
-            <Typography component="div" gutterBottom variant="h4" sx={{mt: 5}}>
-                Exploring NLS Digital Collection Details
-            </Typography>
-            <Divider/>
-            <FormControl sx={{ m: 3, minWidth: 200 }}>
-                <InputLabel id="collection-label">Select Collection</InputLabel>
-                <Select
-                    labelId="collection-label"
-                    id="collection-select"
-                    label="collection"
-                    value={selectedCollection}
-                    autoWidth
-                    onChange={(e) => setSelectedCollection(e.target.value)}
-                >
-                    <MenuItem disabled>Select Collection</MenuItem>
-                    {
-                        collections.map((item, index) => (
-                            <MenuItem key={index} value={item}>{item}</MenuItem>
-                        ))
-                    }
-                </Select>
-            </FormControl>
-
-            {
-                selectedCollection === collections[0] ?
-                    (<FormControl sx={{ m: 3, minWidth: 220 }}>
-                        <InputLabel id="edition-label">Select Edition</InputLabel>
-                        <Select
-                            labelId="edition-label"
-                            id="edition-select"
-                            label="edition"
-                            value={selectedEdition}
-                            onChange={(e) => setSelectedEdition(e.target.value)}
-                        >
-                            <MenuItem disabled>Select Edition</MenuItem>
-                            {
-                                editions.map((item, index) => (
-                                    <MenuItem key={index}>{item}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>) :
-                    null
-            }
-
-        </Container>
+        <Box >
+            <Box sx={{
+                height: '100%',
+                width: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: -2,
+                backgroundImage: `url(${background})`,
+                backgroundSize: '120%',
+                backgroundPosition: "center, center",
+                filter: 'blur(6px) grayscale(50%)',
+            }}/>
+            <Box sx={{
+                height: '100%',
+                width: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                zIndex: -1,
+                backgroundColor: 'rgba(255,255,255,0.7)'
+            }}/>
+            <Container maxWidth="lg" sx={{mt: 3, minHeight: '70vh'}}>
+                <Typography component="div" gutterBottom variant="h4">
+                    Exploring NLS Digital Collections
+                </Typography>
+                {
+                    isPageLoading?
+                        <CircularProgress/>
+                        : <CollectionCards sx={{mt: 3}} collections={collections}/>
+                }
+            </Container>
+        </Box>
         )
 }
 

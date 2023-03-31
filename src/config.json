@@ -1,3 +1,4 @@
 {
-  "BACKEND_BASE_URL": "http://127.0.0.1:5000/api/v1"
+  "BACKEND_BASE_URL": "http://127.0.0.1:5000/api/v1",
+  "MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoicm9zYWZpbGd1ZWlyYSIsImEiOiJjbDFnYWw2d2YxOTkxM2NwM3NyMjFmaTNoIn0.w-RsfBZ_-O8QbB5r1OleGA"
 }

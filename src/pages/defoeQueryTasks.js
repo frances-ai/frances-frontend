@@ -69,6 +69,7 @@ function TaskRow(props) {
     const { task, sx } = props;
     const [open, setOpen] = React.useState(false);
 
+
     const navigate = useNavigate();
     const handleViewClick = (task_id) => {
         navigate("/defoeQueryResult", {state: {taskId: task_id}})

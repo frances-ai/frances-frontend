@@ -1,10 +1,10 @@
-import React, {useEffect, useRef} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import Box from "@mui/material/Box";
 import {Typography} from "@mui/material";
 import {findTermLinkFromUri} from "../utils/stringUtil";
 import * as d3 from 'd3';
 import './visualisationResult.css';
-
+import QueryAPI from "../apis/query";
 
 function filterNodesById(nodes,id){
     return nodes.filter(function(n) { return n.id === id; });
@@ -154,14 +154,26 @@ function RDFGraph(props) {
 }
 
 function VisualisationResult(props) {
-    const result = props.result;
+    const uri = props.uri;
+    const collection = props.collection
+    const [result, setResult] = useState([]);
+
+    useEffect(() => {
+        QueryAPI.visualise(uri, collection).then(response => {
+            console.log(response?.data.results)
+            const result = response?.data.results;
+            setResult(result)
+        })
+    }, [])
+
 
     return (
         <Box>
-            <Typography component="div" gutterBottom variant="body1" sx={{mt: 2}}>
-                Visualisation RDF graph for the resource <b>{findTermLinkFromUri(result.result.uri)}</b>
-            </Typography>
-            <RDFGraph data={result.result.results}/>
+            {
+                result.length !== 0?
+                    <RDFGraph data={result}/>
+                    : null
+            }
         </Box>
     )
 }

@@ -34,7 +34,6 @@ function App() {
                   <Route path="topicModelling" element={<TopicModellingPage/>} />
                   <Route path="result" element={<ResultPage/>} />
                   <Route path="collectionDetails" element={<CollectionDetailsPage/>} />
-
                   {/* Protected routes */}
                   <Route path="/defoeQuery" element={
                       <RequireAuth>
