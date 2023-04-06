@@ -6,26 +6,34 @@ import {
     CardMedia,
     CircularProgress,
     Container,
-    Divider,
-    Grid, Paper,
+    Grid,
     Typography
 } from "@mui/material";
 import CollectionAPI from '../apis/collection';
 import Box from "@mui/material/Box";
 import background from './background.jpg'
+import {useNavigate} from "react-router-dom";
 
 
 function CollectionCard(props) {
     const {collection} = props;
     const [elevation, setElevation] = useState(3);
+    const navigate = useNavigate();
 
+    const handleCardClick = () => {
+        navigate("/collectionDetails/detail", {state:
+                {collection: {
+                    id: collection.id, name: collection.name
+                    }}
+        })
+    }
 
     return (
         <Card sx={{ maxWidth: 500 }} elevation={elevation}
               onMouseOver={() => setElevation(10)}
               onMouseOut={() => setElevation(3)}
         >
-            <CardActionArea>
+            <CardActionArea onClick={handleCardClick}>
                 <CardMedia
                     component="img"
                     height="235"
@@ -51,7 +59,7 @@ function CollectionCards(props) {
                 {
                     collections.map((collection, key) => (
                         <Grid item xs={6} sm={4} md={4} key={key}>
-                            <CollectionCard collection={collection}/>
+                            <CollectionCard collection={collection} />
                         </Grid>
                     ))
                 }
@@ -110,7 +118,7 @@ function CollectionDetailsPage() {
                 {
                     isPageLoading?
                         <CircularProgress/>
-                        : <CollectionCards sx={{mt: 3}} collections={collections}/>
+                        : <CollectionCards sx={{mt: 3}} collections={collections} />
                 }
             </Container>
         </Box>

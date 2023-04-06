@@ -14,6 +14,7 @@ import TopicModellingPage from "./pages/topicModelling";
 import CollectionDetailsPage from "./pages/collectionDetails";
 import DefoeQueryResult from "./pages/defoeQueryResult";
 import DefoeQueryTasksPage from "./pages/defoeQueryTasks";
+import CollectionDetailResult from "./pages/collectionDetailResult";
 
 function App() {
 
@@ -33,7 +34,10 @@ function App() {
                   <Route path="termSimilarity" element={<TermSimilarityPage/>} />
                   <Route path="topicModelling" element={<TopicModellingPage/>} />
                   <Route path="result" element={<ResultPage/>} />
-                  <Route path="collectionDetails" element={<CollectionDetailsPage/>} />
+                  <Route path="/collectionDetails">
+                      <Route index element={<CollectionDetailsPage/>} />
+                      <Route path="detail" element={<CollectionDetailResult/>} />
+                  </Route>
                   {/* Protected routes */}
                   <Route path="/defoeQuery" element={
                       <RequireAuth>

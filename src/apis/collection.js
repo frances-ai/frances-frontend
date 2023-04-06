@@ -2,11 +2,192 @@ import axios, {getBaseUrl} from "./axios";
 
 class CollectionAPI{
     async get_collections() {
-        return await axios.get("/collection/list");
+        const key = 'collections';
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+        return await axios.get("/collection/list").then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+            return response;
+        })
     }
+
+    async get_collection_detail(id) {
+        const key = 'collection' + id;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+        return await axios.get("/collection/", {params: {id: id}}).then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+            return response;
+        })
+    }
+
 
     get_image_url(image_name) {
         return getBaseUrl() + "/collection/image?name=" + image_name;
+    }
+
+    async get_eb_editions() {
+        const key = 'eb_edition';
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+        return await axios.get("/collection/eb_edition/list").then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+            return response;
+        })
+    }
+
+    async get_eb_edition_detail(uri) {
+        const key = 'eb_edition' + uri;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+        return await axios.get("/collection/eb_edition", {params: {uri: uri}}).then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+            return response;
+        })
+    }
+
+    async get_nls_serie_detail(collection, uri) {
+        const key = 'nls_serie' + uri;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+        return await axios.get("/collection/nls_serie", {params: {collection: collection, uri: uri}}).then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+            return response;
+        })
+    }
+
+    async get_nls_series(collection) {
+        const key = 'nls_series' + collection;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+        return await axios.get("/collection/nls_serie/list", {params: {collection: collection}}).then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+            return response;
+        })
+    }
+
+    async get_volumes(collection, edition_uri) {
+        const key = 'volumes' + edition_uri;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+        return await axios.get("/collection/volume/list", {params: {collection: collection, uri: edition_uri}}).then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+            return response;
+        })
+    }
+
+    async get_volume_detail(collection, volume_uri) {
+        const key = 'volume' + volume_uri;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+        return await axios.get("/collection/volume", {params: {collection: collection, uri: volume_uri}}).then(response => {
+            console.log('Server');
+            try {
+                localStorage.setItem(key, JSON.stringify(response.data));
+            } catch (e) {
+                console.log(e);
+                localStorage.clear();
+            }
+            return response;
+        })
     }
 }
 
