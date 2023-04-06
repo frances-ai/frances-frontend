@@ -24,6 +24,7 @@ function TermSearchResult(props) {
     const originResult = props.result;
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
+    const collection = "Encyclopaedia Britannica (1768-1860)";
     const headers = [
         'Yeah', 'Edition', 'Volume', 'Start Page', 'End Page', 'Term Type',
         'Definition / Summary', 'Related Terms', 'Topic Modelling ID', 'Sentiment Score', 'Advanced Options'
@@ -121,8 +122,10 @@ function TermSearchResult(props) {
                                         <Stack>
                                             <VisualiseButton
                                                 uri={key}
-                                                currentSearchInfo={currentSearchInfo}
-                                            />
+                                                collection={collection}
+                                            >
+                                                Visualise
+                                            </VisualiseButton>
                                             <CheckSpellButton
                                                 uri={key}
                                                 currentSearchInfo={currentSearchInfo}

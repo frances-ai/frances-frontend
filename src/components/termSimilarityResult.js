@@ -24,6 +24,7 @@ import CheckSpellButton from "./buttons/checkSpellButton";
 
 function TermInfo(props) {
     const {termInfo, currentSearchInfo} = props;
+    const collection = "Encyclopaedia Britannica (1768-1860)";
 
     const headers = [
         'Term', 'Yeah', 'Edition', 'Volume', 'Definition / Summary',
@@ -72,8 +73,10 @@ function TermInfo(props) {
                                     <Stack>
                                         <VisualiseButton
                                             uri={termInfo.uri}
-                                            currentSearchInfo={currentSearchInfo}
-                                        />
+                                            collection={collection}
+                                        >
+                                            Visualise
+                                        </VisualiseButton>
                                         <CheckSpellButton
                                             uri={termInfo.uri}
                                             currentSearchInfo={currentSearchInfo}
@@ -95,6 +98,7 @@ function TermSimilarityResult(props) {
     //TODO Sort result
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
+    const collection = "Encyclopaedia Britannica (1768-1860)";
     const headers = [
         'Yeah', 'Edition', 'Volume', 'Term', 'Definition',
         'Topic Modelling ID', 'Similitud rank', 'Sentiment Score', 'Advanced Options'
@@ -187,8 +191,10 @@ function TermSimilarityResult(props) {
                                         <Stack>
                                             <VisualiseButton
                                                 uri={key}
-                                                currentSearchInfo={currentSearchInfo}
-                                            />
+                                                collection={collection}
+                                            >
+                                                Visualise
+                                            </VisualiseButton>
                                             <CheckSpellButton
                                                 uri={key}
                                                 currentSearchInfo={currentSearchInfo}

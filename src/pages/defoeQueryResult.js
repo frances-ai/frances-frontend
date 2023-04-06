@@ -3,10 +3,10 @@ import {
     CircularProgress,
     Container,
     Divider,
-    Grid, Link, Paper,
+    Grid, Modal, Paper,
     Stack,
     Table, TableBody, TableCell,
-    TableContainer, TableHead, TableRow,
+    TableContainer, TableHead, TablePagination, TableRow,
     Typography
 } from "@mui/material";
 import {useLocation, useNavigate} from "react-router-dom";
@@ -14,8 +14,14 @@ import React, {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import DownloadIcon from '@mui/icons-material/Download';
-import {findTermLinkFromUri, getLexiconFileOriginalName} from "../utils/stringUtil";
+import {getLexiconFileOriginalName} from "../utils/stringUtil";
 import TextMoreLess from "../components/textMoreLess";
+import Plot from "react-plotly.js";
+import {get_plot_frequency_count_data} from "../utils/plotUtil";
+import BasicMap from "../components/maps/basicMap";
+import VisualiseButton from "../components/buttons/visualiseButton";
+import GeoDataDeepVisualizeResult from "../components/geoDataDeepVisualizeResult";
+import {countTotalYearRecords, getPagingYearResult} from "../utils/pagingUtil";
 
 export function Task(props) {
     const {task, showCollection, showQueryType, showSubmitTime, inputs} = props;
@@ -177,32 +183,30 @@ function DefoeQueryResult() {
     const [result, setResult] = useState();
     // Summary of this task, including config data, and submit time.
     const [task, setTask] = useState();
-    const location = useLocation();
-    const navigate = useNavigate();
 
-    const currentTaskInfo = {
-        type: 'DefoeQueryTask',
-        key: taskID,
-        page: 0, //TODO change after paging
-        name: 'Task('+ taskID + ')'
-    };
+    const DEFAULT_PAGE = 0;
+    const DEFAULT_ROWS_PER_PAGE = 10;
 
-    function handVisualiseClick(uri) {
-        const navStack = location.state?.navStack ? location.state.navStack: [];
-        navStack.push(currentTaskInfo);
-        const termLink = findTermLinkFromUri(uri);
-        navigate("/result",
-            {state:
-                    {
-                        to: {
-                            type: 'Visualisation',
-                            key: uri,
-                            name: 'Visualisation(' + termLink + ')'
-                        },
-                        navStack: navStack
-                    }
-            })
+    const [paging, setPaging] = useState();
+
+    const handlePageChangeYearPaged = (event, newPage) => {
+        setPaging(prevState => ({
+            ...prevState,
+            page: newPage,
+            result: getPagingYearResult(newPage, prevState.rowsPerPage, result)
+        }))
+        console.log(paging.result);
     }
+
+    const handleRowsPerPageChangeYearPaged = (event) => {
+        const newRowsPerPage = event.target.value;
+        setPaging(prevState => ({
+            ...prevState,
+            rowsPerPage: newRowsPerPage,
+            result: getPagingYearResult(prevState.page, newRowsPerPage, result)
+        }))
+    }
+
 
 
     useEffect(() => {
@@ -246,11 +250,30 @@ function DefoeQueryResult() {
                 QueryAPI.getDefoeQueryResult(result_filepath).then((response) => {
                     console.log("Get data from the result file");
                     console.log(response?.data);
-                    setResult(response?.data?.results);
+                    if (task.config.queryType.includes("fulltext") || task.config.queryType.includes("snippet")) {
+                        setResult(response?.data?.results.terms_details);
+                    } else {
+                        setResult(response?.data?.results);
+                    }
+
                 });
             }
         }
     }, [status])
+
+    useEffect(() => {
+        if (result && task) {
+            if (task.config.queryType.includes("year")) {
+                console.log(result);
+                setPaging({
+                    count: countTotalYearRecords(result),
+                    page: DEFAULT_PAGE,
+                    rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+                    result: getPagingYearResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
+                })
+            }
+        }
+    }, [result])
 
 
     function PublicationNormalisedResult() {
@@ -286,36 +309,63 @@ function DefoeQueryResult() {
     }
 
     function FrequencyKeySearchByYearResult() {
+
         return (
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell colSpan={1} align={"center"}>Year</TableCell>
-                            <TableCell align={"center"}>Lexicon</TableCell>
-                            <TableCell align={"center"}>Frequency</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {Object.keys(result).map((value, key) => (
-                            result[value].map((record, index) => (
-                                <TableRow key={'' + key + index}>
-                                    {
-                                        (index == 0) ? <TableCell align={"center"} colSpan={1} rowSpan={result[value].length}>{value}</TableCell> : null
-                                    }
-                                    <TableCell align={"center"} rowSpan={1}>{record[0]}</TableCell>
-                                    <TableCell align={"center"} rowSpan={1}>{record[1]}</TableCell>
-                                </TableRow>
-                            ))
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Box>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell colSpan={1} align={"center"}>Year</TableCell>
+                                <TableCell align={"center"}>Lexicon</TableCell>
+                                <TableCell align={"center"}>Frequency</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {Object.keys(paging.result).map((value, key) => (
+                                paging.result[value].map((record, index) => (
+                                    <TableRow key={'' + key + index}>
+                                        {
+                                            (index == 0) ? <TableCell align={"center"} colSpan={1} rowSpan={paging.result[value].length}>{value}</TableCell> : null
+                                        }
+                                        <TableCell align={"center"} rowSpan={1}>{record[0]}</TableCell>
+                                        <TableCell align={"center"} rowSpan={1}>{record[1]}</TableCell>
+                                    </TableRow>
+                                ))
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    component="div"
+                    count={paging.count}
+                    page={paging.page}
+                    rowsPerPage={paging.rowsPerPage}
+                    onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                    onPageChange={handlePageChangeYearPaged}/>
+                <Plot
+                    data={get_plot_frequency_count_data(result)}
+                    layout={
+                        {
+                            title: 'Frequency of Lexicon Terms per Years',
+                            xaxis: {
+                                title: 'Year'
+                            },
+                            yaxis: {
+                                title: 'Frequency'
+                            },
+                            autosize: true
+                        }
+                    }
+                    useResizeHandler={true}
+                    style={{ width: '100%', height: '100%', marginTop: 20}}
+                />
+            </Box>
+
         );
     }
 
     function TermSnippetKeySearchByYearResult() {
-        const termDetailsResult = result.terms_details;
         const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Snippet'];
         const col_key = {
             'KeySearch Term': 'keysearch-term',
@@ -330,46 +380,60 @@ function DefoeQueryResult() {
         }
 
         return (
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell >Year</TableCell>
-                            {
-                                cols.map((col, index) => (
-                                    <TableCell key={index}> {col}</TableCell>
+            <React.Fragment>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell >Year</TableCell>
+                                {
+                                    cols.map((col, index) => (
+                                        <TableCell key={index}> {col}</TableCell>
+                                    ))
+                                }
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {paging.result.map((recordPerYear, key) => (
+                                recordPerYear[1].map((record, index) => (
+                                    <TableRow key={'' + key + index}>
+                                        {
+                                            (index == 0) ?
+                                                <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
+                                                    {recordPerYear[0]}
+                                                </TableCell>
+                                                : null
+                                        }
+                                        {
+                                            cols.map((col) => (
+                                                <TableCell key={'' + key + index + col} >
+                                                    {
+                                                        col === 'Term'?
+                                                            <VisualiseButton
+                                                                uri={record["uri"]}
+                                                                collection={task.config.collection}
+                                                            >
+                                                                {record[col_key[col]]}
+                                                            </VisualiseButton>
+                                                            : record[col_key[col]]
+                                                    }
+                                                </TableCell>
+                                            ))
+                                        }
+                                    </TableRow>
                                 ))
-                            }
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {termDetailsResult.map((recordPerYear, key) => (
-                            recordPerYear[1].map((record, index) => (
-                                <TableRow key={'' + key + index}>
-                                    {
-                                        (index == 0) ?
-                                            <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
-                                                {recordPerYear[0]}
-                                            </TableCell>
-                                            : null
-                                    }
-                                    {
-                                        cols.map((col) => (
-                                            <TableCell key={'' + key + index + col} >
-                                                {
-                                                    col === 'Term'?
-                                                        <Button variant={"text"} onClick={() => handVisualiseClick(record['uri'])}>{record[col_key[col]]}</Button>
-                                                       : record[col_key[col]]
-                                                }
-                                            </TableCell>
-                                        ))
-                                    }
-                                </TableRow>
-                            ))
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    component="div"
+                    count={paging.count}
+                    page={paging.page}
+                    rowsPerPage={paging.rowsPerPage}
+                    onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                    onPageChange={handlePageChangeYearPaged}/>
+            </React.Fragment>
         )
     }
 
@@ -390,9 +454,12 @@ function DefoeQueryResult() {
                                 {
                                     (index == 0) ? <TableCell rowSpan={result[value].length}>
                                         {
-                                            <Button variant={"text"} onClick={() => handVisualiseClick(value)}>
+                                            <VisualiseButton
+                                                uri={value}
+                                                collection={task.config.collection}
+                                            >
                                                 {value}
-                                            </Button>
+                                            </VisualiseButton>
                                         }
                                     </TableCell> : null
                                 }
@@ -406,8 +473,161 @@ function DefoeQueryResult() {
         )
     }
 
+    function GeoParserByYearResult() {
+        const cols = ['Series', 'Volume', 'Volume ID', 'Volume Title', 'Page', 'Words', 'Part', 'Geo'];
+        const col_key = {
+            'Series': 'serie',
+            'Volume': 'volume',
+            'Volume ID': 'volumeId',
+            'Volume Title': 'volumeTitle',
+            'Page': 'page number',
+            'Words': 'numWords',
+            'Part': 'part',
+            'Geo': 'georesolution'
+        }
+
+        function GeoCell(props) {
+            const {geo, sx} = props;
+            const places = Object.keys(geo)
+            const is_geo_empty = places.length == 0;
+            const [open, setOpen] = useState(false);
+            const [data, setData] = useState([]);
+
+            if (is_geo_empty) {
+                return (
+                    <Box></Box>
+                )
+            }
+
+            const handleOpen = (place_geo, place_name) => {
+                const popup_html = '<h3>' + place_name + ', ' + place_geo['in-cc'] + '</h3>'
+                    + '<div>Type: ' + '<strong>' + place_geo['type'] + '</strong></div>'
+                    + '<div>Population: ' + '<strong>' + place_geo['pop'] + '</strong></div>'
+                    + '<div>Snippet: ' + '<strong>' + place_geo['snippet'] + '</strong></div>';
+                setData({
+                    coordinates: [place_geo.long, place_geo.lat],
+                    popupHtml: popup_html
+                })
+                setOpen(true);
+            }
+            const handleClose = () => setOpen(false);
+
+            const style = {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                bgcolor: 'background.paper',
+                boxShadow: 24,
+                width: '50%',
+                height: '50%',
+                p: 1,
+            };
+
+            return (
+                <Box>
+                    <Stack direction={"column"}>
+                        {
+                            places.map((place, index) => (
+                                <Box key={index}>
+                                    {
+                                        geo[place].lat === ""?
+                                            <Box mt={1} mb={1}>
+                                                {place.split('-')[0]}
+                                            </Box>
+                                            :  <Button
+                                                onClick={() => handleOpen(geo[place], place.split('-')[0])}
+                                                sx={{textTransform: "none"}}>
+                                                {place.split('-')[0]}
+                                            </Button>
+                                    }
+                                </Box>
+                            ))
+                        }
+                    </Stack>
+                    <Modal
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                    >
+                        <Box sx={style}>
+                            <BasicMap coordinates={data.coordinates} popupHtml={data.popupHtml}/>
+                        </Box>
+                    </Modal>
+                </Box>
+            )
+        }
+
+        return (
+            <React.Fragment>
+                <TableContainer component={Paper}>
+                    <Table
+                        sx={{ minWidth: 650 }}
+                        aria-label="geoparser query result table"
+                        stripe="2n">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Year</TableCell>
+                                {
+                                    cols.map((col, index) => {
+                                        return  (col === 'Volume Title') ?
+                                            <TableCell align={"center"} width={250} key={index}>{col}</TableCell>
+                                            : <TableCell align={"center"} key={index}>{col}</TableCell>
+                                    })
+                                }
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {Object.keys(paging.result).map((year) => (
+                                paging.result[year].map((record, index) => (
+                                    <TableRow key={'' + year + index}>
+                                        {
+                                            (index == 0) ?
+                                                <TableCell align={"center"} colSpan={1} rowSpan={paging.result[year].length}>
+                                                    {year}
+                                                </TableCell>
+                                                : null
+                                        }
+                                        {
+                                            cols.map((col) => (
+                                                <TableCell key={'' + year + index + col} align={"center"}>
+                                                    {
+                                                        col === 'Page'?
+                                                            <VisualiseButton
+                                                                uri={record["uri"]}
+                                                                collection={task.config.collection}
+                                                            >
+                                                                {record[col_key[col]]}
+                                                            </VisualiseButton>
+                                                            : (
+                                                                col === 'Geo'?
+                                                                    <GeoCell geo={record[col_key[col]]}/>
+                                                                    : record[col_key[col]]
+                                                            )
+                                                    }
+                                                </TableCell>
+                                            ))
+                                        }
+                                    </TableRow>
+                                ))
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    component="div"
+                    count={paging.count}
+                    page={paging.page}
+                    rowsPerPage={paging.rowsPerPage}
+                    onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                    onPageChange={handlePageChangeYearPaged}/>
+                <GeoDataDeepVisualizeResult result={result} />
+            </React.Fragment>
+        )
+    }
+
     function TermFullTextKeySearchByYearResult() {
-        const termDetailsResult = result.terms_details;
         const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Definition'];
         const col_key = {
             'KeySearch Term': 'keysearch-term',
@@ -422,50 +642,64 @@ function DefoeQueryResult() {
         }
 
         return (
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell >Year</TableCell>
-                            {
-                                cols.map((col, index) => (
-                                    <TableCell key={index}> {col}</TableCell>
+            <React.Fragment>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="frequency_keysearch_by_year result table" stripe="2n">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell >Year</TableCell>
+                                {
+                                    cols.map((col, index) => (
+                                        <TableCell key={index}> {col}</TableCell>
+                                    ))
+                                }
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {paging.result.map((recordPerYear, key) => (
+                                recordPerYear[1].map((record, index) => (
+                                    <TableRow key={'' + key + index}>
+                                        {
+                                            (index == 0) ?
+                                                <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
+                                                    {recordPerYear[0]}
+                                                </TableCell>
+                                                : null
+                                        }
+                                        {
+                                            cols.map((col) => (
+                                                <TableCell key={'' + key + index + col} >
+                                                    {
+                                                        col === 'Term'?
+                                                            <VisualiseButton
+                                                                uri={record["uri"]}
+                                                                collection={task.config.collection}
+                                                            >
+                                                                {record[col_key[col]]}
+                                                            </VisualiseButton>
+                                                            : (
+                                                                col === 'Definition'?
+                                                                    <TextMoreLess text={record[col_key[col]]} />
+                                                                    : record[col_key[col]]
+                                                            )
+                                                    }
+                                                </TableCell>
+                                            ))
+                                        }
+                                    </TableRow>
                                 ))
-                            }
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {termDetailsResult.map((recordPerYear, key) => (
-                            recordPerYear[1].map((record, index) => (
-                                <TableRow key={'' + key + index}>
-                                    {
-                                        (index == 0) ?
-                                            <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
-                                                {recordPerYear[0]}
-                                            </TableCell>
-                                            : null
-                                    }
-                                    {
-                                        cols.map((col) => (
-                                            <TableCell key={'' + key + index + col} >
-                                                {
-                                                    col === 'Term'?
-                                                        <Button variant={"text"} onClick={() => handVisualiseClick(record['uri'])}>{record[col_key[col]]}</Button>
-                                                        : (
-                                                            col === 'Definition'?
-                                                            <TextMoreLess text={record[col_key[col]]} />
-                                                            : record[col_key[col]]
-                                                        )
-                                                }
-                                            </TableCell>
-                                        ))
-                                    }
-                                </TableRow>
-                            ))
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    component="div"
+                    count={paging.count}
+                    page={paging.page}
+                    rowsPerPage={paging.rowsPerPage}
+                    onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                    onPageChange={handlePageChangeYearPaged}/>
+            </React.Fragment>
         )
     }
 
@@ -492,6 +726,8 @@ function DefoeQueryResult() {
                 return <UrisKeySearchResult/>
             case "terms_snippet_keysearch_by_year":
                 return <TermSnippetKeySearchByYearResult/>;
+            case "geoparser_by_year":
+                return <GeoParserByYearResult/>;
             default:
                 return (<Box>
                     No Such Query Type!
@@ -524,7 +760,7 @@ function DefoeQueryResult() {
             }
             <Divider/>
             {
-                (result === undefined) ?
+                (result === undefined || paging === undefined) ?
                     <CircularProgress/> :
                     <Box>
                         <Stack direction={"row"} sx={{mt: 5, mb: 3}} alignItems="baseline" justifyContent="space-between">

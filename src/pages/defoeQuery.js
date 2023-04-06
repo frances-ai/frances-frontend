@@ -17,8 +17,9 @@ import {
 } from "@mui/material";
 import {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
+import CollectionAPI from '../apis/collection';
 import Box from "@mui/material/Box";
-import {preprocess, collections_year_range} from "../apis/queryMeta";
+import {preprocess} from "../apis/queryMeta";
 import {useNavigate} from "react-router-dom";
 
 
@@ -39,7 +40,7 @@ function DefoeQueryPage() {
     const DEFAULT_SNIPPET_WINDOW = 0;
 
     const [collections, setCollections] = useState([]);
-    const [selectedCollection, setSelectedCollection] = useState(initConfig['collection']);
+    const [selectedCollection, setSelectedCollection] = useState();
     const [queryMeta, setQueryMeta] = useState();
     const [queryTypes, setQueryTypes] = useState([]);
     const [selectedQueryType, setSelectQueryType] = useState(initConfig['defoe_selection']);
@@ -60,36 +61,37 @@ function DefoeQueryPage() {
 
     useEffect(() => {
         //Loading all available configuration metadata
-        QueryAPI.getAllCollectionName().then(response => {
-            const data = response?.data
+        CollectionAPI.get_collections().then(response => {
+            const data = response?.data?.collections;
             setCollections(data);
             setSelectedCollection(data[0]);
         })
         QueryAPI.getAllDefoeQueryTypes().then(response => {
             const data = response?.data?.queries;
             setQueryTypes(data);
+            console.log(queryTypes)
             setSelectQueryType(data[0]);
         })
     }, []);
 
     useEffect(() => {
         console.log(selectedCollection);
-        if (selectedCollection !== undefined && selectedCollection !== '') {
+        if (selectedCollection !== undefined) {
             console.log(selectedCollection);
-            const earliest = collections_year_range[selectedCollection][0];
-            const latest = collections_year_range[selectedCollection][1];
+            const earliest = selectedCollection.year_range[0];
+            const latest = selectedCollection.year_range[1];
             setEarliestYear(earliest);
             setLatestYear(latest);
             setStartYear(earliest)
             setEndYear(latest)
-            setQueryMeta(QueryAPI.getQueryMeta(selectedCollection));
+            setQueryMeta(QueryAPI.getQueryMeta(selectedCollection.name));
         }
     }, [selectedCollection]);
 
 
     useEffect(() => {
         console.log("check loading")
-        if (selectedCollection !== '' && selectedQueryType !== '' && queryMeta !== undefined) {
+        if (selectedCollection !== undefined && selectedQueryType !== '' && queryMeta !== undefined) {
             setPageLoading(false);
             console.log(queryMeta);
         }
@@ -98,7 +100,7 @@ function DefoeQueryPage() {
     function formatConfigData() {
         //Format the configuration data
         let configData = {...initConfig};
-        configData.collection = selectedCollection;
+        configData.collection = selectedCollection.name;
         configData.defoe_selection = selectedQueryType;
 
         const inputs = queryMeta[selectedQueryType].inputs;
@@ -344,6 +346,11 @@ function DefoeQueryPage() {
     }
 
 
+    const handleCollectionSelect = (event) => {
+        setSelectedCollection(collections.find(collection => collection.name === event.target.value))
+    }
+
+
     return (
         <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
             {
@@ -360,13 +367,13 @@ function DefoeQueryPage() {
                                     labelId="collection-label"
                                     id="collection-select"
                                     label="collection"
-                                    value={selectedCollection ? selectedCollection : collections[0]}
+                                    value={selectedCollection?.name}
                                     autoWidth
-                                    onChange={(e) => setSelectedCollection(e.target.value)}
+                                    onChange={handleCollectionSelect}
                                 >
                                     {
                                         collections.map((item, index) => (
-                                            <MenuItem key={index} value={item}>{item}</MenuItem>
+                                            <MenuItem key={index} value={item.name}>{item.name}</MenuItem>
                                         ))
                                     }
                                 </Select>

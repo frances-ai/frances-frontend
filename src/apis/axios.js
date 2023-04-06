@@ -8,6 +8,10 @@ if (process.env.REACT_APP_FRANCES_API_ADDRESS !== undefined && process.env.REACT
     baseUrl = process.env.REACT_APP_FRANCES_API_ADDRESS;
 }
 
+export const getBaseUrl = () => {
+    return baseUrl;
+}
+
 export default axios.create({
     baseURL: baseUrl,
     withCredentials: true

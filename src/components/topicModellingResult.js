@@ -27,6 +27,7 @@ function TopicModellingResult(props) {
     const originResult = props.result;
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
+    const collection = "Encyclopaedia Britannica (1768-1860)";
     const headers = [
         'Yeah', 'Edition', 'Volume', 'Term', 'Definition', 'Sentiment Score', 'Advanced Options'
     ]
@@ -100,8 +101,10 @@ function TopicModellingResult(props) {
                                         <Stack>
                                             <VisualiseButton
                                                 uri={key}
-                                                currentSearchInfo={currentSearchInfo}
-                                            />
+                                                collection={collection}
+                                            >
+                                                Visualise
+                                            </VisualiseButton>
                                             <CheckSpellButton
                                                 uri={key}
                                                 currentSearchInfo={currentSearchInfo}

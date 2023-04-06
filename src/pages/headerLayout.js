@@ -22,7 +22,7 @@ function HeaderLayout() {
                 <Header index={currentIndex}/>
                 <Outlet/>
             </Box>
-            <Copyright sx={{ mt: 4, mb: 4}}/>
+            <Copyright sx={{ mt: 4, mb: 4}} color={'text.secondary'}/>
         </Box>
     )
 }

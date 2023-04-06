@@ -113,8 +113,8 @@ class QueryAPI {
         })
     }
 
-    visualise(uri) {
-        const key = 'visualise' + uri;
+    visualise(uri, collection) {
+        const key = 'visualise' + uri + collection;
         const result = localStorage.getItem(key);
         if (result) {
             return new Promise((resolve => {
@@ -127,6 +127,7 @@ class QueryAPI {
 
         return axios.post("/query/visualization_resources", {
             resource_uri: uri,
+            collection: collection
         }).then(response => {
             console.log('server');
             try {
@@ -138,80 +139,6 @@ class QueryAPI {
 
             return response;
         })
-    }
-
-    getAllCollectionName() {
-        const key = 'allCollectionNames';
-        const result = localStorage.getItem(key);
-        if (result) {
-            return new Promise((resolve => {
-                console.log('Local');
-                resolve({
-                    data: JSON.parse(result)
-                });
-            }));
-        }
-
-        return new Promise((resolve => {
-            // fake server call
-            const collectionNames = [
-                'Encyclopaedia Britannica (1768-1860)',
-                'Chapbooks printed in Scotland',
-                'Ladies’ Edinburgh Debating Society'
-            ]
-            resolve({
-                data: collectionNames
-            });
-        }));
-
-        /*return axios.post("/query/allCollectionName").then(response => {
-            console.log('Server');
-            try {
-                localStorage.setItem(key, JSON.stringify(response.data));
-            } catch (e) {
-                console.log(e);
-                localStorage.clear();
-            }
-
-            return response;
-        })*/
-    }
-
-    getAllEditionNameFromEB() {
-        const key = 'allEditionNamesFromEB';
-        const result = localStorage.getItem(key);
-        if (result) {
-            return new Promise((resolve => {
-                console.log('Local');
-                resolve({
-                    data: JSON.parse(result)
-                });
-            }));
-        }
-
-        return new Promise((resolve => {
-            // fake server call
-            const editionNames = [
-                'Encyclopaedia Britannica (1768-1860)',
-                'Chapbooks printed in Scotland',
-                'Ladies’ Edinburgh Debating Society'
-            ]
-            resolve({
-                data: editionNames
-            });
-        }));
-
-        /*return axios.post("/query/allEditionNames").then(response => {
-            console.log('Server');
-            try {
-                localStorage.setItem(key, JSON.stringify(response.data));
-            } catch (e) {
-                console.log(e);
-                localStorage.clear();
-            }
-
-            return response;
-        })*/
     }
 
     getAllDefoeQueryTypes() {
@@ -293,7 +220,7 @@ class QueryAPI {
     }
 
     getQueryMeta(collection) {
-        if (collection === 'Encyclopaedia Britannica (1768-1860)') {
+        if (collection === 'Encyclopaedia Britannica') {
             return queryMeta['EB'];
         } else {
             return queryMeta['NLS'];
