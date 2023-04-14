@@ -224,7 +224,7 @@ function DefoeQueryResult() {
                     console.log('check status!');
                     QueryAPI.getDefoeQueryStatus(taskID).then((r) => {
                         console.log(r);
-                        if (r.data.done) {
+                        if (r.data.state === "DONE") {
                             console.log('done');
                             clearInterval(timerID);
                         }
@@ -243,7 +243,7 @@ function DefoeQueryResult() {
     }, [])
 
     useEffect(() => {
-        if (status !== undefined && status.done) {
+        if (status !== undefined && status?.state === "DONE") {
             if (status.results !== undefined && status.results !== "") {
                 const result_filepath = status.results;
                 console.log("result file path %s", result_filepath);
@@ -263,7 +263,7 @@ function DefoeQueryResult() {
 
     useEffect(() => {
         if (result && task) {
-            if (task.config.queryType.includes("year")) {
+            if (task.config.queryType.includes("year") || task.config.queryType === "publication_normalized") {
                 console.log(result);
                 setPaging({
                     count: countTotalYearRecords(result),
@@ -289,7 +289,7 @@ function DefoeQueryResult() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {Object.keys(result).map((value, key) => (
+                        {Object.keys(paging.result).map((value, key) => (
                             <TableRow
                                 key={key}
                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -297,9 +297,9 @@ function DefoeQueryResult() {
                                 <TableCell component="th" scope="row">
                                     {value}
                                 </TableCell>
-                                <TableCell align="right">{result[value][0]}</TableCell>
-                                <TableCell align="right">{result[value][1]}</TableCell>
-                                <TableCell align="right">{result[value][2]}</TableCell>
+                                <TableCell align="right">{paging.result[value][0]}</TableCell>
+                                <TableCell align="right">{paging.result[value][1]}</TableCell>
+                                <TableCell align="right">{paging.result[value][2]}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
