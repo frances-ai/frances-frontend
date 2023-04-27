@@ -37,7 +37,7 @@ function DefoeQueryPage() {
         file: '',
     };
 
-    const DEFAULT_SNIPPET_WINDOW = 0;
+    const DEFAULT_SNIPPET_WINDOW = 10;
 
     const [collections, setCollections] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState();
