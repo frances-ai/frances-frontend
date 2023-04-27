@@ -1,6 +1,7 @@
 import axios, {axiosPrivate} from "./axios";
 import {queryMeta} from './queryMeta.js'
 import FileDownload from 'js-file-download';
+import {store_response_data_in_local_storage} from "./util";
 
 class QueryAPI {
     searchTerm(term, page = 1) {
@@ -20,13 +21,7 @@ class QueryAPI {
             page: page
         }).then(response => {
             console.log('Server');
-            try {
-                localStorage.setItem(key, JSON.stringify(response.data));
-            } catch (e) {
-                console.log(e);
-                localStorage.clear();
-            }
-
+            store_response_data_in_local_storage(key, response)
             return response;
         })
     }
@@ -48,12 +43,7 @@ class QueryAPI {
             page: page
         }).then(response => {
             console.log('Server');
-            try {
-                localStorage.setItem(key, JSON.stringify(response.data));
-            } catch (e) {
-                console.log(e);
-                localStorage.clear();
-            }
+            store_response_data_in_local_storage(key, response)
             return response;
         })
     }
@@ -75,13 +65,7 @@ class QueryAPI {
             page: page
         }).then(response => {
             console.log('Server');
-            try {
-                localStorage.setItem(key, JSON.stringify(response.data));
-            } catch (e) {
-                console.log(e);
-                localStorage.clear();
-            }
-
+            store_response_data_in_local_storage(key, response)
             return response;
         })
     }
@@ -102,13 +86,7 @@ class QueryAPI {
             resource_uri: uri,
         }).then(response => {
             console.log('Server');
-            try {
-                localStorage.setItem(key, JSON.stringify(response.data));
-            } catch (e) {
-                console.log(e);
-                localStorage.clear();
-            }
-
+            store_response_data_in_local_storage(key, response)
             return response;
         })
     }
@@ -130,13 +108,7 @@ class QueryAPI {
             collection: collection
         }).then(response => {
             console.log('server');
-            try {
-                localStorage.setItem(key, JSON.stringify(response.data));
-            } catch (e) {
-                console.log(e);
-                localStorage.clear();
-            }
-
+            store_response_data_in_local_storage(key, response)
             return response;
         })
     }
@@ -155,13 +127,7 @@ class QueryAPI {
 
         return axios.get("/query/defoe_list").then(response => {
             console.log('Server');
-            try {
-                localStorage.setItem(key, JSON.stringify(response.data));
-            } catch (e) {
-                console.log(e);
-                localStorage.clear();
-            }
-
+            store_response_data_in_local_storage(key, response)
             return response;
         })
     }
