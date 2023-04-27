@@ -19,17 +19,13 @@ function TimeSlideMap(props) {
     const [isRunning, setIsRunning] = useState(false);
 
     const marks = years.map((year) => ({
-        value: parseInt(year),
-        label: year,
+        value: parseInt(year)
     }))
 
     function valuetext(value) {
         return `${value}`;
     }
 
-    function valueLabelFormat(value) {
-        return value;
-    }
 
     function filterBy(year, map) {
         if (map !== undefined) {
@@ -171,7 +167,6 @@ function TimeSlideMap(props) {
                             key={'time-slider'}
                             value={selectedYear}
                             onChange={(e) => setSelectedYear(e.target.value)}
-                            valueLabelFormat={valueLabelFormat}
                             getAriaValueText={valuetext}
                             step={null}
                             valueLabelDisplay="auto"
