@@ -26,6 +26,44 @@ export const preprocess = [
   ]
 ]
 
+export const gazetteer =[
+    [
+        "geonames",
+        "Geonames",
+        "A world-wide gazetteer of over eight million placenames, made available free of charge."
+    ],
+    [
+        "os",
+        "OS",
+        "A detailed gazetteer of UK places,derived from the Ordnance Survey 1:50,000 scale gazetteer, under the OS Open Data initiative. The geoparser code adds GeoNames entries for large populated places around the globe when using this option to allow resolution of place names outside the UK."
+    ],
+    [
+        "naturalearth",
+        "Natural Earth",
+        "A public domain vector and raster map collection of small scale (1:10m, 1:50m, 1:110m) mapping, built by the Natural Earth project."
+    ],
+    [
+        "unlockgeonames",
+        "Geonames through Unlock",
+        "Access to GeoNames via Unlock."
+    ],
+    [
+        "unlock",
+        "Unlock",
+        "A comprehensive gazetteer mainly for the UK, using all of OS, Natural Earth and GeoNames resources. This is the default option on the Unlock Places service and combines all their gazetteers except DEEP."
+    ],
+    [
+        "deep",
+        "DEEP",
+        "A gazetteer of historical placenames in England, built by the DEEP project (Digital Exposure of English Placenames)."
+    ],
+    [
+        "plplus",
+        "Pleiades+",
+        "A gazetteer of the ancient Greek and Roman world, based on the Pleiades dataset and augmented with links to Geonames."
+    ]
+]
+
 const hit_count_eb = [
     [
         "word",
@@ -59,6 +97,7 @@ export const queryMeta = {
       "inputs": {
         "preprocess": true,
         "file": true,
+        "gazetteer": true,
         "filter": {
           "target_sentences": false,
           "target_filter": false,
@@ -133,6 +172,7 @@ export const queryMeta = {
       "inputs": {
         "preprocess": true,
         "file": true,
+        "gazetteer": true,
         "filter": {
           "target_sentences": false,
           "target_filter": false,

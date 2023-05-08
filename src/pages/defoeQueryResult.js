@@ -1,6 +1,5 @@
 import {
     Button,
-    CircularProgress,
     Container,
     Divider,
     Grid, Modal, Paper,
@@ -9,7 +8,7 @@ import {
     TableContainer, TableHead, TablePagination, TableRow,
     Typography
 } from "@mui/material";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useLocation} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
@@ -22,6 +21,7 @@ import BasicMap from "../components/maps/basicMap";
 import VisualiseButton from "../components/buttons/visualiseButton";
 import GeoDataDeepVisualizeResult from "../components/geoDataDeepVisualizeResult";
 import {countTotalYearRecords, getPagingYearResult} from "../utils/pagingUtil";
+import LinearProgressWithLabel from "../components/linearProgressWithLabel";
 
 export function Task(props) {
     const {task, showCollection, showQueryType, showSubmitTime, inputs} = props;
@@ -87,6 +87,19 @@ export function Task(props) {
                         </Typography>
                         <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
                             {task.config.preprocess}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
+            {
+                showConfig("gazetteer", task.config.gazetteer)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Gazetteer:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.gazetteer}
                         </Typography>
                     </Grid>
                     : null
@@ -159,6 +172,20 @@ export function Task(props) {
                     </Grid>
                     : null
             }
+
+            {
+                showConfig("bounding_box", task.config.boundingBox)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Bounding Box:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.boundingBox}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
             {
                 showSubmitTime ?
                     <Grid item xs={6}>
@@ -220,11 +247,11 @@ function DefoeQueryResult() {
 
         const checkStatus = () => {
             if (taskID !== "") {
-                if (status === undefined || !status.done) {
+                if (status === undefined || (status.state !== "DONE" && status.state !== "ERROR")) {
                     console.log('check status!');
                     QueryAPI.getDefoeQueryStatus(taskID).then((r) => {
                         console.log(r);
-                        if (r.data.state === "DONE") {
+                        if (r.data.state === "DONE" || status === "ERROR") {
                             console.log('done');
                             clearInterval(timerID);
                         }
@@ -243,21 +270,26 @@ function DefoeQueryResult() {
     }, [])
 
     useEffect(() => {
-        if (status !== undefined && status?.state === "DONE") {
-            if (status.results !== undefined && status.results !== "") {
-                const result_filepath = status.results;
-                console.log("result file path %s", result_filepath);
-                QueryAPI.getDefoeQueryResult(result_filepath).then((response) => {
-                    console.log("Get data from the result file");
-                    console.log(response?.data);
-                    if (task.config.queryType.includes("fulltext") || task.config.queryType.includes("snippet")) {
-                        setResult(response?.data?.results.terms_details);
-                    } else {
-                        setResult(response?.data?.results);
-                    }
+        if (status !== undefined) {
+            if (status?.state === "DONE") {
+                if (status.results !== undefined && status.results !== "") {
+                    const result_filepath = status.results;
+                    console.log("result file path %s", result_filepath);
+                    QueryAPI.getDefoeQueryResult(result_filepath).then((response) => {
+                        console.log("Get data from the result file");
+                        console.log(response?.data);
+                        if (task.config.queryType.includes("fulltext") || task.config.queryType.includes("snippet")) {
+                            setResult(response?.data?.results.terms_details);
+                        } else {
+                            setResult(response?.data?.results);
+                        }
 
-                });
+                    });
+                }
+            } else if (status?.state === "ERROR") {
+
             }
+
         }
     }, [status])
 
@@ -758,10 +790,20 @@ function DefoeQueryResult() {
                     </Box>)
                     : null
             }
-            <Divider/>
+
             {
-                (result === undefined || paging === undefined) ?
-                    <CircularProgress/> :
+                (status?.state !== "DONE" && status?.state !== "ERROR") ?
+                    <LinearProgressWithLabel value={status?.progress} /> : <Divider/>
+            }
+
+            {
+                (status?.state === "ERROR") ?
+                    <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                        Loading the result ......
+                    </Typography> : null
+            }
+            {
+                (status?.state === "DONE" && (result !== undefined && paging !== undefined)) ?
                     <Box>
                         <Stack direction={"row"} sx={{mt: 5, mb: 3}} alignItems="baseline" justifyContent="space-between">
                             <Typography component={"div"} gutterBottom variant="h5" >
@@ -772,7 +814,9 @@ function DefoeQueryResult() {
                             </Button>
                         </Stack>
                         {DefoeResultTable()}
-                    </Box>
+                    </Box> : <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                        Loading the result ......
+                    </Typography>
             }
         </Container>
     )

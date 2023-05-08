@@ -17,6 +17,11 @@ export default axios.create({
     withCredentials: true
 })
 
+
+export const openStreetMapAxios = axios.create({
+    baseURL: "https://nominatim.openstreetmap.org"
+})
+
 export const axiosPrivate = axios.create({
     baseURL: baseUrl + '/protected',
     withCredentials: true

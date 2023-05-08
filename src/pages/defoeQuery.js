@@ -8,7 +8,7 @@ import {
     FormHelperText,
     Grid, InputBase,
     InputLabel,
-    MenuItem,
+    MenuItem, Modal,
     Paper,
     Select,
     Stack,
@@ -19,8 +19,9 @@ import {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import CollectionAPI from '../apis/collection';
 import Box from "@mui/material/Box";
-import {preprocess} from "../apis/queryMeta";
+import {gazetteer, preprocess} from "../apis/queryMeta";
 import {useNavigate} from "react-router-dom";
+import GeoLocationAPI from "../apis/geoLocation"
 
 
 function DefoeQueryPage() {
@@ -28,6 +29,7 @@ function DefoeQueryPage() {
         collection: '',
         defoe_selection: '',
         preprocess: '',
+        gazetteer: '',
         target_sentences: '',
         target_filter: null,
         start_year: null,
@@ -47,6 +49,7 @@ function DefoeQueryPage() {
     const [pageLoading, setPageLoading] = useState(true);
     const [submitDisable, setSubmitDisable] = useState(true);
     const [selectedPreprocessIndex, setSelectedPreprocessIndex] = useState(0);
+    const [selectedGazetteerIndex, setSelectedGazetteerIndex] = useState(0);
     const [hitCountChecked, setHitCountChecked] = useState(true);
     const [targetAllChecked, setTargetAllChecked] = useState(true);
     const [startYear, setStartYear] = useState(initConfig['start_year']);
@@ -57,6 +60,7 @@ function DefoeQueryPage() {
     const [currentTarget, setCurrentTarget] = useState("");
     const [fileID, setFileID] = useState(initConfig['file']);
     const [window, setWindow] = useState(DEFAULT_SNIPPET_WINDOW);
+    const [boundingBox, setBoundingBox] = useState([]);
     const [config, setConfig] = useState();
 
     useEffect(() => {
@@ -119,6 +123,10 @@ function DefoeQueryPage() {
             configData.file = fileID;
         }
 
+        if ("gazetteer" in inputs) {
+            configData.gazetteer = gazetteer[selectedGazetteerIndex][0];
+        }
+
         if ("filter" in inputs) {
             if ("target_sentences" in inputs["filter"]) {
                 console.log(targets);
@@ -140,6 +148,10 @@ function DefoeQueryPage() {
             if ("window" in inputs["filter"]) {
                 configData.window = window;
             }
+
+            if ("bounding_box" in inputs["filter"] && boundingBox.length > 0) {
+                configData.bounding_box = boundingBox.join(" ");
+            }
         }
         return configData;
     }
@@ -155,7 +167,7 @@ function DefoeQueryPage() {
         //Check if all required configuration are made.
         setSubmitDisable(!hasAllRequiredConfigDone(initConfig, configData, queryMeta));
     }, [queryMeta, selectedCollection, selectedQueryType, 
-        selectedPreprocessIndex, targets, targetAllChecked, startYear, endYear, hitCountChecked, fileID, window]);
+        selectedPreprocessIndex, boundingBox, selectedGazetteerIndex, targets, targetAllChecked, startYear, endYear, hitCountChecked, fileID, window]);
 
     function hasAllRequiredConfigDone(initConfig, currentConfig, queryMeta) {
         if (queryMeta === undefined || selectedQueryType === '') {
@@ -279,6 +291,332 @@ function DefoeQueryPage() {
                 >
                     {
                         preprocess.map((item, index) => (
+                            <MenuItem key={index} value={index}>{item[1]}</MenuItem>
+                        ))
+                    }
+                </Select>
+            </Grid>
+            <Grid item xs={12}><Divider/></Grid>
+        </React.Fragment>;
+    }
+
+
+    function BoundingBoxConfig() {
+        const [open, setOpen] = useState(false);
+        const [west, setWest] = useState("");
+        const [errorWest, setErrorWest] = useState(false);
+        const [errorMsgWest, setErrorMsgWest] = useState("");
+        const [north, setNorth] = useState("");
+        const [errorNorth, setErrorNorth] = useState(false);
+        const [errorMsgNorth, setErrorMsgNorth] = useState("");
+        const [south, setSouth] = useState("");
+        const [errorSouth, setErrorSouth] = useState(false);
+        const [errorMsgSouth, setErrorMsgSouth] = useState("");
+        const [east, setEast] = useState("");
+        const [errorEast, setErrorEast] = useState(false);
+        const [errorMsgEast, setErrorMsgEast] = useState("");
+        const [allValid, setAllValid] = useState(false);
+
+        const [locations, setLocations] = useState([]);
+        const [selectedLocationIndex, setSelectedLocationIndex] = useState(-1);
+
+        const style = {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            width: '60%',
+            height: '70%',
+            borderRadius: 1,
+            p: 2,
+        };
+
+        const unselected_style = {
+            textTransform: "none",
+            color: "rgba(0,0,0,0.7)",
+            alignItems: "start",
+            justifyContent: "start"
+        }
+
+
+        const selected_style = {
+            textTransform: "none",
+            color: "#046ffa",
+            alignItems: "start",
+            justifyContent: "start"
+        }
+
+        useEffect(() => {
+            if (boundingBox.length === 4) {
+                setWest(boundingBox[0]);
+                setNorth(boundingBox[1]);
+                setEast(boundingBox[2]);
+                setSouth(boundingBox[3]);
+            }
+        }, [])
+
+
+        useEffect(() => {
+            if (!errorWest && !errorNorth && !errorSouth && !errorEast &&
+                (west !== "" && north !== "" && east !== "" && south!== "")) {
+                setAllValid(true);
+            } else {
+                setAllValid(false);
+            }
+        }, [west, east, north, south, errorWest, errorEast, errorNorth, errorSouth])
+
+        const handleBoundingBoxConfirmClick = () => {
+            setBoundingBox([
+                parseFloat(west),
+                parseFloat(north),
+                parseFloat(east),
+                parseFloat(south)
+            ])
+        }
+
+        useEffect( () => {
+            if (west === "") {
+                return
+            }
+            // TODO Validate input value: -180.0000000001111111 should not be accepted!
+            if (!isNaN(parseFloat(west))) {
+                console.log(west === "")
+                if (west >= -180 && west <= 180) {
+                    setErrorWest(false);
+                    setErrorMsgWest(null);
+                } else {
+                    setErrorMsgWest("Over the range [-180, 180]!")
+                    setErrorWest(true);
+                }
+            } else {
+                setErrorMsgWest("Not a number!")
+                setErrorWest(true);
+            }
+        }, [west])
+
+        useEffect(() => {
+            if (east === "") {
+                return
+            }
+            // TODO Validate input value: -180.0000000001111111 should not be accepted!
+            if (!isNaN(parseFloat(east))) {
+                if (east >= -180 && east <= 180) {
+                    setErrorEast(false);
+                    setErrorMsgEast(null);
+                } else {
+                    setErrorMsgEast("Over the range [-180, 180]!")
+                    setErrorEast(true);
+                }
+            } else {
+                setErrorMsgEast("Not a number!")
+                setErrorEast(true);
+            }
+        }, [east])
+
+        useEffect( () => {
+            if (north === "") {
+                return
+            }
+            // TODO Validate input value: -90.0000000001111111 should not be accepted!
+            if (!isNaN(parseFloat(north))) {
+                if (north >= -90 && north <= 90) {
+                    setErrorNorth(false);
+                    setErrorMsgNorth(null);
+                } else {
+                    setErrorMsgNorth("Over the range [-90, 90]!")
+                    setErrorNorth(true);
+                }
+            } else {
+                setErrorMsgNorth("Not a number!")
+                setErrorNorth(true);
+            }
+        }, [north])
+
+        useEffect( () => {
+            if (south === "") {
+                return
+            }
+            // TODO Validate input value: -90.0000000001111111 should not be accepted!
+            if (!isNaN(parseFloat(south))) {
+                if (south >= -90 && south <= 90) {
+                    setErrorSouth(false);
+                    setErrorMsgSouth(null);
+                } else {
+                    setErrorMsgSouth("Over the range [-90, 90]!")
+                    setErrorSouth(true);
+                }
+            } else {
+                setErrorMsgSouth("Not a number!")
+                setErrorSouth(true);
+            }
+        }, [south])
+
+        const handleSearchPlace = (event) => {
+            const keyword = event.target.value;
+            // Get result locations
+            GeoLocationAPI.searchBoundingBoxByPlace(keyword).then((response => {
+                setLocations(response?.data);
+                setSelectedLocationIndex(-1);
+            }))
+        }
+
+        const handleLocationButtonClick = (index) => {
+            setSelectedLocationIndex(index);
+            const location_bounding_box = locations[index].bounding_box;
+            // location.bounding_box: n s w e
+            console.log(location_bounding_box)
+            setNorth(location_bounding_box[0]);
+            setSouth(location_bounding_box[1]);
+            setWest(location_bounding_box[2]);
+            setEast(location_bounding_box[3]);
+        }
+
+        return <React.Fragment>
+            <Grid item xs={5} textAlign={"left"} sx={{m: 2}}>
+                <Typography component="div" gutterBottom variant="subtitle1">
+                    Bounding Box
+                </Typography>
+                <Typography component="div" variant="body2" color="text.disabled">
+                    The geoparser will prefer places within bounding box, but will still choose locations outside it if other factors give them higher weighting.
+                </Typography>
+            </Grid>
+            <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                <Stack
+                    direction="row"
+                    divider={<Divider orientation="vertical" variant={"middle"} flexItem />}
+                    spacing={1}
+                    alignItems="center"
+                    justifyContent={"right"}
+                >
+                    <Typography component="div" gutterBottom variant="body1" fontSize={15}>
+                        {
+                            boundingBox.join(" ")
+                        }
+                    </Typography>
+                    <Button component="div" onClick={() => setOpen(true)}>Edit</Button>
+                </Stack>
+            </Grid>
+            <Grid item xs={12}><Divider/></Grid>
+            <Modal
+                open={open}
+                onClose={() => setOpen(false)}
+                aria-labelledby="modal-bounding_box-edit"
+                aria-describedby="modal-edit-bounding_box"
+            >
+                <Box sx={style}>
+                    <Typography component="div" gutterBottom variant="h5">
+                        Edit bounding box
+                    </Typography>
+                    <Typography component="div" gutterBottom variant="body1">
+                        You can either manually enter the bounding box or search and select a place. The format of bounding box is:
+                        <div style={{textAlign: "center"}}><strong>W N E S</strong>,  where W(est) N(orth) E(ast) S(outh) are decimal degrees</div>
+                    </Typography>
+                    <Box
+                        component="form"
+                        sx={{
+                            '& .MuiTextField-root': { m: 1, width: '25ch' },
+                            marginTop: 1
+                        }}
+                        noValidate
+                        autoComplete="off"
+                    >
+                        <Stack direction={"row"}>
+                            <TextField
+                                error={errorWest}
+                                id="west"
+                                label="West"
+                                value={west}
+                                onChange={(event) => setWest(event.target.value)}
+                                helperText={errorMsgWest}
+                                />
+                            <TextField
+                                error={errorNorth}
+                                id="north"
+                                label="North"
+                                value={north}
+                                onChange={(event) => setNorth(event.target.value)}
+                                helperText={errorMsgNorth}
+                           />
+                            <TextField
+                                error={errorEast}
+                                id="east"
+                                label="East"
+                                value={east}
+                                onChange={(event) => setEast(event.target.value)}
+                                helperText={errorMsgEast}
+                           />
+                            <TextField
+                                error={errorSouth}
+                                id="south"
+                                label="South"
+                                value={south}
+                                onChange={(event) => setSouth(event.target.value)}
+                                helperText={errorMsgSouth}
+                            />
+                        </Stack>
+                    </Box>
+                    <Box sx={{margin: 2}}>
+                        <TextField
+                            sx={{marginBottom: 2}}
+                            fullWidth
+                            label={"Search a place for its bounding box"}
+                            variant="outlined"
+                            onChange={handleSearchPlace}
+                        />
+                        <Stack direction={"column"} maxHeight={250} sx={{overflowY: "scroll"}}>
+                            {
+                                locations.map((location, index) => (
+                                    <Button
+                                        key={index}
+                                        size="large"
+                                        onClick={() => handleLocationButtonClick(index)}
+                                        sx={index === selectedLocationIndex ? selected_style : unselected_style }
+                                    >
+                                        {location.name}
+                                    </Button>
+                                ))
+
+                            }
+                        </Stack>
+                    </Box>
+                    <Stack direction={"row"} sx={{position: "absolute", right: 30, bottom: 20}}>
+                        <Button color={"secondary"} component={"div"} onClick={() => setOpen(false)}>Close</Button>
+                        <Button component={"div"} disabled={!allValid} onClick={handleBoundingBoxConfirmClick}>Confirm</Button>
+                        {
+                            boundingBox.length > 0 ?
+                                <Button color={"warning"} component={"div"} onClick={() => setBoundingBox([])}>Unset</Button>
+                                : null
+                        }
+                    </Stack>
+                </Box>
+            </Modal>
+        </React.Fragment>;
+    }
+
+
+    function GazetteerConfig() {
+        return <React.Fragment>
+            <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                <Typography component="div" gutterBottom variant="subtitle1">
+                    Gazetteer
+                </Typography>
+                <Typography component="div" variant="body2" color="text.disabled">
+                    {
+                        gazetteer[selectedGazetteerIndex][2]
+                    }
+                </Typography>
+            </Grid>
+            <Grid item xs textAlign={"right"} sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                <Select
+                    id="gazetteer"
+                    value={selectedGazetteerIndex}
+                    autoWidth
+                    onChange={(e) => setSelectedGazetteerIndex(e.target.value)}
+                >
+                    {
+                        gazetteer.map((item, index) => (
                             <MenuItem key={index} value={index}>{item[1]}</MenuItem>
                         ))
                     }
@@ -418,6 +756,11 @@ function DefoeQueryPage() {
                                             : null
                                     }
                                     {
+                                        "gazetteer" in queryMeta[selectedQueryType].inputs ?
+                                            <GazetteerConfig />
+                                            : null
+                                    }
+                                    {
                                         "filter" in queryMeta[selectedQueryType].inputs ?
                                             <React.Fragment>
                                                 <Typography
@@ -516,6 +859,11 @@ function DefoeQueryPage() {
                                                         </Stack>
                                                     </Grid>
                                                     <Grid item xs={12}><Divider/></Grid>
+                                                    {
+                                                        "bounding_box" in queryMeta[selectedQueryType].inputs['filter'] ?
+                                                            <BoundingBoxConfig/>
+                                                            : null
+                                                    }
                                                 </Grid>
                                                 {
                                                     "window" in queryMeta[selectedQueryType].inputs['filter'] ?
@@ -542,6 +890,7 @@ function DefoeQueryPage() {
                                                         </React.Fragment>
                                                         : null
                                                 }
+
                                             </React.Fragment>
                                             : null
                                     }
