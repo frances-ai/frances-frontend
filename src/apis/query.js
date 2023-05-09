@@ -210,6 +210,14 @@ class QueryAPI {
         })
     }
 
+    cancelDefoeQueryTask(task_id) {
+        return axiosPrivate.post("/query/defoe_cancel", {
+            id: task_id
+        }).then(response => {
+            return response;
+        })
+    }
+
 }
 
 export default new QueryAPI();

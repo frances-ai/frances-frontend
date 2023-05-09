@@ -247,11 +247,11 @@ function DefoeQueryResult() {
 
         const checkStatus = () => {
             if (taskID !== "") {
-                if (status === undefined || (status.state !== "DONE" && status.state !== "ERROR")) {
+                if (status === undefined || (status.state !== "DONE" && status.state !== "ERROR" && status.state !== "CANCELLED")) {
                     console.log('check status!');
                     QueryAPI.getDefoeQueryStatus(taskID).then((r) => {
                         console.log(r);
-                        if (r.data.state === "DONE" || status === "ERROR") {
+                        if (r.data.state === "DONE" || r.data.state === "ERROR" || r.data.state === "CANCELLED") {
                             console.log('done');
                             clearInterval(timerID);
                         }
@@ -768,6 +768,12 @@ function DefoeQueryResult() {
 
     }
 
+    const handleCancelTaskClick = () => {
+        QueryAPI.cancelDefoeQueryTask(taskID).then(r => {
+            console.log(r?.data)
+        })
+    }
+
 
     return (
         <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
@@ -786,20 +792,41 @@ function DefoeQueryResult() {
                             <Button variant="contained" href={"/defoeQueryTasks"}>
                                 Check all query tasks
                             </Button>
+                            {
+                                status?.state === "PENDING" ||  status?.state === "RUNNING" ?
+                                    (<Button variant="contained" color={"error"} onClick={handleCancelTaskClick}>
+                                        Cancel current query
+                                    </Button>) : null
+                            }
+
                         </Stack>
                     </Box>)
                     : null
             }
 
             {
-                (status?.state !== "DONE" && status?.state !== "ERROR") ?
-                    <LinearProgressWithLabel value={status?.progress} /> : <Divider/>
+                (status?.state !== "DONE" && status?.state !== "ERROR" && !status?.state.includes("CANCEL"))  ?
+                    <LinearProgressWithLabel value={status? status.progress : 0} /> : <Divider/>
+            }
+
+            {
+                (status?.state === "CANCEL_STARTED" || status?.state === "CANCEL_PENDING") ?
+                    <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                        Cancelling ......
+                    </Typography> : null
+            }
+
+            {
+                (status?.state === "CANCELLED") ?
+                    <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                        This query has been cancelled!
+                    </Typography> : null
             }
 
             {
                 (status?.state === "ERROR") ?
                     <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
-                        Loading the result ......
+                        Failed to run this query!
                     </Typography> : null
             }
             {
@@ -814,9 +841,10 @@ function DefoeQueryResult() {
                             </Button>
                         </Stack>
                         {DefoeResultTable()}
-                    </Box> : <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                    </Box> :
+                    (status?.state === "DONE")? <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
                         Loading the result ......
-                    </Typography>
+                    </Typography> : null
             }
         </Container>
     )
