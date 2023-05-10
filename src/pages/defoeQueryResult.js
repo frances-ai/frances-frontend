@@ -20,7 +20,12 @@ import {get_plot_frequency_count_data} from "../utils/plotUtil";
 import BasicMap from "../components/maps/basicMap";
 import VisualiseButton from "../components/buttons/visualiseButton";
 import GeoDataDeepVisualizeResult from "../components/geoDataDeepVisualizeResult";
-import {countTotalYearRecords, getPagingYearResult} from "../utils/pagingUtil";
+import {
+    countTotalYearRecords,
+    countTotalYearSingleRowRecords,
+    getPagingYearResult,
+    getPagingYearSingleRowResult
+} from "../utils/pagingUtil";
 import LinearProgressWithLabel from "../components/linearProgressWithLabel";
 
 export function Task(props) {
@@ -217,21 +222,36 @@ function DefoeQueryResult() {
     const [paging, setPaging] = useState();
 
     const handlePageChangeYearPaged = (event, newPage) => {
-        setPaging(prevState => ({
-            ...prevState,
-            page: newPage,
-            result: getPagingYearResult(newPage, prevState.rowsPerPage, result)
-        }))
-        console.log(paging.result);
+        if (task.config.queryType === "publication_normalized") {
+            setPaging(prevState => ({
+                ...prevState,
+                page: newPage,
+                result: getPagingYearSingleRowResult(newPage, prevState.rowsPerPage, result)
+            }))
+        } else {
+            setPaging(prevState => ({
+                ...prevState,
+                page: newPage,
+                result: getPagingYearResult(newPage, prevState.rowsPerPage, result)
+            }))
+        }
     }
 
     const handleRowsPerPageChangeYearPaged = (event) => {
         const newRowsPerPage = event.target.value;
-        setPaging(prevState => ({
-            ...prevState,
-            rowsPerPage: newRowsPerPage,
-            result: getPagingYearResult(prevState.page, newRowsPerPage, result)
-        }))
+        if (task.config.queryType === "publication_normalized") {
+            setPaging(prevState => ({
+                ...prevState,
+                rowsPerPage: newRowsPerPage,
+                result: getPagingYearSingleRowResult(prevState.page, newRowsPerPage, result)
+            }))
+        } else {
+            setPaging(prevState => ({
+                ...prevState,
+                rowsPerPage: newRowsPerPage,
+                result: getPagingYearResult(prevState.page, newRowsPerPage, result)
+            }))
+        }
     }
 
 
@@ -295,13 +315,21 @@ function DefoeQueryResult() {
 
     useEffect(() => {
         if (result && task) {
-            if (task.config.queryType.includes("year") || task.config.queryType === "publication_normalized") {
+            if (task.config.queryType.includes("year")){
                 console.log(result);
                 setPaging({
                     count: countTotalYearRecords(result),
                     page: DEFAULT_PAGE,
                     rowsPerPage: DEFAULT_ROWS_PER_PAGE,
                     result: getPagingYearResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
+                })
+            } else if (task.config.queryType === "publication_normalized")  {
+                console.log(result);
+                setPaging({
+                    count: countTotalYearSingleRowRecords(result),
+                    page: DEFAULT_PAGE,
+                    rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+                    result: getPagingYearSingleRowResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
                 })
             }
         }
@@ -310,33 +338,55 @@ function DefoeQueryResult() {
 
     function PublicationNormalisedResult() {
         return (
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Year</TableCell>
-                            <TableCell align="right">Volumes</TableCell>
-                            <TableCell align="right">Pages</TableCell>
-                            <TableCell align="right">Words</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {Object.keys(paging.result).map((value, key) => (
-                            <TableRow
-                                key={key}
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {value}
-                                </TableCell>
-                                <TableCell align="right">{paging.result[value][0]}</TableCell>
-                                <TableCell align="right">{paging.result[value][1]}</TableCell>
-                                <TableCell align="right">{paging.result[value][2]}</TableCell>
+            <React.Fragment>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Year</TableCell>
+                                <TableCell align="right">Volumes</TableCell>
+                                <TableCell align="right">Pages</TableCell>
+                                {
+                                    task.config.collection === "Encyclopaedia Britannica"?
+                                        <TableCell align="right">Terms</TableCell> : null
+                                }
+                                <TableCell align="right">Words</TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {Object.keys(paging.result).map((value, key) => (
+                                <TableRow
+                                    key={key}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                        {value}
+                                    </TableCell>
+                                    <TableCell align="right">{paging.result[value][0]}</TableCell>
+                                    <TableCell align="right">{paging.result[value][1]}</TableCell>
+                                    {
+                                        task.config.collection === "Encyclopaedia Britannica"?
+                                            (
+                                                <React.Fragment>
+                                                    <TableCell align="right">{paging.result[value][2]}</TableCell>
+                                                    <TableCell align="right">{paging.result[value][3]}</TableCell>
+                                                </React.Fragment>
+                                            )
+                                            : <TableCell align="right">{paging.result[value][2]}</TableCell>
+                                    }
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    component="div"
+                    count={paging.count}
+                    page={paging.page}
+                    rowsPerPage={paging.rowsPerPage}
+                    onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                    onPageChange={handlePageChangeYearPaged}/>
+            </React.Fragment>
         );
     }
 
