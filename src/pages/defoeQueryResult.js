@@ -16,7 +16,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import {getLexiconFileOriginalName} from "../utils/stringUtil";
 import TextMoreLess from "../components/textMoreLess";
 import Plot from "react-plotly.js";
-import {get_plot_frequency_count_data} from "../utils/plotUtil";
+import {get_plot_frequency_count_data, get_plot_normalized_frequency_count_data} from "../utils/plotUtil";
 import BasicMap from "../components/maps/basicMap";
 import VisualiseButton from "../components/buttons/visualiseButton";
 import GeoDataDeepVisualizeResult from "../components/geoDataDeepVisualizeResult";
@@ -27,6 +27,7 @@ import {
     getPagingYearSingleRowResult
 } from "../utils/pagingUtil";
 import LinearProgressWithLabel from "../components/linearProgressWithLabel";
+import {getDisplayNameForGazetteer, getDisplayNameForHitCount, getDisplayNameForPreprocess} from "../apis/util";
 
 export function Task(props) {
     const {task, showCollection, showQueryType, showSubmitTime, inputs} = props;
@@ -91,7 +92,7 @@ export function Task(props) {
                             Preprocess:
                         </Typography>
                         <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                            {task.config.preprocess}
+                            {getDisplayNameForPreprocess(task.config.preprocess)}
                         </Typography>
                     </Grid>
                     : null
@@ -104,7 +105,7 @@ export function Task(props) {
                             Gazetteer:
                         </Typography>
                         <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                            {task.config.gazetteer}
+                            {getDisplayNameForGazetteer(task.config.gazetteer)}
                         </Typography>
                     </Grid>
                     : null
@@ -114,10 +115,10 @@ export function Task(props) {
                 showConfig("hit_count", task.config.hitCount)?
                     <Grid item xs={6}>
                         <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                            HitCount:
+                            Hit Count:
                         </Typography>
                         <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                            {task.config.hitCount}
+                            {getDisplayNameForHitCount(task.config.hitCount)}
                         </Typography>
                     </Grid>
                     : null
@@ -262,7 +263,11 @@ function DefoeQueryResult() {
         QueryAPI.getDefoeQueryTaskByTaskID(taskID).then((response) => {
             console.log('get task summary')
             console.log(response?.data);
-            setTask(response?.data?.task);
+            let task = response?.data.task;
+            if (response?.data.publication_normalized_result_path !== undefined) {
+                task["publication_normalized_result_path"] = response?.data.publication_normalized_result_path;
+            }
+            setTask(task);
         })
 
         const checkStatus = () => {
@@ -391,6 +396,18 @@ function DefoeQueryResult() {
     }
 
     function FrequencyKeySearchByYearResult() {
+        const [publicationNorm, setPublicationNorm] = useState();
+
+        useEffect(() => {
+            console.log("init")
+            if (task !== undefined && task.publication_normalized_result_path !== undefined) {
+                QueryAPI.getDefoeQueryResult(task.publication_normalized_result_path).then((response) => {
+                    console.log("Get publication normalized result");
+                    console.log(response?.data);
+                    setPublicationNorm(response?.data.results);
+                });
+            }
+        }, [])
 
         return (
             <Box>
@@ -429,7 +446,7 @@ function DefoeQueryResult() {
                     data={get_plot_frequency_count_data(result)}
                     layout={
                         {
-                            title: 'Frequency of Lexicon Terms per Years',
+                            title: 'Frequency of Lexicon ' + getDisplayNameForHitCount(task.config.hitCount) + ' per Years',
                             xaxis: {
                                 title: 'Year'
                             },
@@ -442,6 +459,27 @@ function DefoeQueryResult() {
                     useResizeHandler={true}
                     style={{ width: '100%', height: '100%', marginTop: 20}}
                 />
+                {
+                    publicationNorm?
+                        <Plot
+                            data={get_plot_normalized_frequency_count_data(publicationNorm, result, task.config.hitCount)}
+                            layout={
+                                {
+                                    title: 'Normalized Frequency of Lexicon ' + getDisplayNameForHitCount(task.config.hitCount) + ' per Years',
+                                    xaxis: {
+                                        title: 'Year'
+                                    },
+                                    yaxis: {
+                                        title: 'Frequency'
+                                    },
+                                    autosize: true
+                                }
+                            }
+                            useResizeHandler={true}
+                            style={{ width: '100%', height: '100%', marginTop: 20}}
+                        />
+                    : null
+                }
             </Box>
 
         );
