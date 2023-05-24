@@ -24,7 +24,7 @@ import CheckSpellButton from "./buttons/checkSpellButton";
 
 function TermInfo(props) {
     const {termInfo, currentSearchInfo} = props;
-    const collection = "Encyclopaedia Britannica (1768-1860)";
+    const collection = "Encyclopaedia Britannica";
 
     const headers = [
         'Term', 'Yeah', 'Edition', 'Volume', 'Definition / Summary',
@@ -98,9 +98,9 @@ function TermSimilarityResult(props) {
     //TODO Sort result
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
-    const collection = "Encyclopaedia Britannica (1768-1860)";
+    const collection = "Encyclopaedia Britannica";
     const headers = [
-        'Yeah', 'Edition', 'Volume', 'Term', 'Definition',
+        'Year', 'Edition', 'Volume', 'Term', 'Definition',
         'Topic Modelling ID', 'Similitud rank', 'Sentiment Score', 'Advanced Options'
     ]
     const termInfo = currentResult.result.uri ?

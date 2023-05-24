@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react'
 import {IconButton, Modal, Typography} from "@mui/material";
 import Box from "@mui/material/Box";
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
-import BasicMap from "./maps/basicMap";
 
 function TextMoreLess(props) {
     const originText = props.text;
@@ -35,7 +34,7 @@ function TextMoreLess(props) {
         boxShadow: 24,
         width: '60%',
         height: '60%',
-        p: 2,
+        p: 2
     };
 
     return (
@@ -60,7 +59,7 @@ function TextMoreLess(props) {
                     <Typography component="div" gutterBottom variant="h4">
                         Full Text
                     </Typography>
-                    <Typography component="div" gutterBottom variant="body1">
+                    <Typography component="div" gutterBottom variant="body1" sx={{height: '90%', overflowY: "scroll"}}>
                         {originText}
                     </Typography>
                 </Box>
