@@ -46,6 +46,7 @@ axiosPrivate.interceptors.response.use(
             //refresh
             const refresh_response = await AuthAPI.refresh();
             console.log(refresh_response.data);
+            prevRequest.headers["X-CSRF-TOKEN"] = Cookies.get('csrf_access_token');
             return axiosPrivate(prevRequest);
         }
         return Promise.reject(error);
