@@ -1,4 +1,4 @@
-import axios, {getBaseUrl} from "./axios";
+import {getBaseUrl, axiosPublic} from "./axios";
 import {store_response_data_in_local_storage} from "./util";
 
 class CollectionAPI{
@@ -13,7 +13,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axios.get("/collection/list").then(response => {
+        return await axiosPublic.get("/collection/list").then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
@@ -31,7 +31,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axios.get("/collection/", {params: {id: id}}).then(response => {
+        return await axiosPublic.get("/collection/", {params: {id: id}}).then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
@@ -54,7 +54,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axios.get("/collection/eb_edition/list").then(response => {
+        return await axiosPublic.get("/collection/eb_edition/list").then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
@@ -72,7 +72,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axios.get("/collection/eb_edition", {params: {uri: uri}}).then(response => {
+        return await axiosPublic.get("/collection/eb_edition", {params: {uri: uri}}).then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
@@ -90,7 +90,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axios.get("/collection/nls_serie", {params: {collection: collection, uri: uri}}).then(response => {
+        return await axiosPublic.get("/collection/nls_serie", {params: {collection: collection, uri: uri}}).then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
@@ -108,7 +108,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axios.get("/collection/nls_serie/list", {params: {collection: collection}}).then(response => {
+        return await axiosPublic.get("/collection/nls_serie/list", {params: {collection: collection}}).then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
@@ -126,7 +126,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axios.get("/collection/volume/list", {params: {collection: collection, uri: edition_uri}}).then(response => {
+        return await axiosPublic.get("/collection/volume/list", {params: {collection: collection, uri: edition_uri}}).then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
@@ -144,7 +144,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axios.get("/collection/volume", {params: {collection: collection, uri: volume_uri}}).then(response => {
+        return await axiosPublic.get("/collection/volume", {params: {collection: collection, uri: volume_uri}}).then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;

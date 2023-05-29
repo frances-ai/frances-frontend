@@ -1,4 +1,4 @@
-import axios, {axiosPrivate} from "./axios";
+import {axiosPrivate, axiosPublic} from "./axios";
 import {queryMeta} from './queryMeta.js'
 import FileDownload from 'js-file-download';
 import {store_response_data_in_local_storage} from "./util";
@@ -16,7 +16,7 @@ class QueryAPI {
             }));
         }
 
-        return axios.post("/query/term_search", {
+        return axiosPublic.post("/query/term_search", {
             search: term,
             page: page
         }).then(response => {
@@ -38,7 +38,7 @@ class QueryAPI {
             }));
         }
 
-        return axios.post("/query/similar_terms", {
+        return axiosPublic.post("/query/similar_terms", {
             resource_uri: resource_uri,
             page: page
         }).then(response => {
@@ -60,7 +60,7 @@ class QueryAPI {
             }));
         }
 
-        return axios.post("/query/topic_modelling", {
+        return axiosPublic.post("/query/topic_modelling", {
             topic_name: model_name_or_number,
             page: page
         }).then(response => {
@@ -82,7 +82,7 @@ class QueryAPI {
             }));
         }
 
-        return axios.post("/query/spelling_checker", {
+        return axiosPublic.post("/query/spelling_checker", {
             resource_uri: uri,
         }).then(response => {
             console.log('Server');
@@ -103,7 +103,7 @@ class QueryAPI {
             }));
         }
 
-        return axios.post("/query/visualization_resources", {
+        return axiosPublic.post("/query/visualization_resources", {
             resource_uri: uri,
             collection: collection
         }).then(response => {
@@ -125,7 +125,7 @@ class QueryAPI {
             }));
         }
 
-        return axios.get("/query/defoe_list").then(response => {
+        return axiosPublic.get("/query/defoe_list").then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
@@ -205,6 +205,7 @@ class QueryAPI {
         }, {
             responseType: 'blob'
         }).then(response => {
+
             FileDownload(response.data, downloadFileName)
             return response;
         })

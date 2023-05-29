@@ -12,10 +12,21 @@ export const getBaseUrl = () => {
     return baseUrl;
 }
 
-export default axios.create({
+export const axiosPublic = axios.create({
     baseURL: baseUrl,
     withCredentials: true
 })
+
+axiosPublic.interceptors.response.use(
+    response => response,
+    error => {
+        if (error?.response?.status === 429) {
+            // Handle rate limit exceeded error
+            alert('Too many requests. Please try again later.');
+        }
+        return Promise.reject(error);
+    }
+);
 
 
 export const openStreetMapAxios = axios.create({
@@ -48,6 +59,10 @@ axiosPrivate.interceptors.response.use(
             console.log(refresh_response.data);
             prevRequest.headers["X-CSRF-TOKEN"] = Cookies.get('csrf_access_token');
             return axiosPrivate(prevRequest);
+        }
+        if (error?.response?.status === 429) {
+            // Handle rate limit exceeded error
+            alert('Too many requests. Please try again later.');
         }
         return Promise.reject(error);
     }
