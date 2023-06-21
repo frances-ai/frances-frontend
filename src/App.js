@@ -18,10 +18,10 @@ import CollectionDetailResult from "./pages/collectionDetailResult";
 
 function App() {
 
-    const update = localStorage.getItem("update-v1");
+    const update = localStorage.getItem("update-v2");
     if (!update) {
         localStorage.clear();
-        localStorage.setItem("update-v1", "0");
+        localStorage.setItem("update-v2", "0");
     }
 
 

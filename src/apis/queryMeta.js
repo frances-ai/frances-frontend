@@ -68,7 +68,7 @@ const hit_count_eb = [
     [
         "word",
         "Word",
-        "It counts the number of times a keyword/keysentece appears in a word."
+        "It counts the number of times a keyword/keysentece appears in text."
     ],
     [
         "term",
@@ -81,7 +81,7 @@ const hit_count_nls = [
   [
     "word",
     "Word",
-    "It counts the number of times a keyword/keysentece appears in a word."
+    "It counts the number of times a keyword/keysentece appears in text."
   ],
   [
     "page",
@@ -122,7 +122,7 @@ export const queryMeta = {
       }
     },
     "publication_normalized": {
-      "description": "It extracts the number of volumes (books), pages and words per year.",
+      "description": "It extracts the number of volumes (books), pages, terms and words per year.",
       "inputs": {}
     },
     "uris_keysearch": {
@@ -138,7 +138,7 @@ export const queryMeta = {
         }
       }
     },
-    "terms_snippet_keysearch_by_year": {
+    "snippet_keysearch_by_year": {
       "description": "It extracts snippets of terms definitions in which appear your selected kewyords/keysentences groupping results by years.",
       "inputs": {
         "preprocess": true,
@@ -152,7 +152,7 @@ export const queryMeta = {
         }
       }
     },
-    "terms_fulltext_keysearch_by_year": {
+    "fulltext_keysearch_by_year": {
       "description": "It extracts full text of terms definitions in which appear your selected kewyords/keysentences. It groups results by years.",
       "inputs": {
         "preprocess": true,
@@ -164,11 +164,23 @@ export const queryMeta = {
           "end_year": false
         }
       }
+    },
+    "frequency-distribution": {
+      "description": "It calculates the frequency of the most ‘N’ common tokens in terms definitions",
+      "inputs": {}
+    },
+    "lexicon-diversity": {
+      "description": "It computes the lexical diversity metric, which is the ratio of the vocabulary size to the total number of words in the text",
+      "inputs": {}
+    },
+    "person_entity_recognition": {
+      "description": "It identifies people mentioned in text and estimates the gender distribution",
+      "inputs": {}
     }
   },
   "NLS": {
     "geoparser_by_year": {
-      "description": "It geo-locates locations in terms definitions and geo-resolves them using the Edinburgh Geoparser. It groups results by years.",
+      "description": "It geo-locates locations in pages and geo-resolves them using the Edinburgh Geoparser. It groups results by years.",
       "inputs": {
         "preprocess": true,
         "file": true,
@@ -201,7 +213,7 @@ export const queryMeta = {
       "inputs": {}
     },
     "uris_keysearch": {
-      "description": "It extracts uris of terms in which appear your selected kewyords/keysentences. It groups results by uris.",
+      "description": "It extracts uris of pages in which appear your selected kewyords/keysentences. It groups results by uris.",
       "inputs": {
         "preprocess": true,
         "file": true,
@@ -213,8 +225,8 @@ export const queryMeta = {
         }
       }
     },
-    "terms_snippet_keysearch_by_year": {
-      "description": "It extracts snippets of terms definitions in which appear your selected kewyords/keysentences groupping results by years.",
+    "snippet_keysearch_by_year": {
+      "description": "It extracts snippets of pages in which appear your selected kewyords/keysentences groupping results by years.",
       "inputs": {
         "preprocess": true,
         "file": true,
@@ -227,8 +239,8 @@ export const queryMeta = {
         }
       }
     },
-    "terms_fulltext_keysearch_by_year": {
-      "description": "It extracts full text of terms definitions in which appear your selected kewyords/keysentences. It groups results by years.",
+    "fulltext_keysearch_by_year": {
+      "description": "It extracts full text of pages in which appear your selected kewyords/keysentences. It groups results by years.",
       "inputs": {
         "preprocess": true,
         "file": true,
@@ -239,6 +251,18 @@ export const queryMeta = {
           "end_year": false
         }
       }
+    },
+    "frequency-distribution": {
+      "description": "It calculates the frequency of the most ‘N’ common tokens in pages",
+      "inputs": {}
+    },
+    "lexicon-diversity": {
+      "description": "It computes the lexical diversity metric, which is the ratio of the vocabulary size to the total number of words in the text",
+      "inputs": {}
+    },
+    "person_entity_recognition": {
+      "description": "It identifies people mentioned in text and estimates the gender distribution",
+      "inputs": {}
     }
   }
 }
