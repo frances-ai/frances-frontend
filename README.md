@@ -2,35 +2,51 @@
 
 ## Overview
 
-This is the React frontend for the frances project. 
+This is the React frontend for the frances project. It has been deployed on this site: http://35.228.63.82:3000
 
-### Screenshots of the latest UI:
+### Main features:
 
-1. Register an account page:
-![](screenshots/register.png)
-2. Login page:
-![](screenshots/login.png)
-3. Term Search page:
-![](screenshots/termSearch.png)
-4. Term Similarity page:
-![](screenshots/termSearch.png)
-5. Topic Modeling page:
-![](screenshots/topicModeling.png)
-6. Defoe Query Submit page (not accessible until logged in):
-![](screenshots/defoe-query-submit.png)
-7. Defoe Query Result - EB - publication_noralised:
-![](screenshots/defoe_pub_result.png)
-8. Defoe Query Tasks:
-![](screenshots/all_query_tasks.png)
-9. Defoe Query Result - EB - frequency_keysearch_by_year:
-![](screenshots/defoe_eb_frequency.png)
-10. Spell Check result for a term search result:
-![](screenshots/spellcheck.png)
-11. Visualise resource in a graph format after spell check:
-![](screenshots/visualise_graph.png)
+1. Account Registration and Login:
+![](screenshots/registration_login.gif)
+2. Term Search
+![](screenshots/termSearch.gif)
+3. Term Similarity
+![](screenshots/termSimilarity.gif)
+4. Topic Modelling
+![](screenshots/topicModelling.gif)
+5. Collection Details
+![](screenshots/collectionDetails.gif)
+6. Defoe Query
+![](screenshots/defoequery.gif)
+
 
 ## Get Started
 
-In the project directory, you can run:
+### Get source code repository
+
+For the source code, run:
+
+```bash
+git clone https://github.com/frances-ai/frances-frontend
+```
+
+### Install npm
+
+see the instructions to [install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+
+### Run the frontend
+
+Before running the frontend, make up the [backend](https://github.com/frances-ai/frances-api) is running.
+
+In the `frances-frontend` directory, you can run:
 
 `npm start`
+
+## Cloud Deployment
+
+Build the docker image: Run the following command in `frances-frontend` directory to build the image:
+```bash
+docker buildx build --platform <linux/arm/v7,linux/arm64/v8,>linux/amd64 --tag <docker username>/frances-front:latest --push .
+```
+
+For full cloud deployment see [frances-api](https://github.com/frances-ai/frances-api)
