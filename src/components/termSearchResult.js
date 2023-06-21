@@ -24,9 +24,9 @@ function TermSearchResult(props) {
     const originResult = props.result;
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
-    const collection = "Encyclopaedia Britannica (1768-1860)";
+    const collection = "Encyclopaedia Britannica";
     const headers = [
-        'Yeah', 'Edition', 'Volume', 'Start Page', 'End Page', 'Term Type',
+        'Year', 'Edition', 'Volume', 'Start Page', 'End Page', 'Term Type',
         'Definition / Summary', 'Related Terms', 'Topic Modelling ID', 'Sentiment Score', 'Advanced Options'
     ]
 

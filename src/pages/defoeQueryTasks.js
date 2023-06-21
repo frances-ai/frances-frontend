@@ -91,10 +91,15 @@ function TaskRow(props) {
                     setOpen={setOpen}
                     config={task?.config}
                 />
-                <TableCell align="center">{task.progress}</TableCell>
+                <TableCell align="center">{task.state}</TableCell>
                 <TableCell>{task.submit_time}</TableCell>
                 <TableCell align={"center"}>
-                    <Button variant={"text"} onClick={() => {handleViewClick(task.task_id)}}>View</Button>
+                    <Button
+                        variant={"text"}
+                        onClick={() => {handleViewClick(task.task_id)}}
+                        disabled={task.state === "ERROR" || task.state === "CANCELLED"}>
+                        View
+                    </Button>
                 </TableCell>
             </TableRow>
 
@@ -144,7 +149,7 @@ function DefoeQueryTasksPage() {
                                     <TableCell>Collection</TableCell>
                                     <TableCell>Query Type</TableCell>
                                     <TableCell>Configuration</TableCell>
-                                    <TableCell align="center">Progress</TableCell>
+                                    <TableCell align="center">State</TableCell>
                                     <TableCell>Submit Time</TableCell>
                                     <TableCell align={"center"}>Actions</TableCell>
                                 </TableRow>

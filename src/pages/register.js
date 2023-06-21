@@ -15,11 +15,9 @@ import AuthAPI from '../apis/auth'
 import useAuth from "../hooks/useAuth";
 import {useLocation, useNavigate} from "react-router-dom";
 
-const theme = createTheme();
-
-function RegisterPage() {
-
+function RegisterForm(props) {
     const {setAuth} = useAuth();
+    const {setRegistered} = props;
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -98,9 +96,9 @@ function RegisterPage() {
                 //check if email has been registered
                 AuthAPI.emailRegistered(email)
                     .then(response => {
-                    setIsValidEmail(!response.data.registered);
-                    setEmailError(response.data.registered ? 'This email has benn registered!' : '');
-                }).catch(error => {
+                        setIsValidEmail(!response.data.registered);
+                        setEmailError(response.data.registered ? 'This email has benn registered!' : '');
+                    }).catch(error => {
                     setIsValidEmail(false)
                     setEmailError(error.reponse.data.error)
                 })
@@ -145,18 +143,146 @@ function RegisterPage() {
         AuthAPI.register(firstName, lastName, email, password)
             .then(response => {
                 console.log(response.data);
-                //login
-                AuthAPI.login(email, password).then(response => {
-                    console.log(response)
-                    const user = response?.data?.user;
-                    setAuth({user});
-                    navigate(from, { replace: true });
-                })
+                if (response?.data?.user) {
+                    setRegistered(true);
+                }
             }).catch(error => {
-                console.log(error.response);
+            console.log(error.response);
         })
 
     };
+
+
+    return (
+        <React.Fragment>
+            <Typography component="h1" variant="h5" sx={{mt: 2}}>
+                Sign up
+            </Typography>
+            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                        <TextField
+                            autoComplete="given-name"
+                            name="firstName"
+                            required
+                            fullWidth
+                            id="firstName"
+                            label="First Name"
+                            onChange={(e) => {
+                                setFiledChecked(prevState => ({
+                                    ...prevState,
+                                    firstName: true
+                                }))
+                                setFirstName(e.target.value)
+                            }}
+                            error={fieldChecked.firstName && !isValidFirstName}
+                            helperText={firstNameError}
+                            autoFocus
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <TextField
+                            required
+                            fullWidth
+                            id="lastName"
+                            label="Last Name"
+                            name="lastName"
+                            autoComplete="family-name"
+                            onChange={(e) => {
+                                setFiledChecked(prevState => ({
+                                    ...prevState,
+                                    lastName: true
+                                }))
+                                setLastName(e.target.value)
+                            }}
+                            error={fieldChecked.lastName && !isValidLastName}
+                            helperText={lastNameError}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField
+                            required
+                            fullWidth
+                            id="email"
+                            label="Email Address"
+                            name="email"
+                            autoComplete="email"
+                            onChange={(e) => {
+                                setFiledChecked(prevState => ({
+                                    ...prevState,
+                                    email: true
+                                }))
+                                setEmail(e.target.value)
+                            }}
+                            error={fieldChecked.email && !isValidEmail}
+                            helperText={emailError}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            type="password"
+                            id="password"
+                            autoComplete="new-password"
+                            onChange={(e) => {
+                                setFiledChecked(prevState => ({
+                                    ...prevState,
+                                    password: true
+                                }))
+                                setPassword(e.target.value)
+                            }}
+                            error={fieldChecked.password && !isValidPassword}
+                            helperText={passwordError}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField
+                            required
+                            fullWidth
+                            name="confirm password"
+                            label="Confirm Password"
+                            type="password"
+                            id="confirmedPassword"
+                            autoComplete="off"
+                            onChange={(e) => {
+                                setFiledChecked(prevState => ({
+                                    ...prevState,
+                                    match_pwd: true
+                                }))
+                                setMatchPassword(e.target.value)
+                            }}
+                            error={fieldChecked.match_pwd && !isValidMatchPassword}
+                            helperText={matchPasswordError}
+                        />
+                    </Grid>
+                </Grid>
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    disabled={!(isValidFirstName && isValidLastName && isValidEmail
+                        && isValidPassword && isValidMatchPassword)}
+                    sx={{ mt: 3, mb: 2 }}
+                >
+                    Sign Up
+                </Button>
+                <Grid container justifyContent="center">
+                    <Grid item>
+                        <Link href="/login" variant="body2">
+                            Already have an account? Sign in
+                        </Link>
+                    </Grid>
+                </Grid>
+            </Box>
+        </React.Fragment>
+    )
+}
+
+function RegisterPage() {
+    const [registered, setRegistered] = useState(false)
 
     return (
             <Container component="main" maxWidth="xs">
@@ -169,128 +295,16 @@ function RegisterPage() {
                     }}
                 >
                     <FrancesLogo size={"3rem"} weight={"bold"}/>
-                    <Typography component="h1" variant="h5" sx={{mt: 2}}>
-                        Sign up
-                    </Typography>
-                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    autoComplete="given-name"
-                                    name="firstName"
-                                    required
-                                    fullWidth
-                                    id="firstName"
-                                    label="First Name"
-                                    onChange={(e) => {
-                                        setFiledChecked(prevState => ({
-                                            ...prevState,
-                                                firstName: true
-                                        }))
-                                        setFirstName(e.target.value)
-                                    }}
-                                    error={fieldChecked.firstName && !isValidFirstName}
-                                    helperText={firstNameError}
-                                    autoFocus
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    id="lastName"
-                                    label="Last Name"
-                                    name="lastName"
-                                    autoComplete="family-name"
-                                    onChange={(e) => {
-                                        setFiledChecked(prevState => ({
-                                            ...prevState,
-                                            lastName: true
-                                        }))
-                                        setLastName(e.target.value)
-                                    }}
-                                    error={fieldChecked.lastName && !isValidLastName}
-                                    helperText={lastNameError}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    id="email"
-                                    label="Email Address"
-                                    name="email"
-                                    autoComplete="email"
-                                    onChange={(e) => {
-                                        setFiledChecked(prevState => ({
-                                            ...prevState,
-                                            email: true
-                                        }))
-                                        setEmail(e.target.value)
-                                    }}
-                                    error={fieldChecked.email && !isValidEmail}
-                                    helperText={emailError}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    name="password"
-                                    label="Password"
-                                    type="password"
-                                    id="password"
-                                    autoComplete="new-password"
-                                    onChange={(e) => {
-                                        setFiledChecked(prevState => ({
-                                            ...prevState,
-                                            password: true
-                                        }))
-                                        setPassword(e.target.value)
-                                    }}
-                                    error={fieldChecked.password && !isValidPassword}
-                                    helperText={passwordError}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    name="confirm password"
-                                    label="Confirm Password"
-                                    type="password"
-                                    id="confirmedPassword"
-                                    autoComplete="off"
-                                    onChange={(e) => {
-                                        setFiledChecked(prevState => ({
-                                            ...prevState,
-                                            match_pwd: true
-                                        }))
-                                        setMatchPassword(e.target.value)
-                                    }}
-                                    error={fieldChecked.match_pwd && !isValidMatchPassword}
-                                    helperText={matchPasswordError}
-                                />
-                            </Grid>
-                        </Grid>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            disabled={!(isValidFirstName && isValidLastName && isValidEmail
-                            && isValidPassword && isValidMatchPassword)}
-                            sx={{ mt: 3, mb: 2 }}
-                        >
-                            Sign Up
-                        </Button>
-                        <Grid container justifyContent="center">
-                            <Grid item>
-                                <Link href="/login" variant="body2">
-                                    Already have an account? Sign in
+                    {
+                        registered?
+                            <Typography component="div" variant="h5" sx={{mt: 2}}>
+                                Thanks for your interest! Your registered account is pending for approval! If your account has been approved, please
+                                <Link href="/login" marginLeft={1}>
+                                    sign in
                                 </Link>
-                            </Grid>
-                        </Grid>
-                    </Box>
+                            </Typography>
+                            : <RegisterForm setRegistered={setRegistered}/>
+                    }
                 </Box>
                 <Copyright sx={{ mt: 5 }} />
             </Container>

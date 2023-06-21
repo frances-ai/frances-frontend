@@ -19,10 +19,10 @@ import SimilarTermsButton from "./buttons/similarTermsButton";
 
 function TermInfo(props) {
     const {termInfo,currentSearchInfo} = props;
-    const collection = "Encyclopaedia Britannica (1768-1860)";
+    const collection = "Encyclopaedia Britannica";
 
     const headers = [
-        'Yeah', 'Edition', 'Volume', 'Term', 'Advanced Options'
+        'Year', 'Edition', 'Volume', 'Term', 'Advanced Options'
     ]
 
     return (

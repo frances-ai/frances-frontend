@@ -16,6 +16,32 @@ export function countTotalYearRecords(result) {
     return null;
 }
 
+export function countTotalYearSingleRowRecords(result) {
+    return Object.keys(result).length;
+}
+
+
+export function getPagingYearSingleRowResult(page, rowsPerPage, result) {
+    const num_previous_records = page * rowsPerPage;
+    let start_year_index = num_previous_records;
+
+    let paged_result = {};
+    const years = Object.keys(result);
+    if (years.length === 0) {
+        return result;
+    }
+
+    let remaining_records = years.length - num_previous_records;
+    let num_rows_current_page = remaining_records > rowsPerPage ? rowsPerPage : remaining_records ;
+    console.log(remaining_records)
+    for (let i = 0; i < num_rows_current_page; i++) {
+        const current_year = years[i + start_year_index];
+        paged_result[current_year] = result[current_year]
+    }
+    console.log(paged_result)
+    return paged_result;
+}
+
 export function getPagingYearResult(page, rowsPerPage, result) {
     console.log(result);
     const num_previous_records = page * rowsPerPage;
@@ -66,6 +92,10 @@ export function getPagingYearResult(page, rowsPerPage, result) {
     if (result instanceof Object) {
         let paged_result = {};
         const years = Object.keys(result);
+        if (years.length === 0) {
+            return result;
+        }
+
         while (num_previous_records > num_previous_years_records)  {
             const next_year_records_length = result[years[start_year_index]].length;
             if (num_previous_years_records + next_year_records_length > num_previous_records) {

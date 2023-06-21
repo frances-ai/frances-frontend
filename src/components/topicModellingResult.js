@@ -27,9 +27,9 @@ function TopicModellingResult(props) {
     const originResult = props.result;
     const [currentResult, setCurrentResult] = useState(originResult);
     const [currentSearchInfo, setCurrentSearchInfo] = useState();
-    const collection = "Encyclopaedia Britannica (1768-1860)";
+    const collection = "Encyclopaedia Britannica";
     const headers = [
-        'Yeah', 'Edition', 'Volume', 'Term', 'Definition', 'Sentiment Score', 'Advanced Options'
+        'Year', 'Edition', 'Volume', 'Term', 'Definition', 'Sentiment Score', 'Advanced Options'
     ]
 
     console.log(currentResult);

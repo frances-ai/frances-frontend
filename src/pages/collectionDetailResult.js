@@ -107,7 +107,7 @@ function Editions(props) {
     return (
         <React.Fragment>
             <Typography gutterBottom variant={"h5"} component="div">
-                Editions for {collection.name}
+                {(collection.id === 1? "Editions" : "Series")} for {collection.name}
             </Typography>
             <Grid container columnSpacing={{ sm: 1, md: 5}} sx={{mt:3}}>
                 <Grid item md={5} xs={12}>

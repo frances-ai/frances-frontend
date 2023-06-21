@@ -1,11 +1,12 @@
-FROM node:14-alpine AS development
-ENV NODE_ENV development
+FROM node:14-alpine AS production
+ENV NODE_ENV production
 # Add a work directory
 WORKDIR /app
 # Cache and Install dependencies
 COPY package.json .
 COPY package-lock.json .
-RUN npm install
+
+RUN npm ci
 # Copy app files
 COPY . .
 # Expose port

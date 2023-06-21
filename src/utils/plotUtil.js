@@ -35,3 +35,37 @@ function get_frequency_count(query_results) {
     }
     return freq_count
 }
+
+
+function get_normalize_freq(publication_normalized_result, query_results, hit_count) {
+    const freq_count = get_frequency_count(query_results);
+    let normalized_freq_count = {};
+    for (const term in freq_count) {
+        let term_year_norm_freq = {};
+        for (const year in freq_count[term]) {
+            let base_number = publication_normalized_result[year][2];
+            if (hit_count === "page") {
+                base_number = publication_normalized_result[year][1];
+            }
+            term_year_norm_freq[year] = (freq_count[term][year] * (term.split().length)) / parseFloat(base_number);
+        }
+        normalized_freq_count[term] = term_year_norm_freq;
+    }
+    return normalized_freq_count;
+}
+
+export function get_plot_normalized_frequency_count_data(publication_normalized_result, query_results, hit_count) {
+    const normalized_freq_count = get_normalize_freq(publication_normalized_result, query_results, hit_count);
+    let data = [];
+    for (const term in normalized_freq_count) {
+        const count = normalized_freq_count[term];
+        const trace = {
+            x: Object.keys(count),
+            y: Object.values(count),
+            type: 'scatter',
+            name: term
+        }
+        data.push(trace);
+    }
+    return data;
+}

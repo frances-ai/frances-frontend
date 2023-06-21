@@ -1,6 +1,5 @@
 import {
     Button,
-    CircularProgress,
     Container,
     Divider,
     Grid, Modal, Paper,
@@ -9,7 +8,7 @@ import {
     TableContainer, TableHead, TablePagination, TableRow,
     Typography
 } from "@mui/material";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useLocation} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
@@ -17,11 +16,18 @@ import DownloadIcon from '@mui/icons-material/Download';
 import {getLexiconFileOriginalName} from "../utils/stringUtil";
 import TextMoreLess from "../components/textMoreLess";
 import Plot from "react-plotly.js";
-import {get_plot_frequency_count_data} from "../utils/plotUtil";
+import {get_plot_frequency_count_data, get_plot_normalized_frequency_count_data} from "../utils/plotUtil";
 import BasicMap from "../components/maps/basicMap";
 import VisualiseButton from "../components/buttons/visualiseButton";
 import GeoDataDeepVisualizeResult from "../components/geoDataDeepVisualizeResult";
-import {countTotalYearRecords, getPagingYearResult} from "../utils/pagingUtil";
+import {
+    countTotalYearRecords,
+    countTotalYearSingleRowRecords,
+    getPagingYearResult,
+    getPagingYearSingleRowResult
+} from "../utils/pagingUtil";
+import LinearProgressWithLabel from "../components/linearProgressWithLabel";
+import {getDisplayNameForGazetteer, getDisplayNameForHitCount, getDisplayNameForPreprocess} from "../apis/util";
 
 export function Task(props) {
     const {task, showCollection, showQueryType, showSubmitTime, inputs} = props;
@@ -86,7 +92,20 @@ export function Task(props) {
                             Preprocess:
                         </Typography>
                         <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                            {task.config.preprocess}
+                            {getDisplayNameForPreprocess(task.config.preprocess)}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
+            {
+                showConfig("gazetteer", task.config.gazetteer)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Gazetteer:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {getDisplayNameForGazetteer(task.config.gazetteer)}
                         </Typography>
                     </Grid>
                     : null
@@ -96,10 +115,10 @@ export function Task(props) {
                 showConfig("hit_count", task.config.hitCount)?
                     <Grid item xs={6}>
                         <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
-                            HitCount:
+                            Hit Count:
                         </Typography>
                         <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
-                            {task.config.hitCount}
+                            {getDisplayNameForHitCount(task.config.hitCount)}
                         </Typography>
                     </Grid>
                     : null
@@ -159,6 +178,20 @@ export function Task(props) {
                     </Grid>
                     : null
             }
+
+            {
+                showConfig("bounding_box", task.config.boundingBox)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Bounding Box:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.boundingBox}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+
             {
                 showSubmitTime ?
                     <Grid item xs={6}>
@@ -190,21 +223,36 @@ function DefoeQueryResult() {
     const [paging, setPaging] = useState();
 
     const handlePageChangeYearPaged = (event, newPage) => {
-        setPaging(prevState => ({
-            ...prevState,
-            page: newPage,
-            result: getPagingYearResult(newPage, prevState.rowsPerPage, result)
-        }))
-        console.log(paging.result);
+        if (task.config.queryType === "publication_normalized") {
+            setPaging(prevState => ({
+                ...prevState,
+                page: newPage,
+                result: getPagingYearSingleRowResult(newPage, prevState.rowsPerPage, result)
+            }))
+        } else {
+            setPaging(prevState => ({
+                ...prevState,
+                page: newPage,
+                result: getPagingYearResult(newPage, prevState.rowsPerPage, result)
+            }))
+        }
     }
 
     const handleRowsPerPageChangeYearPaged = (event) => {
         const newRowsPerPage = event.target.value;
-        setPaging(prevState => ({
-            ...prevState,
-            rowsPerPage: newRowsPerPage,
-            result: getPagingYearResult(prevState.page, newRowsPerPage, result)
-        }))
+        if (task.config.queryType === "publication_normalized") {
+            setPaging(prevState => ({
+                ...prevState,
+                rowsPerPage: newRowsPerPage,
+                result: getPagingYearSingleRowResult(prevState.page, newRowsPerPage, result)
+            }))
+        } else {
+            setPaging(prevState => ({
+                ...prevState,
+                rowsPerPage: newRowsPerPage,
+                result: getPagingYearResult(prevState.page, newRowsPerPage, result)
+            }))
+        }
     }
 
 
@@ -215,16 +263,20 @@ function DefoeQueryResult() {
         QueryAPI.getDefoeQueryTaskByTaskID(taskID).then((response) => {
             console.log('get task summary')
             console.log(response?.data);
-            setTask(response?.data?.task);
+            let task = response?.data.task;
+            if (response?.data.publication_normalized_result_path !== undefined) {
+                task["publication_normalized_result_path"] = response?.data.publication_normalized_result_path;
+            }
+            setTask(task);
         })
 
         const checkStatus = () => {
             if (taskID !== "") {
-                if (status === undefined || !status.done) {
+                if (status === undefined || (status.state !== "DONE" && status.state !== "ERROR" && status.state !== "CANCELLED")) {
                     console.log('check status!');
                     QueryAPI.getDefoeQueryStatus(taskID).then((r) => {
                         console.log(r);
-                        if (r.data.done) {
+                        if (r.data.state === "DONE" || r.data.state === "ERROR" || r.data.state === "CANCELLED") {
                             console.log('done');
                             clearInterval(timerID);
                         }
@@ -243,33 +295,46 @@ function DefoeQueryResult() {
     }, [])
 
     useEffect(() => {
-        if (status !== undefined && status.done) {
-            if (status.results !== undefined && status.results !== "") {
-                const result_filepath = status.results;
-                console.log("result file path %s", result_filepath);
-                QueryAPI.getDefoeQueryResult(result_filepath).then((response) => {
-                    console.log("Get data from the result file");
-                    console.log(response?.data);
-                    if (task.config.queryType.includes("fulltext") || task.config.queryType.includes("snippet")) {
-                        setResult(response?.data?.results.terms_details);
-                    } else {
-                        setResult(response?.data?.results);
-                    }
+        if (status !== undefined) {
+            if (status?.state === "DONE") {
+                if (status.results !== undefined && status.results !== "") {
+                    const result_filepath = status.results;
+                    console.log("result file path %s", result_filepath);
+                    QueryAPI.getDefoeQueryResult(result_filepath).then((response) => {
+                        console.log("Get data from the result file");
+                        console.log(response?.data);
+                        if (task.config.queryType.includes("fulltext") || task.config.queryType.includes("snippet")) {
+                            setResult(response?.data?.results.terms_details);
+                        } else {
+                            setResult(response?.data?.results);
+                        }
 
-                });
+                    });
+                }
+            } else if (status?.state === "ERROR") {
+
             }
+
         }
     }, [status])
 
     useEffect(() => {
         if (result && task) {
-            if (task.config.queryType.includes("year")) {
+            if (task.config.queryType.includes("year")){
                 console.log(result);
                 setPaging({
                     count: countTotalYearRecords(result),
                     page: DEFAULT_PAGE,
                     rowsPerPage: DEFAULT_ROWS_PER_PAGE,
                     result: getPagingYearResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
+                })
+            } else if (task.config.queryType === "publication_normalized")  {
+                console.log(result);
+                setPaging({
+                    count: countTotalYearSingleRowRecords(result),
+                    page: DEFAULT_PAGE,
+                    rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+                    result: getPagingYearSingleRowResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
                 })
             }
         }
@@ -278,37 +343,71 @@ function DefoeQueryResult() {
 
     function PublicationNormalisedResult() {
         return (
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Year</TableCell>
-                            <TableCell align="right">Volumes</TableCell>
-                            <TableCell align="right">Pages</TableCell>
-                            <TableCell align="right">Words</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {Object.keys(result).map((value, key) => (
-                            <TableRow
-                                key={key}
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {value}
-                                </TableCell>
-                                <TableCell align="right">{result[value][0]}</TableCell>
-                                <TableCell align="right">{result[value][1]}</TableCell>
-                                <TableCell align="right">{result[value][2]}</TableCell>
+            <React.Fragment>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Year</TableCell>
+                                <TableCell align="right">Volumes</TableCell>
+                                <TableCell align="right">Pages</TableCell>
+                                {
+                                    task.config.collection === "Encyclopaedia Britannica"?
+                                        <TableCell align="right">Terms</TableCell> : null
+                                }
+                                <TableCell align="right">Words</TableCell>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {Object.keys(paging.result).map((value, key) => (
+                                <TableRow
+                                    key={key}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                        {value}
+                                    </TableCell>
+                                    <TableCell align="right">{paging.result[value][0]}</TableCell>
+                                    <TableCell align="right">{paging.result[value][1]}</TableCell>
+                                    {
+                                        task.config.collection === "Encyclopaedia Britannica"?
+                                            (
+                                                <React.Fragment>
+                                                    <TableCell align="right">{paging.result[value][2]}</TableCell>
+                                                    <TableCell align="right">{paging.result[value][3]}</TableCell>
+                                                </React.Fragment>
+                                            )
+                                            : <TableCell align="right">{paging.result[value][2]}</TableCell>
+                                    }
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    component="div"
+                    count={paging.count}
+                    page={paging.page}
+                    rowsPerPage={paging.rowsPerPage}
+                    onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                    onPageChange={handlePageChangeYearPaged}/>
+            </React.Fragment>
         );
     }
 
     function FrequencyKeySearchByYearResult() {
+        const [publicationNorm, setPublicationNorm] = useState();
+
+        useEffect(() => {
+            console.log("init")
+            if (task !== undefined && task.publication_normalized_result_path !== undefined) {
+                QueryAPI.getDefoeQueryResult(task.publication_normalized_result_path).then((response) => {
+                    console.log("Get publication normalized result");
+                    console.log(response?.data);
+                    setPublicationNorm(response?.data.results);
+                });
+            }
+        }, [])
 
         return (
             <Box>
@@ -347,7 +446,7 @@ function DefoeQueryResult() {
                     data={get_plot_frequency_count_data(result)}
                     layout={
                         {
-                            title: 'Frequency of Lexicon Terms per Years',
+                            title: 'Frequency of Lexicon ' + getDisplayNameForHitCount(task.config.hitCount) + ' per Years',
                             xaxis: {
                                 title: 'Year'
                             },
@@ -360,6 +459,27 @@ function DefoeQueryResult() {
                     useResizeHandler={true}
                     style={{ width: '100%', height: '100%', marginTop: 20}}
                 />
+                {
+                    publicationNorm?
+                        <Plot
+                            data={get_plot_normalized_frequency_count_data(publicationNorm, result, task.config.hitCount)}
+                            layout={
+                                {
+                                    title: 'Normalized Frequency of Lexicon ' + getDisplayNameForHitCount(task.config.hitCount) + ' per Years',
+                                    xaxis: {
+                                        title: 'Year'
+                                    },
+                                    yaxis: {
+                                        title: 'Frequency'
+                                    },
+                                    autosize: true
+                                }
+                            }
+                            useResizeHandler={true}
+                            style={{ width: '100%', height: '100%', marginTop: 20}}
+                        />
+                    : null
+                }
             </Box>
 
         );
@@ -736,6 +856,12 @@ function DefoeQueryResult() {
 
     }
 
+    const handleCancelTaskClick = () => {
+        QueryAPI.cancelDefoeQueryTask(taskID).then(r => {
+            console.log(r?.data)
+        })
+    }
+
 
     return (
         <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
@@ -754,14 +880,45 @@ function DefoeQueryResult() {
                             <Button variant="contained" href={"/defoeQueryTasks"}>
                                 Check all query tasks
                             </Button>
+                            {
+                                status?.state === "PENDING" ||  status?.state === "RUNNING" ?
+                                    (<Button variant="contained" color={"error"} onClick={handleCancelTaskClick}>
+                                        Cancel current query
+                                    </Button>) : null
+                            }
+
                         </Stack>
                     </Box>)
                     : null
             }
-            <Divider/>
+
             {
-                (result === undefined || paging === undefined) ?
-                    <CircularProgress/> :
+                (status?.state !== "DONE" && status?.state !== "ERROR" && !status?.state.includes("CANCEL"))  ?
+                    <LinearProgressWithLabel value={status? status.progress : 0} /> : <Divider/>
+            }
+
+            {
+                (status?.state === "CANCEL_STARTED" || status?.state === "CANCEL_PENDING") ?
+                    <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                        Cancelling ......
+                    </Typography> : null
+            }
+
+            {
+                (status?.state === "CANCELLED") ?
+                    <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                        This query has been cancelled!
+                    </Typography> : null
+            }
+
+            {
+                (status?.state === "ERROR") ?
+                    <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                        Failed to run this query!
+                    </Typography> : null
+            }
+            {
+                (status?.state === "DONE" && (result !== undefined && paging !== undefined)) ?
                     <Box>
                         <Stack direction={"row"} sx={{mt: 5, mb: 3}} alignItems="baseline" justifyContent="space-between">
                             <Typography component={"div"} gutterBottom variant="h5" >
@@ -772,7 +929,10 @@ function DefoeQueryResult() {
                             </Button>
                         </Stack>
                         {DefoeResultTable()}
-                    </Box>
+                    </Box> :
+                    (status?.state === "DONE")? <Typography component={"div"} sx={{mt: 5}} gutterBottom variant="h5" >
+                        Loading the result ......
+                    </Typography> : null
             }
         </Container>
     )
