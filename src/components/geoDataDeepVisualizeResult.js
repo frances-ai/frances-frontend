@@ -22,7 +22,10 @@ function GeoDataDeepVisualizeResult(props) {
                         let c_locs = []
                         c_locs.push(locs[place_name]["lat"])
                         c_locs.push(locs[place_name]["long"])
-                        c_locs.push(place_name.split("-")[0])
+                        const lowercase_place_name = place_name.split("-")[0].toLowerCase()
+                        const capitalized_place_name = lowercase_place_name.charAt(0).toUpperCase()
+                            + lowercase_place_name.slice(1)
+                        c_locs.push(capitalized_place_name)
                         c_locs.push(locs[place_name]["snippet"])
                         c_locs.push(page)
                         c_locs.push(serie)
