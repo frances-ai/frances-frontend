@@ -485,7 +485,7 @@ function DefoeQueryResult() {
         );
     }
 
-    function TermSnippetKeySearchByYearResult() {
+    function SnippetKeySearchByYearResult() {
         const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Snippet'];
         const col_key = {
             'KeySearch Term': 'keysearch-term',
@@ -747,7 +747,7 @@ function DefoeQueryResult() {
         )
     }
 
-    function TermFullTextKeySearchByYearResult() {
+    function FullTextKeySearchByYearResult() {
         const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Definition'];
         const col_key = {
             'KeySearch Term': 'keysearch-term',
@@ -840,12 +840,12 @@ function DefoeQueryResult() {
                 return <PublicationNormalisedResult/>
             case "frequency_keysearch_by_year":
                 return <FrequencyKeySearchByYearResult/>
-            case "terms_fulltext_keysearch_by_year":
-                return <TermFullTextKeySearchByYearResult/>;
+            case "fulltext_keysearch_by_year":
+                return <FullTextKeySearchByYearResult/>;
             case "uris_keysearch":
                 return <UrisKeySearchResult/>
-            case "terms_snippet_keysearch_by_year":
-                return <TermSnippetKeySearchByYearResult/>;
+            case "snippet_keysearch_by_year":
+                return <SnippetKeySearchByYearResult/>;
             case "geoparser_by_year":
                 return <GeoParserByYearResult/>;
             default:
