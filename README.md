@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is the React frontend for the frances project. It has been deployed on this site: http://35.228.63.82:3000
+This is the React frontend for the frances project. It has been deployed on this site: http://www.frances-ai.com
 
 ### Main features:
 
@@ -33,6 +33,11 @@ git clone https://github.com/frances-ai/frances-frontend
 ### Install npm
 
 see the instructions to [install npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+
+### Install dependencies
+
+In the `frances-frontend` directory, run
+`npm install`
 
 ### Run the frontend
 
