@@ -47,6 +47,8 @@ In the `frances-frontend` directory, you can run:
 
 `npm start`
 
+Your local frances frontend can be accessed here: http://127.0.0.1:3000
+
 ## Cloud Deployment
 
 Build the docker image: Run the following command in `frances-frontend` directory to build the image:
