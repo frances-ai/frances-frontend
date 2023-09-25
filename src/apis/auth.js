@@ -18,6 +18,26 @@ class AuthAPI {
         });
     }
 
+    async getPendingUsers() {
+        return await axiosPrivate.get("auth/pendingUsers");
+    }
+
+    async getActiveUsers() {
+        return await axiosPrivate.get("auth/activeUsers");
+    }
+
+    async activateUser(user_id) {
+        await axiosPrivate.post("auth/activateUser", {
+            user_id: user_id,
+        });
+    }
+
+    async deleteUser(user_id) {
+        await axiosPrivate.post("auth/deleteUser", {
+            user_id: user_id,
+        });
+    }
+    
     async refresh() {
         const options =  {
             headers:

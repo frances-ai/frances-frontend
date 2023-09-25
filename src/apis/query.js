@@ -48,6 +48,7 @@ class QueryAPI {
         })
     }
 
+
     searchTopicModels(model_name_or_number, page = 1) {
         const key = 'searchTopicModels' + model_name_or_number + page;
         const result = localStorage.getItem(key);
@@ -197,6 +198,14 @@ class QueryAPI {
         return axiosPrivate.post("/query/defoe_query_tasks").then(response => {
             return response;
         })
+    }
+
+
+    getAllDefoeQueryTasksForUser(user_id) {
+        console.log("User ID:", user_id);
+        return axiosPrivate.post("/query/defoe_query_tasks_for_user", {
+            user_id: user_id,
+        });
     }
 
     download(resultFileName, downloadFileName) {
