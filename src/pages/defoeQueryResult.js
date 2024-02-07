@@ -60,6 +60,16 @@ export function Task(props) {
                     : null
             }
             {
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Source:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.sourceProvider}
+                        </Typography>
+                    </Grid>
+            }
+            {
                 showQueryType?
                     <Grid item xs={6}>
                         <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>

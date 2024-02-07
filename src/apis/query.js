@@ -185,6 +185,15 @@ class QueryAPI {
         })
     }
 
+
+    getSourceProviders(collection) {
+        if (collection === 'Encyclopaedia Britannica') {
+            return ["NLS", "HQ"];
+        } else {
+            return ["NLS"];
+        }
+    }
+
     getQueryMeta(collection) {
         if (collection === 'Encyclopaedia Britannica') {
             return queryMeta['EB'];
@@ -193,8 +202,8 @@ class QueryAPI {
         }
     }
 
-    getAllDefoeQueryTasks() {
-        return axiosPrivate.post("/query/defoe_query_tasks").then(response => {
+    getAllDefoeQueryTasks(options) {
+        return axiosPrivate.post("/query/defoe_query_tasks", options).then(response => {
             return response;
         })
     }

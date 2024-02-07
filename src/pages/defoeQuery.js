@@ -19,7 +19,7 @@ import {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import CollectionAPI from '../apis/collection';
 import Box from "@mui/material/Box";
-import {gazetteer, preprocess} from "../apis/queryMeta";
+import {gazetteer, preprocess, sourceProvidersInfo} from "../apis/queryMeta";
 import {useNavigate} from "react-router-dom";
 import GeoLocationAPI from "../apis/geoLocation"
 
@@ -27,6 +27,7 @@ import GeoLocationAPI from "../apis/geoLocation"
 function DefoeQueryPage() {
     const initConfig = {
         collection: '',
+        source_provider: '',
         defoe_selection: '',
         preprocess: '',
         gazetteer: '',
@@ -41,6 +42,8 @@ function DefoeQueryPage() {
 
     const DEFAULT_SNIPPET_WINDOW = 10;
 
+    const [sourceProviders, setSourceProviders] = useState([]);
+    const [selectedSourceProvider, setSelectedSourceProvider] = useState(initConfig['source_provider']);
     const [collections, setCollections] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState();
     const [queryMeta, setQueryMeta] = useState();
@@ -68,7 +71,11 @@ function DefoeQueryPage() {
         CollectionAPI.get_collections().then(response => {
             const data = response?.data?.collections;
             setCollections(data);
-            setSelectedCollection(data[0]);
+            let init_collection = data[0]
+            setSelectedCollection(init_collection);
+            let init_sourceProviders = QueryAPI.getSourceProviders(init_collection.name);
+            setSourceProviders(init_sourceProviders);
+            setSelectedSourceProvider(init_sourceProviders[0]);
         })
         QueryAPI.getAllDefoeQueryTypes().then(response => {
             const data = response?.data?.queries;
@@ -79,6 +86,12 @@ function DefoeQueryPage() {
     }, []);
 
     useEffect(() => {
+        if (sourceProviders !== undefined && sourceProviders.length > 0) {
+            setSelectedSourceProvider(sourceProviders[0]);
+        }
+    }, [sourceProviders])
+
+    useEffect(() => {
         console.log(selectedCollection);
         if (selectedCollection !== undefined) {
             console.log(selectedCollection);
@@ -87,25 +100,29 @@ function DefoeQueryPage() {
             setEarliestYear(earliest);
             setLatestYear(latest);
             setStartYear(earliest)
-            setEndYear(latest)
+            setEndYear(latest);
             setQueryMeta(QueryAPI.getQueryMeta(selectedCollection.name));
+            setSourceProviders(QueryAPI.getSourceProviders(selectedCollection.name))
         }
     }, [selectedCollection]);
 
 
     useEffect(() => {
-        console.log("check loading")
-        if (selectedCollection !== undefined && selectedQueryType !== '' && queryMeta !== undefined) {
+        console.log("check loading");
+        console.log(sourceProviders);
+        console.log(selectedSourceProvider);
+        if (selectedCollection !== undefined && selectedSourceProvider !== '' && selectedQueryType !== '' && queryMeta !== undefined) {
             setPageLoading(false);
             console.log(queryMeta);
         }
-    }, [selectedCollection, selectedQueryType, queryMeta]);
+    }, [selectedCollection,selectedSourceProvider, selectedQueryType, queryMeta]);
 
     function formatConfigData() {
         //Format the configuration data
         let configData = {...initConfig};
         configData.collection = selectedCollection.name;
         configData.defoe_selection = selectedQueryType;
+        configData.source_provider = selectedSourceProvider;
 
         const inputs = queryMeta[selectedQueryType].inputs;
 
@@ -166,7 +183,7 @@ function DefoeQueryPage() {
         setConfig(configData);
         //Check if all required configuration are made.
         setSubmitDisable(!hasAllRequiredConfigDone(initConfig, configData, queryMeta));
-    }, [queryMeta, selectedCollection, selectedQueryType, 
+    }, [queryMeta, selectedCollection, selectedSourceProvider, selectedQueryType,
         selectedPreprocessIndex, boundingBox, selectedGazetteerIndex, targets, targetAllChecked, startYear, endYear, hitCountChecked, fileID, window]);
 
     function hasAllRequiredConfigDone(initConfig, currentConfig, queryMeta) {
@@ -717,6 +734,25 @@ function DefoeQueryPage() {
                                 </Select>
                             </FormControl>
 
+                            <FormControl sx={{ mt: 3, ml: 3, minWidth: 100 }}>
+                                <InputLabel id="source-provider-label">Source</InputLabel>
+                                <Select
+                                    labelId="source-provider-label"
+                                    id="source-provider-select"
+                                    label="source provider"
+                                    value={selectedSourceProvider}
+                                    autoWidth
+                                    onChange={(e) => setSelectedSourceProvider(e.target.value)}
+                                >
+                                    {
+                                        sourceProviders.map((item, index) => (
+                                            <MenuItem key={index} value={item}>{item}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                                <FormHelperText>{sourceProvidersInfo[selectedSourceProvider][0]}</FormHelperText>
+                            </FormControl>
+
                             <FormControl sx={{ mt: 3, ml: 3, minWidth: 200 }}>
                                 <InputLabel id="query-type-label">Query type</InputLabel>
                                 <Select
@@ -733,7 +769,7 @@ function DefoeQueryPage() {
                                         ))
                                     }
                                 </Select>
-                                <FormHelperText>{queryMeta[selectedQueryType].description}</FormHelperText>
+                                {/*<FormHelperText>{queryMeta[selectedQueryType].description}</FormHelperText>*/}
                             </FormControl>
                             <Paper
                                 elevation={3}

@@ -26,6 +26,11 @@ export const preprocess = [
   ]
 ]
 
+export const sourceProvidersInfo = {
+  "NLS": ["All data from National Library of Scotland"],
+  "HQ": ["Data from several sources with high quality text"]
+}
+
 export const gazetteer =[
     [
         "geonames",
