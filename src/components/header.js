@@ -5,6 +5,7 @@ import NavTabs from "./navTabs";
 import UserMenu from "./userMenu";
 
 export const sections = [
+    { title: 'Search', url: '/search' },
     { title: 'Term Search', url: '/termSearch' },
     { title: 'Term Similarity', url: '/termSimilarity' },
     { title: 'Topic Modelling', url: '/topicModelling' },

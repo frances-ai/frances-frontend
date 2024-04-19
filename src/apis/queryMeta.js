@@ -28,7 +28,8 @@ export const preprocess = [
 
 export const sourceProvidersInfo = {
   "NLS": ["All data from National Library of Scotland"],
-  "HQ": ["Data from several sources with high quality text"]
+  "HQ": ["Data from several sources with high quality text"],
+  "NeuSpell": ["Spell Corrected data using the NeuSpell tool"]
 }
 
 export const gazetteer =[

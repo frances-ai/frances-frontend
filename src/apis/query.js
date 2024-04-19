@@ -4,6 +4,101 @@ import FileDownload from 'js-file-download';
 import {store_response_data_in_local_storage} from "./util";
 
 class QueryAPI {
+
+    get_terms_by_concept_uri(concept_uri) {
+        return axiosPublic.post("/search/concept_term_records", {"concept_uri": concept_uri}).then(response => {
+            console.log('Server');
+            return response;
+        })
+    }
+
+    get_similar_terms(term_uri) {
+        return axiosPublic.post("/search/similar_terms", {"term_uri": term_uri}).then(response => {
+            console.log('Server');
+            return response;
+        })
+    }
+
+    get_word_frequencies(term_name){
+        return axiosPublic.get("/search/word_frequencies", {params: {term_name: term_name}}).then(response => {
+            console.log('Server');
+            return response;
+        })
+    }
+
+    search(query) {
+        return axiosPublic.get("/search", {params: query}).then(response => {
+            console.log('Server');
+            return response;
+        })
+    }
+
+    get_similar_term_descriptions(term_uri) {
+        return axiosPublic.post("/search/similar_term_descriptions", {"term_uri": term_uri}).then(response => {
+            console.log('Server');
+            return response;
+        })
+    }
+
+
+    get_page_display_info(page_path) {
+        const key = 'get_page_display_info' + page_path;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return axiosPublic.get("/search/page_display", {params: {page_path: page_path}}).then(response => {
+            console.log('Server');
+            store_response_data_in_local_storage(key, response)
+            return response;
+        })
+    }
+
+
+    get_page_info(page_path) {
+        const key = 'get_page_info' + page_path;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return axiosPublic.get("/search/page", {params: {page_path: page_path}}).then(response => {
+            console.log('Server');
+            store_response_data_in_local_storage(key, response)
+            return response;
+        })
+    }
+
+    get_term_info(term_path) {
+        const key = 'get_term_info' + term_path;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return axiosPublic.get("/search/term", {params: {term_path: term_path}}).then(response => {
+            console.log('Server');
+            store_response_data_in_local_storage(key, response)
+            return response;
+        })
+    }
+
     searchTerm(term, page = 1) {
         const key = 'searchTerm' + term + page;
         const result = localStorage.getItem(key);
@@ -188,9 +283,9 @@ class QueryAPI {
 
     getSourceProviders(collection) {
         if (collection === 'Encyclopaedia Britannica') {
-            return ["NLS", "HQ"];
+            return ["NLS", "HQ", "NeuSpell"];
         } else {
-            return ["NLS"];
+            return ["NLS", "NeuSpell"];
         }
     }
 
