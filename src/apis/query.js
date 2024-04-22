@@ -303,6 +303,13 @@ class QueryAPI {
         })
     }
 
+
+    deleteDefoeQueryTasks(task_ids) {
+        return axiosPrivate.post("/query/delete_defoe_query_tasks", {taskIDs: task_ids}).then(response => {
+            return response;
+        })
+    }
+
     download(resultFileName, downloadFileName) {
         return axiosPrivate.post("/query/download", {
             result_filename: resultFileName

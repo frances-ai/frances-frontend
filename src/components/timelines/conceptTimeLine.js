@@ -1,6 +1,6 @@
 import React, {Fragment, useState} from "react";
 import Box from "@mui/material/Box";
-import {Card, CardActionArea, CardContent, Divider, Paper, Typography} from "@mui/material";
+import {Card, CardActionArea, CardContent, Typography} from "@mui/material";
 import Timeline from "@mui/lab/Timeline";
 import TimelineItem from "@mui/lab/TimelineItem";
 import TimelineOppositeContent from "@mui/lab/TimelineOppositeContent";
