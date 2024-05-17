@@ -1,5 +1,5 @@
-import {Button, Container, Divider, Stack, Typography} from "@mui/material";
-import {useParams} from "react-router-dom";
+import {Button, Container, Divider, Link, Stack, Typography} from "@mui/material";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import config from "../../config.json";
 import QueryAPI from "../../apis/query";
@@ -11,6 +11,7 @@ function PageRecordPage() {
     let { pageId } = useParams();
     const [pageInfo, setPageInfo] = useState();
     const [pagePath, setPagePath] = useState("Page/" + pageId);
+    const navigate = useNavigate();
     console.log(pageId)
 
     useEffect(() => {
@@ -22,6 +23,21 @@ function PageRecordPage() {
             setPageInfo(data);
         })
     }, [pageId])
+
+
+    const get_collection_name = (collection_name) => {
+        // example: collection_name: Encyclopaedia Britannica Collection
+
+        return collection_name.substring(0, collection_name.indexOf("Collection") -1)
+    }
+
+    const handleCollectionClick = (event, collection) => {
+        navigate("/collectionDetails/detail", {state:
+                {collection: {
+                        uri: collection.uri, name: get_collection_name(collection.name)
+                    }}
+        })
+    }
 
 
     return (
@@ -52,17 +68,22 @@ function PageRecordPage() {
                             <Typography variant={"body1"}>Volume</Typography>
                         </Box>
                         <Box>
-                            <Typography variant={"body1"} fontWeight={"bold"}>{pageInfo?.volume?.title}</Typography>
+                            <Link mr={1} href={pageInfo?.volume.permanent_url}>
+                                <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{pageInfo?.volume.title}</Typography>
+                            </Link>
                         </Box>
                     </Stack>
-                    <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
-                        <Box>
-                            <Typography variant={"body1"}>Genre</Typography>
-                        </Box>
-                        <Box>
-                            <Typography variant={"body1"} fontWeight={"bold"}>{pageInfo?.edition_or_series?.genre}</Typography>
-                        </Box>
-                    </Stack>
+                    {
+                        pageInfo?.edition_or_series?.genre != 0 ?
+                            <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
+                                <Box>
+                                    <Typography variant={"body1"}>Genre</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant={"body1"} fontWeight={"bold"}>{pageInfo?.edition_or_series?.genre}</Typography>
+                                </Box>
+                            </Stack> : null
+                    }
                     <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
                         <Box>
                             <Typography variant={"body1"}>Printed in</Typography>
@@ -84,7 +105,9 @@ function PageRecordPage() {
                             <Typography variant={"body1"}>Collection</Typography>
                         </Box>
                         <Box>
-                            <Typography variant={"body1"} fontWeight={"bold"}>{pageInfo?.collection?.name}</Typography>
+                            <Link component="button" onClick={(event) => handleCollectionClick(event, pageInfo?.collection)}>
+                                <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{pageInfo?.collection.name}</Typography>
+                            </Link>
                         </Box>
                     </Stack>
                 </Stack>

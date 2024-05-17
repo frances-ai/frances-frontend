@@ -313,7 +313,7 @@ function DefoeQueryResult() {
                     QueryAPI.getDefoeQueryResult(result_filepath).then((response) => {
                         console.log("Get data from the result file");
                         console.log(response?.data);
-                        if (task.config.queryType.includes("fulltext") || task.config.queryType.includes("snippet")) {
+                        if (task?.config.queryType.includes("fulltext") || task?.config.queryType.includes("snippet")) {
                             setResult(response?.data?.results.terms_details);
                         } else {
                             setResult(response?.data?.results);
@@ -330,7 +330,7 @@ function DefoeQueryResult() {
 
     useEffect(() => {
         if (result && task) {
-            if (task.config.queryType.includes("year")){
+            if (task?.config.queryType.includes("year")){
                 console.log(result);
                 setPaging({
                     count: countTotalYearRecords(result),
@@ -338,7 +338,7 @@ function DefoeQueryResult() {
                     rowsPerPage: DEFAULT_ROWS_PER_PAGE,
                     result: getPagingYearResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
                 })
-            } else if (task.config.queryType === "publication_normalized")  {
+            } else if (task?.config.queryType === "publication_normalized")  {
                 console.log(result);
                 setPaging({
                     count: countTotalYearSingleRowRecords(result),

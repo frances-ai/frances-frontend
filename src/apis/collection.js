@@ -20,8 +20,8 @@ class CollectionAPI{
         })
     }
 
-    async get_collection_detail(id) {
-        const key = 'collection' + id;
+    async get_collection_detail(uri) {
+        const key = 'collection' + uri;
         const result = localStorage.getItem(key);
         if (result) {
             return new Promise((resolve => {
@@ -31,7 +31,7 @@ class CollectionAPI{
                 });
             }));
         }
-        return await axiosPublic.get("/collection/", {params: {id: id}}).then(response => {
+        return await axiosPublic.post("/collection/", {uri: uri}).then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;
