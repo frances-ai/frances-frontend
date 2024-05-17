@@ -8,12 +8,14 @@ This is the React frontend for the frances project. It has been deployed on this
 
 1. Account Registration and Login:
 ![](screenshots/registration_login.gif)
-2. Term Search
-![](screenshots/termSearch.gif)
-3. Term Similarity
-![](screenshots/termSimilarity.gif)
-4. Topic Modelling
-![](screenshots/topicModelling.gif)
+2. Fulltext Search
+![](screenshots/fulltext.gif)
+3. Semantic Search
+![](screenshots/semanticsearch.gif)
+3. Term record page
+![](screenshots/termrecord.gif)
+4. Collection Page page
+![](screenshots/page.gif)
 5. Collection Details
 ![](screenshots/collectionDetails.gif)
 6. Defoe Query
