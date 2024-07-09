@@ -3,6 +3,10 @@ export const findTopicModelID = (model_name) => {
     return model_name.substring(0, index);
 }
 
+export const hto_uri_to_path = (uri) => {
+    return uri.substring(uri.indexOf("/hto/"));
+}
+
 export const findTermLinkFromUri = (uri) => {
     const index = uri.lastIndexOf('/');
     return uri.substring(index + 1);

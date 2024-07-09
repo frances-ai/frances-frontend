@@ -2,7 +2,7 @@ import {
     Button,
     Container,
     Divider,
-    Grid, Modal, Paper,
+    Grid, Link, Modal, Paper,
     Stack,
     Table, TableBody, TableCell,
     TableContainer, TableHead, TablePagination, TableRow,
@@ -13,10 +13,10 @@ import React, {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import DownloadIcon from '@mui/icons-material/Download';
-import {getLexiconFileOriginalName} from "../utils/stringUtil";
+import {getLexiconFileOriginalName, hto_uri_to_path} from "../utils/stringUtil";
 import TextMoreLess from "../components/textMoreLess";
 import Plot from "react-plotly.js";
-import {get_plot_frequency_count_data, get_plot_normalized_frequency_count_data} from "../utils/plotUtil";
+import {get_plot_frequency_count_data, get_plot_normalized_frequency_count_data, get_plot_lexicon_diversity_year} from "../utils/plotUtil";
 import BasicMap from "../components/maps/basicMap";
 import VisualiseButton from "../components/buttons/visualiseButton";
 import GeoDataDeepVisualizeResult from "../components/geoDataDeepVisualizeResult";
@@ -116,6 +116,18 @@ export function Task(props) {
                         </Typography>
                         <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
                             {getDisplayNameForGazetteer(task.config.gazetteer)}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
+            {
+                showConfig("level", task.config.level)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Level:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.level}
                         </Typography>
                     </Grid>
                     : null
@@ -313,12 +325,7 @@ function DefoeQueryResult() {
                     QueryAPI.getDefoeQueryResult(result_filepath).then((response) => {
                         console.log("Get data from the result file");
                         console.log(response?.data);
-                        if (task?.config.queryType.includes("fulltext") || task?.config.queryType.includes("snippet")) {
-                            setResult(response?.data?.results.terms_details);
-                        } else {
-                            setResult(response?.data?.results);
-                        }
-
+                        setResult(response?.data?.results);
                     });
                 }
             } else if (status?.state === "ERROR") {
@@ -330,7 +337,7 @@ function DefoeQueryResult() {
 
     useEffect(() => {
         if (result && task) {
-            if (task?.config.queryType.includes("year")){
+            if (task?.config.queryType.includes("year") || task?.config.queryType === "lexicon_diversity"){
                 console.log(result);
                 setPaging({
                     count: countTotalYearRecords(result),
@@ -495,18 +502,129 @@ function DefoeQueryResult() {
         );
     }
 
+
+    function LexiconDiversityResult() {
+        let es = "Series";
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            es = "Edition"
+        }
+        let volume_cols = [es, "Volume", "Unique Words", "Words", "TTR", "Maas", "MTLD"]
+        let es_cols = [es, "Unique Words", "Words", "TTR", "Maas", "MTLD"]
+        let year_cols = ["Unique Words", "Words", "TTR", "Maas", "MTLD"]
+
+        let cols = volume_cols
+        if (task.config.level === "edition" || task.config.level === "series") {
+            cols = es_cols
+        } else if (task.config.level === "year") {
+            cols = year_cols
+        }
+
+        console.log(cols.length)
+
+        return (
+            <Box>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="lexicon_diversity result table" stripe="2n">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell colSpan={1} align={"center"}>Year</TableCell>
+                                {
+                                    cols.map((col, index) => (
+                                        <TableCell key={index}> {col}</TableCell>
+                                    ))
+                                }
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {Object.keys(paging.result).map((value, key) => (
+                                paging.result[value].map((record, index) => (
+                                    <TableRow key={'' + key + index}>
+                                        {
+                                            (index == 0) ? <TableCell align={"center"} colSpan={1} rowSpan={paging.result[value].length}>{value}</TableCell> : null
+                                        }
+                                        {
+                                            cols.length === 7 ?
+                                                (<>
+                                                        <TableCell align={"center"} rowSpan={1}>
+                                                            <TextMoreLess text={record[0]}/>
+                                                        </TableCell>
+                                                        <TableCell align={"center"} rowSpan={1}>
+                                                            <TextMoreLess text={record[4]}/>
+                                                        </TableCell>
+                                                </>
+                                                ) : cols.length === 6 ?
+                                                    (<>
+                                                        <TableCell align={"center"} rowSpan={1}>
+                                                            <TextMoreLess text={record[0]}/>
+                                                        </TableCell>
+                                                    </> ): null
+                                        }
+                                        <TableCell align={"center"} rowSpan={1}>{record[record.length-5]}</TableCell>
+                                        <TableCell align={"center"} rowSpan={1}>{record[record.length-4]}</TableCell>
+                                        <TableCell align={"center"} rowSpan={1}>{record[record.length-3]}</TableCell>
+                                        <TableCell align={"center"} rowSpan={1}>{record[record.length-2]}</TableCell>
+                                        <TableCell align={"center"} rowSpan={1}>{record[record.length-1]}</TableCell>
+                                    </TableRow>
+                                ))
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    component="div"
+                    count={paging.count}
+                    page={paging.page}
+                    rowsPerPage={paging.rowsPerPage}
+                    onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                    onPageChange={handlePageChangeYearPaged}/>
+                <Plot
+                    data={get_plot_lexicon_diversity_year(result)}
+                    layout={
+                        {
+                            title: 'Lexicon Diversity per Years',
+                            xaxis: {
+                                title: 'Year'
+                            },
+                            yaxis: {
+                                title: 'Value'
+                            },
+                            autosize: true
+                        }
+                    }
+                    useResizeHandler={true}
+                    style={{ width: '100%', height: '100%', marginTop: 20}}
+                />
+
+            </Box>
+
+        );
+    }
+
     function SnippetKeySearchByYearResult() {
-        const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Snippet'];
-        const col_key = {
+        const nls_cols = ['KeySearch Term', 'Page', 'Series', 'Volume', 'Volume Title', 'Snippet'];
+        const nls_col_key = {
             'KeySearch Term': 'keysearch-term',
-            'Term': 'term',
-            'Edition': 'edition',
-            'Volume': 'volume',
-            'Page': 'page number',
-            'Header': 'header',
-            'Letters': 'letters',
-            'Part': 'part',
+            'Page': 'page_number',
+            'Series': 'series_number',
+            'Volume': 'volume_number',
+            'Volume Title': 'volume_title',
             'Snippet': 'snippet'
+        }
+        const eb_cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Snippet'];
+        const eb_col_key = {
+            'KeySearch Term': 'keysearch-term',
+            'Term': 'term_name',
+            'Edition': 'edition_number',
+            'Volume': 'volume_number',
+            'Page': 'start_page_number',
+            'Snippet': 'snippet'
+        }
+
+        let cols = nls_cols
+        let col_key = nls_col_key
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            cols = eb_cols
+            col_key = eb_col_key
         }
 
         return (
@@ -524,13 +642,13 @@ function DefoeQueryResult() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {paging.result.map((recordPerYear, key) => (
-                                recordPerYear[1].map((record, index) => (
+                            {Object.keys(paging.result).map((year, key) => (
+                                paging.result[year].map((record, index) => (
                                     <TableRow key={'' + key + index}>
                                         {
                                             (index == 0) ?
-                                                <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
-                                                    {recordPerYear[0]}
+                                                <TableCell align={"center"} colSpan={1} rowSpan={paging.result[year].length}>
+                                                    {year}
                                                 </TableCell>
                                                 : null
                                         }
@@ -539,13 +657,13 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + key + index + col} >
                                                     {
                                                         col === 'Term'?
-                                                            <VisualiseButton
-                                                                uri={record["uri"]}
-                                                                collection={task.config.collection}
-                                                            >
+                                                            <Link href={hto_uri_to_path(record["term_uri"])}>
                                                                 {record[col_key[col]]}
-                                                            </VisualiseButton>
-                                                            : record[col_key[col]]
+                                                            </Link>
+                                                            : (col === 'Page'?
+                                                                <Link href={hto_uri_to_path(record["page_uri"])}>
+                                                                    {record[col_key[col]]}
+                                                                </Link>: record[col_key[col]])
                                                     }
                                                 </TableCell>
                                             ))
@@ -604,17 +722,29 @@ function DefoeQueryResult() {
     }
 
     function GeoParserByYearResult() {
-        const cols = ['Series', 'Volume', 'Volume ID', 'Volume Title', 'Page', 'Words', 'Part', 'Geo'];
-        const col_key = {
-            'Series': 'serie',
-            'Volume': 'volume',
-            'Volume ID': 'volumeId',
-            'Volume Title': 'volumeTitle',
-            'Page': 'page number',
-            'Words': 'numWords',
-            'Part': 'part',
+        const nls_cols = ['Series', 'Volume', 'Volume Title', 'Page', 'Geo'];
+        const nls_col_key = {
+            'Series': 'series_number',
+            'Volume': 'volume_number',
+            'Volume Title': 'volume_title',
+            'Page': 'page_number',
             'Geo': 'georesolution'
         }
+        const eb_cols = ['Edition', 'Volume', 'Term', 'Geo'];
+        const eb_col_key = {
+            'Edition': 'edition_number',
+            'Volume': 'volume_number',
+            'Term': 'term_name',
+            'Geo': 'georesolution'
+        }
+
+        let cols = nls_cols
+        let col_key = nls_col_key
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            cols = eb_cols
+            col_key = eb_col_key
+        }
+
 
         function GeoCell(props) {
             const {geo, sx} = props;
@@ -724,16 +854,17 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + year + index + col} align={"center"}>
                                                     {
                                                         col === 'Page'?
-                                                            <VisualiseButton
-                                                                uri={record["uri"]}
-                                                                collection={task.config.collection}
-                                                            >
+                                                            <Link href={hto_uri_to_path(record["page_uri"])}>
                                                                 {record[col_key[col]]}
-                                                            </VisualiseButton>
+                                                            </Link>
                                                             : (
+                                                                col === 'Term'?
+                                                                    <Link href={hto_uri_to_path(record["term_uri"])}>
+                                                                        {record[col_key[col]]}
+                                                                    </Link> : (
                                                                 col === 'Geo'?
                                                                     <GeoCell geo={record[col_key[col]]}/>
-                                                                    : record[col_key[col]]
+                                                                    : record[col_key[col]])
                                                             )
                                                     }
                                                 </TableCell>
@@ -758,17 +889,30 @@ function DefoeQueryResult() {
     }
 
     function FullTextKeySearchByYearResult() {
-        const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Definition'];
-        const col_key = {
+        const nls_cols = ['KeySearch Term', 'Page', 'Series', 'Volume', 'Volume Title', 'Description'];
+        const nls_col_key = {
             'KeySearch Term': 'keysearch-term',
-            'Term': 'term',
-            'Edition': 'edition',
-            'Volume': 'volume',
-            'Page': 'page number',
-            'Header': 'header',
-            'Letters': 'letters',
-            'Part': 'part',
-            'Definition': 'term-definition'
+            'Page': 'page_number',
+            'Series': 'series_number',
+            'Volume': 'volume_number',
+            'Volume Title': 'volume_title',
+            'Snippet': 'description'
+        }
+        const eb_cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Description'];
+        const eb_col_key = {
+            'KeySearch Term': 'keysearch-term',
+            'Term': 'term_name',
+            'Edition': 'edition_number',
+            'Volume': 'volume_number',
+            'Page': 'start_page_number',
+            'Description': 'description'
+        }
+
+        let cols = nls_cols
+        let col_key = nls_col_key
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            cols = eb_cols
+            col_key = eb_col_key
         }
 
         return (
@@ -786,13 +930,13 @@ function DefoeQueryResult() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {paging.result.map((recordPerYear, key) => (
-                                recordPerYear[1].map((record, index) => (
+                            {Object.keys(paging.result).map((year, key) => (
+                                paging.result[year].map((record, index) => (
                                     <TableRow key={'' + key + index}>
                                         {
                                             (index == 0) ?
-                                                <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
-                                                    {recordPerYear[0]}
+                                                <TableCell align={"center"} colSpan={1} rowSpan={paging.result[year].length}>
+                                                    {year}
                                                 </TableCell>
                                                 : null
                                         }
@@ -801,14 +945,15 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + key + index + col} >
                                                     {
                                                         col === 'Term'?
-                                                            <VisualiseButton
-                                                                uri={record["uri"]}
-                                                                collection={task.config.collection}
-                                                            >
+                                                            <Link href={hto_uri_to_path(record["term_uri"])}>
                                                                 {record[col_key[col]]}
-                                                            </VisualiseButton>
+                                                            </Link>
                                                             : (
-                                                                col === 'Definition'?
+                                                                col === 'Page'?
+                                                                    <Link href={hto_uri_to_path(record["page_uri"])}>
+                                                                        {record[col_key[col]]}
+                                                                    </Link> :
+                                                                col === 'Description'?
                                                                     <TextMoreLess text={record[col_key[col]]} />
                                                                     : record[col_key[col]]
                                                             )
@@ -858,6 +1003,8 @@ function DefoeQueryResult() {
                 return <SnippetKeySearchByYearResult/>;
             case "geoparser_by_year":
                 return <GeoParserByYearResult/>;
+            case "lexicon_diversity":
+                return <LexiconDiversityResult/>;
             default:
                 return (<Box>
                     No Such Query Type!

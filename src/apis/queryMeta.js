@@ -26,6 +26,18 @@ export const preprocess = [
   ]
 ]
 
+export const eb_levels = {
+  "volume": ["Volume", "Apply this query to volume level"],
+  "edition": ["Edition", "Apply this query to edition level"],
+  "year": ["Year", "Apply this query to year level"]
+}
+
+export const nls_levels = {
+  "volume": ["Volume", "Apply this query to volume level"],
+  "series": ["Series", "Apply this query to series level"],
+  "year": ["Year", "Apply this query to year level"]
+}
+
 export const sourceProvidersInfo = {
   "NLS": ["All data from National Library of Scotland"],
   "HQ": ["Data from several sources with high quality text"],
@@ -171,13 +183,20 @@ export const queryMeta = {
         }
       }
     },
-    "frequency-distribution": {
+    "frequency_distribution": {
       "description": "It calculates the frequency of the most ‘N’ common tokens in terms definitions",
       "inputs": {}
     },
-    "lexicon-diversity": {
+    "lexicon_diversity": {
       "description": "It computes the lexical diversity metric, which is the ratio of the vocabulary size to the total number of words in the text",
-      "inputs": {}
+      "inputs": {
+        "preprocess": true,
+        "level": true,
+        "filter": {
+          "start_year": false,
+          "end_year": false
+        }
+      }
     },
     "person_entity_recognition": {
       "description": "It identifies people mentioned in text and estimates the gender distribution",
@@ -258,13 +277,20 @@ export const queryMeta = {
         }
       }
     },
-    "frequency-distribution": {
+    "frequency_distribution": {
       "description": "It calculates the frequency of the most ‘N’ common tokens in pages",
       "inputs": {}
     },
-    "lexicon-diversity": {
+    "lexicon_diversity": {
       "description": "It computes the lexical diversity metric, which is the ratio of the vocabulary size to the total number of words in the text",
-      "inputs": {}
+      "inputs": {
+        "preprocess": true,
+        "level": true,
+        "filter": {
+          "start_year": false,
+          "end_year": false
+        }
+      }
     },
     "person_entity_recognition": {
       "description": "It identifies people mentioned in text and estimates the gender distribution",

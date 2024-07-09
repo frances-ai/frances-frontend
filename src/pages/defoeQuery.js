@@ -19,9 +19,10 @@ import {useEffect, useState} from "react";
 import QueryAPI from "../apis/query";
 import CollectionAPI from '../apis/collection';
 import Box from "@mui/material/Box";
-import {gazetteer, preprocess, sourceProvidersInfo} from "../apis/queryMeta";
+import {gazetteer, preprocess, sourceProvidersInfo, eb_levels, nls_levels} from "../apis/queryMeta";
 import {useNavigate} from "react-router-dom";
 import GeoLocationAPI from "../apis/geoLocation"
+import {object} from "prop-types";
 
 
 function DefoeQueryPage() {
@@ -38,12 +39,15 @@ function DefoeQueryPage() {
         hit_count: null,
         window: null,
         file: '',
+        level: ''
     };
 
     const DEFAULT_SNIPPET_WINDOW = 10;
 
     const [sourceProviders, setSourceProviders] = useState([]);
     const [selectedSourceProvider, setSelectedSourceProvider] = useState(initConfig['source_provider']);
+    const [levels, setLevels] = useState({})
+    const [selectedLevel, setSelectedLevel] = useState(initConfig["level"]);
     const [collections, setCollections] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState();
     const [queryMeta, setQueryMeta] = useState();
@@ -76,11 +80,12 @@ function DefoeQueryPage() {
             let init_sourceProviders = QueryAPI.getSourceProviders(init_collection.name);
             setSourceProviders(init_sourceProviders);
             setSelectedSourceProvider(init_sourceProviders[0]);
+            setLevels(QueryAPI.getLevels(init_collection.name));
         })
         QueryAPI.getAllDefoeQueryTypes().then(response => {
             const data = response?.data?.queries;
             setQueryTypes(data);
-            console.log(queryTypes)
+            console.log(data)
             setSelectQueryType(data[0]);
         })
     }, []);
@@ -103,6 +108,7 @@ function DefoeQueryPage() {
             setEndYear(latest);
             setQueryMeta(QueryAPI.getQueryMeta(selectedCollection.name));
             setSourceProviders(QueryAPI.getSourceProviders(selectedCollection.name))
+            setLevels(QueryAPI.getLevels(selectedCollection.name))
         }
     }, [selectedCollection]);
 
@@ -112,6 +118,9 @@ function DefoeQueryPage() {
         console.log(sourceProviders);
         console.log(selectedSourceProvider);
         if (selectedCollection !== undefined && selectedSourceProvider !== '' && selectedQueryType !== '' && queryMeta !== undefined) {
+            if ("level" in queryMeta[selectedQueryType].inputs && selectedLevel === "") {
+                setSelectedLevel(Object.keys(levels)[0])
+            }
             setPageLoading(false);
             console.log(queryMeta);
         }
@@ -142,6 +151,10 @@ function DefoeQueryPage() {
 
         if ("gazetteer" in inputs) {
             configData.gazetteer = gazetteer[selectedGazetteerIndex][0];
+        }
+
+        if ("level" in inputs) {
+            configData.level = selectedLevel;
         }
 
         if ("filter" in inputs) {
@@ -183,7 +196,7 @@ function DefoeQueryPage() {
         setConfig(configData);
         //Check if all required configuration are made.
         setSubmitDisable(!hasAllRequiredConfigDone(initConfig, configData, queryMeta));
-    }, [queryMeta, selectedCollection, selectedSourceProvider, selectedQueryType,
+    }, [queryMeta, selectedCollection, selectedSourceProvider, selectedQueryType, selectedLevel,
         selectedPreprocessIndex, boundingBox, selectedGazetteerIndex, targets, targetAllChecked, startYear, endYear, hitCountChecked, fileID, window]);
 
     function hasAllRequiredConfigDone(initConfig, currentConfig, queryMeta) {
@@ -667,6 +680,35 @@ function DefoeQueryPage() {
         </React.Fragment>;
     }
 
+    function LevelConfig() {
+
+        return <React.Fragment>
+            <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                <Typography component="div" gutterBottom variant="subtitle1">
+                    Level
+                </Typography>
+                <Typography component="div" variant="body2" color="text.disabled">
+                    {levels[selectedLevel][1]}
+                </Typography>
+            </Grid>
+            <Grid item xs textAlign={"right"} sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                <Select
+                    id="level"
+                    value={selectedLevel}
+                    autoWidth
+                    onChange={(e) => setSelectedLevel(e.target.value)}
+                >
+                    {
+                        Object.keys(levels).map((item, index) => (
+                            <MenuItem key={index} value={item}>{levels[item][0]}</MenuItem>
+                        ))
+                    }
+                </Select>
+            </Grid>
+            <Grid item xs={12}><Divider/></Grid>
+        </React.Fragment>;
+    }
+
     function FileConfig() {
         return <React.Fragment>
             <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
@@ -797,6 +839,11 @@ function DefoeQueryPage() {
                                             : null
                                     }
                                     {
+                                        "level" in queryMeta[selectedQueryType].inputs && selectedLevel !== ""?
+                                            <LevelConfig />
+                                            : null
+                                    }
+                                    {
                                         "filter" in queryMeta[selectedQueryType].inputs ?
                                             <React.Fragment>
                                                 <Typography
@@ -809,92 +856,104 @@ function DefoeQueryPage() {
                                                     Filtering Options (Optional)
                                                 </Typography>
                                                 <Grid container sx={{ml: 2}}>
-                                                    <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
-                                                        <Typography component="div" gutterBottom variant="subtitle1">
-                                                            Target words or sentences
-                                                        </Typography>
-                                                        <Grid container spacing={1}>
-                                                            {
-                                                                targets.map((item, index) => (
-                                                                    <Grid item xs="auto" key={index}>
-                                                                        <Button
-                                                                            sx={{textTransform: 'none'}}
-                                                                            onClick={() => handledTargetClick(index)}>{item}
-                                                                        </Button>
+                                                    {
+                                                        "target_filter" in queryMeta[selectedQueryType].inputs['filter'] ?
+                                                            <>
+                                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                                    <Typography component="div" gutterBottom variant="subtitle1">
+                                                                        Target words or sentences
+                                                                    </Typography>
+                                                                    <Grid container spacing={1}>
+                                                                        {
+                                                                            targets.map((item, index) => (
+                                                                                <Grid item xs="auto" key={index}>
+                                                                                    <Button
+                                                                                        sx={{textTransform: 'none'}}
+                                                                                        onClick={() => handledTargetClick(index)}>{item}
+                                                                                    </Button>
+                                                                                </Grid>
+                                                                            ))
+                                                                        }
                                                                     </Grid>
-                                                                ))
-                                                            }
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
-                                                        <Paper>
-                                                            <Grid container height={40} justifyContent={"right"}>
-                                                                <Grid item xs>
-                                                                    <InputBase
-                                                                        sx={{pl:1, mt: 0.5}}
-                                                                        fullWidth
-                                                                        value = {currentTarget}
-                                                                        onChange={(e) => setCurrentTarget(e.target.value)}
-                                                                        placeholder="Word or Sentence"
+                                                                </Grid>
+                                                                <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                                                                    <Paper>
+                                                                        <Grid container height={40} justifyContent={"right"}>
+                                                                            <Grid item xs>
+                                                                                <InputBase
+                                                                                    sx={{pl:1, mt: 0.5}}
+                                                                                    fullWidth
+                                                                                    value = {currentTarget}
+                                                                                    onChange={(e) => setCurrentTarget(e.target.value)}
+                                                                                    placeholder="Word or Sentence"
+                                                                                />
+                                                                            </Grid>
+                                                                            <Grid item xs="auto">
+                                                                                <Button
+                                                                                    sx={{height: 40}}
+                                                                                    onClick={handleAddTargetClick}
+                                                                                >
+                                                                                    Add
+                                                                                </Button>
+                                                                            </Grid>
+                                                                        </Grid>
+                                                                    </Paper>
+                                                                </Grid>
+                                                                <Grid item xs={12}><Divider/></Grid>
+                                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                                    <Typography component="div" gutterBottom variant="subtitle1">
+                                                                        Select term which contains <b>Any</b> the target words/sentences
+                                                                    </Typography>
+                                                                    <Typography component="div" variant="body2" color="text.disabled">
+                                                                        Or contains <b>All</b> of the target words/sentences.
+                                                                    </Typography>
+                                                                </Grid>
+                                                                <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}} textAlign={"right"}>
+                                                                    <Switch checked={targetAllChecked}
+                                                                            onChange={(e) => setTargetAllChecked(e.target.checked)}
                                                                     />
                                                                 </Grid>
-                                                                <Grid item xs="auto">
-                                                                    <Button
-                                                                        sx={{height: 40}}
-                                                                        onClick={handleAddTargetClick}
-                                                                    >
-                                                                        Add
-                                                                    </Button>
+                                                                <Grid item xs={12}><Divider/></Grid>
+                                                            </>
+                                                            : null
+                                                    }
+                                                    {
+                                                        "start_year" in queryMeta[selectedQueryType].inputs['filter'] ?
+                                                            <>
+                                                                <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                                                                    <Typography component="div" gutterBottom variant="subtitle1">
+                                                                        Year Range
+                                                                    </Typography>
                                                                 </Grid>
-                                                            </Grid>
-                                                        </Paper>
-                                                    </Grid>
-                                                    <Grid item xs={12}><Divider/></Grid>
-                                                    <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
-                                                        <Typography component="div" gutterBottom variant="subtitle1">
-                                                            Select term which contains <b>Any</b> the target words/sentences
-                                                        </Typography>
-                                                        <Typography component="div" variant="body2" color="text.disabled">
-                                                            Or contains <b>All</b> of the target words/sentences.
-                                                        </Typography>
-                                                    </Grid>
-                                                    <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}} textAlign={"right"}>
-                                                        <Switch checked={targetAllChecked}
-                                                                onChange={(e) => setTargetAllChecked(e.target.checked)}
-                                                        />
-                                                    </Grid>
-                                                    <Grid item xs={12}><Divider/></Grid>
-                                                    <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
-                                                        <Typography component="div" gutterBottom variant="subtitle1">
-                                                            Year Range
-                                                        </Typography>
-                                                    </Grid>
-                                                    <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto', pt: 1, pb: 1}} textAlign={"right"}>
-                                                        <Stack direction="row" spacing={2} alignItems="center"
-                                                               justifyContent={"right"}>
-                                                            <TextField id="start_year"
-                                                                       type={"number"}
-                                                                       InputProps={{
-                                                                           inputProps: {
-                                                                               max: 1900, min: 1771
-                                                                           }
-                                                                       }}
-                                                                       value={startYear}
-                                                                       onChange={(e) => handleStartYearInputChange(e)}
-                                                            />
-                                                            <Typography>To</Typography>
-                                                            <TextField id="end_year"
-                                                                       type={"number"}
-                                                                       InputProps={{
-                                                                           inputProps: {
-                                                                               max: 1900, min: 1771
-                                                                           }
-                                                                       }}
-                                                                       value={endYear}
-                                                                       onChange={(e) => handleEndYearInputChange(e)} />
-                                                        </Stack>
-                                                    </Grid>
-                                                    <Grid item xs={12}><Divider/></Grid>
+                                                                <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto', pt: 1, pb: 1}} textAlign={"right"}>
+                                                                    <Stack direction="row" spacing={2} alignItems="center"
+                                                                           justifyContent={"right"}>
+                                                                        <TextField id="start_year"
+                                                                                   type={"number"}
+                                                                                   InputProps={{
+                                                                                       inputProps: {
+                                                                                           max: 1900, min: 1771
+                                                                                       }
+                                                                                   }}
+                                                                                   value={startYear}
+                                                                                   onChange={(e) => handleStartYearInputChange(e)}
+                                                                        />
+                                                                        <Typography>To</Typography>
+                                                                        <TextField id="end_year"
+                                                                                   type={"number"}
+                                                                                   InputProps={{
+                                                                                       inputProps: {
+                                                                                           max: 1900, min: 1771
+                                                                                       }
+                                                                                   }}
+                                                                                   value={endYear}
+                                                                                   onChange={(e) => handleEndYearInputChange(e)} />
+                                                                    </Stack>
+                                                                </Grid>
+                                                                <Grid item xs={12}><Divider/></Grid>
+                                                            </>
+                                                            : null
+                                                    }
                                                     {
                                                         "bounding_box" in queryMeta[selectedQueryType].inputs['filter'] ?
                                                             <BoundingBoxConfig/>
