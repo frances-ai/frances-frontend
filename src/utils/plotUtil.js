@@ -14,6 +14,49 @@ export function get_plot_frequency_count_data(query_results) {
     return data;
 }
 
+export function get_word_cloud_words_frequency(words_frequency) {
+    /**
+     * words_frequency: [(word,... 10), (word,... 2), ....]
+     * return: [
+     * {text: word,
+     * value: frequency,
+     * }, ....
+     * ]
+     */
+    let words = []
+    words_frequency.forEach(wf => {
+        words.push({
+            text: wf[0],
+            value: wf[wf.length-1]
+        })
+    })
+    return words;
+}
+
+
+export function get_plot_words_frequency(words_frequency) {
+    /**
+     * words_frequency: [(word, .... 10), (word,.... 2), ....]
+     * return: [
+     * {x: [values in x-axis],
+     * y: [values in y-axis],
+     * type: 'bar'
+     * }
+     * ]
+     */
+    let words = [];
+    let frequencies = [];
+    words_frequency.forEach(wf => {
+        words.push(wf[0])
+        frequencies.push(wf[wf.length-1])
+    })
+    return [{
+        x: words,
+        y: frequencies,
+        type: 'bar'
+    }]
+}
+
 export function get_plot_lexicon_diversity_year(query_results) {
     /*
     query_results: {

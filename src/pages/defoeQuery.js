@@ -34,6 +34,7 @@ function DefoeQueryPage() {
         gazetteer: '',
         target_sentences: '',
         target_filter: null,
+        exclude_words: '',
         start_year: null,
         end_year: null,
         hit_count: null,
@@ -63,6 +64,7 @@ function DefoeQueryPage() {
     const [endYear, setEndYear] = useState(initConfig['end_year']);
     const [earliestYear, setEarliestYear] = useState();
     const [latestYear, setLatestYear] = useState();
+    const [excludeWords, setExcludeWords] = useState([]);
     const [targets, setTargets] = useState([]);
     const [currentTarget, setCurrentTarget] = useState("");
     const [fileID, setFileID] = useState(initConfig['file']);
@@ -163,6 +165,11 @@ function DefoeQueryPage() {
                 configData.target_sentences = targets.join(",");
             }
 
+            if ("exclude_words" in inputs["filter"]) {
+                console.log(excludeWords);
+                configData.exclude_words = excludeWords.join(",");
+            }
+
             if ("target_filter" in inputs["filter"] && targets.length > 0) {
                 configData.target_filter = targetAllChecked ? "or" : "and";
             }
@@ -197,7 +204,8 @@ function DefoeQueryPage() {
         //Check if all required configuration are made.
         setSubmitDisable(!hasAllRequiredConfigDone(initConfig, configData, queryMeta));
     }, [queryMeta, selectedCollection, selectedSourceProvider, selectedQueryType, selectedLevel,
-        selectedPreprocessIndex, boundingBox, selectedGazetteerIndex, targets, targetAllChecked, startYear, endYear, hitCountChecked, fileID, window]);
+        selectedPreprocessIndex, boundingBox, selectedGazetteerIndex, targets, targetAllChecked, excludeWords, selectedLevel,
+        startYear, endYear, hitCountChecked, fileID, window]);
 
     function hasAllRequiredConfigDone(initConfig, currentConfig, queryMeta) {
         if (queryMeta === undefined || selectedQueryType === '') {
@@ -258,6 +266,7 @@ function DefoeQueryPage() {
             setCurrentTarget('');
         }
     }
+
 
     const navigate = useNavigate();
 
@@ -680,6 +689,73 @@ function DefoeQueryPage() {
         </React.Fragment>;
     }
 
+    function ExcludeWordsConfig() {
+
+        const [currentWord, setCurrentWord] = useState("")
+
+        const handledExcludeWordClick = (index) => {
+            console.log(index);
+            setExcludeWords(current =>
+                current.filter((_, i) => {
+                    return i !== index;
+                })
+            );
+        }
+
+        const handleAddExcludeWordClick = () => {
+            if (currentWord !== '' && excludeWords.indexOf(currentWord) === -1) {
+                setExcludeWords(current =>
+                    [...current, currentWord]
+                );
+                setCurrentWord('');
+            }
+        }
+
+        return <>
+            <Grid item xs={8} textAlign={"left"} sx={{m: 2}}>
+                <Typography component="div" gutterBottom variant="subtitle1">
+                    Exclude Words
+                </Typography>
+                <Grid container spacing={1}>
+                    {
+                        excludeWords.map((item, index) => (
+                            <Grid item xs="auto" key={index}>
+                                <Button
+                                    sx={{textTransform: 'none'}}
+                                    onClick={() => handledExcludeWordClick(index)}>{item}
+                                </Button>
+                            </Grid>
+                        ))
+                    }
+                </Grid>
+            </Grid>
+            <Grid item xs sx={{mr: 5, mt: 'auto', mb: 'auto'}}>
+                <Paper>
+                    <Grid container height={40} justifyContent={"right"}>
+                        <Grid item xs>
+                            <InputBase
+                                sx={{pl:1, mt: 0.5}}
+                                fullWidth
+                                value = {currentWord}
+                                onChange={(e) => setCurrentWord(e.target.value)}
+                                placeholder="enter word"
+                            />
+                        </Grid>
+                        <Grid item xs="auto">
+                            <Button
+                                sx={{height: 40}}
+                                onClick={handleAddExcludeWordClick}
+                            >
+                                Add
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Paper>
+            </Grid>
+            <Grid item xs={12}><Divider/></Grid>
+        </>
+    }
+
     function LevelConfig() {
 
         return <React.Fragment>
@@ -839,7 +915,7 @@ function DefoeQueryPage() {
                                             : null
                                     }
                                     {
-                                        "level" in queryMeta[selectedQueryType].inputs && selectedLevel !== ""?
+                                        "level" in queryMeta[selectedQueryType].inputs && levels !== undefined && selectedLevel !== ""?
                                             <LevelConfig />
                                             : null
                                     }
@@ -916,6 +992,11 @@ function DefoeQueryPage() {
                                                                 <Grid item xs={12}><Divider/></Grid>
                                                             </>
                                                             : null
+                                                    }
+                                                    {
+                                                        "exclude_words" in queryMeta[selectedQueryType].inputs['filter'] ?
+                                                            <ExcludeWordsConfig /> : null
+
                                                     }
                                                     {
                                                         "start_year" in queryMeta[selectedQueryType].inputs['filter'] ?

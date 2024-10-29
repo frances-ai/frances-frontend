@@ -1,5 +1,17 @@
 import Box from "@mui/material/Box";
-import {Divider, IconButton, Link, Menu, MenuItem, Paper, Stack, Tooltip, Typography} from "@mui/material";
+import {
+    Divider,
+    IconButton,
+    Link,
+    Menu,
+    MenuItem,
+    Paper,
+    Stack,
+    Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow,
+    Tooltip,
+    Typography
+} from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -15,11 +27,11 @@ function TrackSourceGraph(props) {
     const [edges, setEdges] = useState([])
     const [selections, setSelections] = useState([]);
     const rdfs_type_uri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+    const foaf_homepage_uri = "http://xmlns.com/foaf/0.1/homepage";
     const hto_text_uri = "https://w3id.org/hto#text";
     const hto_hasTextQuality_uri = "https://w3id.org/hto#hasTextQuality";
-    const info_predicates = [rdfs_type_uri, hto_text_uri, hto_hasTextQuality_uri];
+    const info_predicates = [rdfs_type_uri, hto_text_uri, hto_hasTextQuality_uri, foaf_homepage_uri];
     const [nodesInfo, setNodesInfo] = useState({})
-
 
     function nodeExists(node_id) {
         for (const index in nodes) {
@@ -32,6 +44,9 @@ function TrackSourceGraph(props) {
     }
 
     function get_simple_name_from_uri(uri) {
+        if (uri === entry_uri) {
+            return "Current Description";
+        }
         const last_slash_index = uri.lastIndexOf("/")
         const last_hash_index = uri.lastIndexOf("#")
         if (last_hash_index > last_slash_index) {
@@ -175,53 +190,90 @@ function TrackSourceGraph(props) {
                     position={"absolute"}
                     top={10}
                     right={0}
-                    width={300}
+                    maxWidth={700}
                     minHeight={100}
                     p={1}
-                    sx={{backgroundColor: grey[300], borderTopLeftRadius: 5, borderBottomLeftRadius: 5}}
+                    sx={{backgroundColor: grey[100], borderTopLeftRadius: 5, borderBottomLeftRadius: 5}}
                 >
+                    <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>Node: </Typography>
                     <Link href={hto_uri_to_path(selections[0])} underline={"none"}>
-                        <Typography variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>{get_simple_name_from_uri(selections[0])}</Typography>
+                        <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>{get_simple_name_from_uri(selections[0])}</Typography>
                     </Link>
 
                     {
                         selections[0] in nodesInfo ?
-                            <>
-                            {
-                                rdfs_type_uri in nodesInfo[selections[0]] ?
-                                    <>
-                                        <Typography variant={"body1"} mt={1}>
-                                            Type
-                                        </Typography>
-                                        <Divider />
-                                        <Link href={hto_uri_to_path(nodesInfo[selections[0]][rdfs_type_uri]["value"])} underline={"none"}>
-                                            <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][rdfs_type_uri]["value"])}</Typography>
-                                        </Link>
+                            <TableContainer sx={{marginTop: 1}}>
+                                <Table padding={"none"}>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={{paddingRight: 2}}>
+                                                Property
+                                            </TableCell>
+                                            <TableCell>Value</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
                                         {
-                                            Object.keys(nodesInfo[selections[0]]).map((predicate_uri) => (
+                                            rdfs_type_uri in nodesInfo[selections[0]] ?
                                                 <>
+                                                    <TableRow hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                                        <TableCell sx={{paddingRight: 2}}>
+                                                            <Typography variant={"body1"}>
+                                                                Type
+                                                            </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Link href={hto_uri_to_path(nodesInfo[selections[0]][rdfs_type_uri]["value"])} underline={"none"}>
+                                                                <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][rdfs_type_uri]["value"])}</Typography>
+                                                            </Link>
+                                                        </TableCell>
+                                                    </TableRow>
                                                     {
-                                                        predicate_uri !== rdfs_type_uri && predicate_uri !== hto_text_uri ?
-                                                            <>
-                                                                <Link href={hto_uri_to_path(predicate_uri)} underline={"none"}>
-                                                                    <Typography variant={"body1"} sx={{wordWrap: 'break-word'}} mt={1}>{get_simple_name_from_uri(predicate_uri)}</Typography>
-                                                                </Link>
-                                                                <Divider />
-                                                                {
-                                                                    nodesInfo[selections[0]][predicate_uri]["type"] === "uri" ?
-                                                                        <Link href={hto_uri_to_path(nodesInfo[selections[0]][predicate_uri]["value"])} underline={"none"}>
-                                                                            <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][predicate_uri]["value"])}</Typography>
-                                                                        </Link> :
-                                                                        <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][predicate_uri]["value"])}</Typography>
-                                                                }
-                                                            </> : null
+                                                        foaf_homepage_uri in nodesInfo[selections[0]] ?
+                                                            <TableRow hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                                                <TableCell sx={{paddingRight: 2}}>
+                                                                    <Typography variant={"body1"}>
+                                                                        Homepage
+                                                                    </Typography>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Link href={hto_uri_to_path(nodesInfo[selections[0]][foaf_homepage_uri]["value"])} underline={"none"}>
+                                                                        <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{nodesInfo[selections[0]][foaf_homepage_uri]["value"]}</Typography>
+                                                                    </Link>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                            : null
                                                     }
-                                                </>
-                                            ))
+                                                    {
+                                                        Object.keys(nodesInfo[selections[0]]).map((predicate_uri) => (
+                                                            <TableRow hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                                                {
+                                                                    predicate_uri !== rdfs_type_uri && predicate_uri !== hto_text_uri && predicate_uri !== foaf_homepage_uri?
+                                                                        <>
+                                                                            <TableCell sx={{paddingRight: 2}}>
+                                                                                <Link href={hto_uri_to_path(predicate_uri)} underline={"none"}>
+                                                                                    <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(predicate_uri)}</Typography>
+                                                                                </Link>
+                                                                            </TableCell>
+                                                                            <TableCell>
+                                                                                {
+                                                                                    nodesInfo[selections[0]][predicate_uri]["type"] === "uri" ?
+                                                                                        <Link href={hto_uri_to_path(nodesInfo[selections[0]][predicate_uri]["value"])} underline={"none"}>
+                                                                                            <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][predicate_uri]["value"])}</Typography>
+                                                                                        </Link> :
+                                                                                        <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][predicate_uri]["value"])}</Typography>
+                                                                                }
+                                                                            </TableCell>
+                                                                        </> : null
+                                                                }
+                                                            </TableRow>
+                                                        ))
+                                                    }
+                                                </> : null
                                         }
-                                    </> : null
-                            }
-                            </>
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
                             :
                             <>
                                 <Typography variant={"body1"} sx={{wordWrap: 'break-word'}} mt={1}>
@@ -314,6 +366,16 @@ function MultiSourceDescriptionDisplay(props) {
         setCurrentDescriptionIndex(newValue);
     }
 
+    const get_quality_label = (quality_uri) => {
+        let label = quality_uri.split("#")[1]
+        // capitalise label
+        label = label.toUpperCase()[0] + label.toLowerCase().slice(1)
+        if (label === "Low") {
+            label = "Original"
+        }
+        return label
+    }
+
     return (
         <>
             <Box pt={2} pb={1}>
@@ -324,7 +386,7 @@ function MultiSourceDescriptionDisplay(props) {
                     <Tabs value={currentDescriptionIndex} onChange={handleDescriptionTabClick} >
                         {
                             descriptions.map((record, key) => (
-                                <Tab key={key} label={record.text_quality.split("#")[1]} />
+                                <Tab key={key} label={get_quality_label(record.text_quality)} />
                             ))
                         }
                     </Tabs>
