@@ -11,11 +11,11 @@ import TimelineContent from "@mui/lab/TimelineContent";
 import ReactWordcloud from "@cyberblast/react-wordcloud";
 
 function WordClouds(props) {
-    const {year_word_frequencies, year} = props
+    const {year_word_frequencies, year, entity_label} = props
     return (
         <Fragment>
             <Box pt={2} pb={1}>
-                <Typography variant={"h6"}>Word clouds</Typography>
+                <Typography variant={"h6"}>Word clouds - {entity_label}</Typography>
             </Box>
             <Timeline position="alternate">
                 {

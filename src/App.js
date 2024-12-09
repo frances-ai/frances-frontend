@@ -1,16 +1,13 @@
 import './App.css';
-import {Route, Routes} from "react-router-dom";
-import TermSearchPage from "./pages/termSearch";
+import StatsAPI from './apis/stats'
+import {Route, Routes, useLocation} from "react-router-dom";
 import RegisterPage from "./pages/register";
-import React from 'react';
+import React, {useEffect} from 'react';
 import LoginPage from "./pages/login";
 import {AuthProvider} from "./contexts/authProvider";
 import RequireAuth from "./components/requireAuth";
-import TermSimilarityPage from "./pages/termSimilarity";
 import DefoeQueryPage from "./pages/defoeQuery";
 import HeaderLayout from "./pages/headerLayout";
-import ResultPage from "./pages/result";
-import TopicModellingPage from "./pages/topicModelling";
 import CollectionDetailsPage from "./pages/collectionDetails";
 import DefoeQueryResult from "./pages/defoeQueryResult";
 import DefoeQueryTasksPage from "./pages/defoeQueryTasks";
@@ -23,25 +20,31 @@ import TopicTermRecord from "./pages/records/TopicTermRecord";
 
 function App() {
 
-    const update = localStorage.getItem("update-v2.1");
+    const update = localStorage.getItem("update-v2.1.2");
     if (!update) {
         localStorage.clear();
-        localStorage.setItem("update-v2.1", "0");
+        localStorage.setItem("update-v2.1.2", "0");
     }
 
+    const location = useLocation();
 
-  return (
+    useEffect(() => {
+        StatsAPI.add_visit(location.pathname).then(res => {
+            console.log(res)
+        }).catch(reason => {
+            console.log(reason)
+        }) // Track the visit with the current path
+    }, [location.pathname]);
+
+
+    return (
       <AuthProvider>
           <Routes>
               <Route path="/" element={<HeaderLayout/>}>
                   <Route index element={<SearchPage/>} />
                   <Route path="search" element={<SearchPage/>} />
-                  <Route path="termSearch" element={<TermSearchPage/>} />
-                  <Route path="termSimilarity" element={<TermSimilarityPage/>} />
-                  <Route path="topicModelling" element={<TopicModellingPage/>} />
-                  <Route path="result" element={<ResultPage/>} />
                   <Route path="searchResult" element={<SearchResultPage/>} />
-                  <Route path="/collectionDetails">
+                  <Route path="collectionDetails">
                       <Route index element={<CollectionDetailsPage/>} />
                       <Route path="detail" element={<CollectionDetailResult/>} />
                   </Route>
@@ -52,17 +55,17 @@ function App() {
                   </Route>
 
                   {/* Protected routes */}
-                  <Route path="/defoeQuery" element={
+                  <Route path="defoeQuery" element={
                       <RequireAuth>
                           <DefoeQueryPage />
                       </RequireAuth>}
                   />
-                  <Route path="/defoeQueryResult" element={
+                  <Route path="defoeQueryResult" element={
                       <RequireAuth>
                           <DefoeQueryResult />
                       </RequireAuth>}
                   />
-                  <Route path="/defoeQueryTasks" element={
+                  <Route path="defoeQueryTasks" element={
                       <RequireAuth>
                           <DefoeQueryTasksPage />
                       </RequireAuth>}

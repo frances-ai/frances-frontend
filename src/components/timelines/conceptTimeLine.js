@@ -57,14 +57,14 @@ function TermRecordCard(props) {
 }
 
 function ConceptTimeLine(props) {
-    const {concept_terms, year} = props;
+    const {concept_terms, year, entity_label} = props;
 
     console.log(year)
 
     return (
         <Fragment>
             <Box pt={2} pb={1}>
-                <Typography variant={"h6"}>Concept Timeline</Typography>
+                <Typography variant={"h6"}>Concept Timeline - {entity_label} </Typography>
             </Box>
             <Timeline position="alternate">
                 {

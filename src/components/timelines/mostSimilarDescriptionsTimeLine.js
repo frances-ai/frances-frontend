@@ -10,11 +10,11 @@ import TimelineConnector from "@mui/lab/TimelineConnector";
 import TimelineContent from "@mui/lab/TimelineContent";
 
 function MostSimilarDescriptions(props) {
-    const {similar_descriptions, year} = props
+    const {similar_descriptions, year, entity_label} = props
     return (
         <Fragment>
             <Box pt={2} pb={1}>
-                <Typography variant={"h6"}>The most similar description across years</Typography>
+                <Typography variant={"h6"}>The most similar description across years - {entity_label}</Typography>
             </Box>
             <Timeline position="alternate">
                 {

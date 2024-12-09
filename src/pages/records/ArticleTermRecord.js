@@ -218,14 +218,17 @@ function ArticleTermRecordPage() {
             <Box sx={{backgroundColor: 'rgba(240,240,240,0.5)', minHeight: 200}} mt={2} pb={1} >
                 <Container maxWidth="md">
                     {
-                        termInfo?.descriptions? <MultiSourceDescriptionDisplay descriptions={termInfo?.descriptions} /> : null
+                        termInfo?.descriptions? <MultiSourceDescriptionDisplay
+                            descriptions={termInfo?.descriptions}
+                            entity_label = {termInfo?.term_name + ","  + termInfo?.edition.year_published}
+                        /> : null
                     }
                 </Container>
             </Box>
             {
                 similarTerms?.length > 0 ?
                     <Container maxWidth={"md"}>
-                        <Typography variant={"h6"} mt={2}>Discover similar terms</Typography>
+                        <Typography variant={"h6"} mt={2}>Discover similar terms - {termInfo?.term_name + ","  + termInfo?.edition.year_published}</Typography>
                         <Box>
                             {
                                 similarTerms.map((value, index) => (
@@ -241,7 +244,11 @@ function ArticleTermRecordPage() {
                 similarTermDescriptions?.length > 0?
                     <Box sx={{backgroundColor: 'rgba(240,240,240,0.5)', minHeight: 200}} mt={2} pb={1} >
                         <Container maxWidth="md">
-                            <MostSimilarDescriptions similar_descriptions={similarTermDescriptions} year={termInfo?.edition.year_published}></MostSimilarDescriptions>
+                            <MostSimilarDescriptions
+                                similar_descriptions={similarTermDescriptions}
+                                year={termInfo?.edition.year_published}
+                                entity_label = {termInfo?.term_name + ","  + termInfo?.edition.year_published}
+                            ></MostSimilarDescriptions>
                         </Container>
                     </Box>
                     : null
@@ -249,14 +256,20 @@ function ArticleTermRecordPage() {
             {
                 yearWordFrequencies?
                     <Container maxWidth="md">
-                        <WordClouds year_word_frequencies={yearWordFrequencies} year={termInfo?.edition.year_published}/>
+                        <WordClouds
+                            year_word_frequencies={yearWordFrequencies}
+                            entity_label = {termInfo?.term_name + ","  + termInfo?.edition.year_published}
+                            year={termInfo?.edition.year_published}/>
                     </Container> : null
             }
             {
                 conceptTerms.length > 0 ?
                     <Box sx={{backgroundColor: 'rgba(240,240,240,0.5)', minHeight: 200}} mt={2} pb={1} >
                         <Container maxWidth="md">
-                            <ConceptTimeLine concept_terms={conceptTerms} year={termInfo?.edition.year_published}/>
+                            <ConceptTimeLine
+                                concept_terms={conceptTerms}
+                                entity_label = {termInfo?.term_name + ","  + termInfo?.edition.year_published}
+                                year={termInfo?.edition.year_published}/>
                         </Container>
                     </Box> : null
             }

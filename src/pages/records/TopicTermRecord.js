@@ -1,16 +1,15 @@
+import {Button, Container, Divider, Stack, Typography, Link} from "@mui/material";
 import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
-import QueryAPI from "../../apis/query";
+import QueryAPI from "../../apis/query"
 import Box from "@mui/material/Box";
-import {Button, Container, Divider, Grid, IconButton, Link, Paper, Stack, Typography} from "@mui/material";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import config from "../../config.json";
 import PageImageDisplay from "../../components/PageImageDisplay";
-import MostSimilarDescriptions from "../../components/timelines/mostSimilarDescriptionsTimeLine";
-import WordClouds from "../../components/timelines/wordCloudsTimeLine";
+import config from "../../config.json"
 import ConceptTimeLine from "../../components/timelines/conceptTimeLine";
+import WordClouds from "../../components/timelines/wordCloudsTimeLine";
+import MostSimilarDescriptions from "../../components/timelines/mostSimilarDescriptionsTimeLine";
 import MultiSourceDescriptionDisplay from "../../components/MultiSourceDescriptionDisplay";
+
 
 function TopicTermRecordPage() {
     let { termId } = useParams();
@@ -58,6 +57,7 @@ function TopicTermRecordPage() {
             })
         }
     }, [termInfo])
+
 
     const get_collection_name = (collection_name) => {
         // example: collection_name: Encyclopaedia Britannica Collection
@@ -218,14 +218,17 @@ function TopicTermRecordPage() {
             <Box sx={{backgroundColor: 'rgba(240,240,240,0.5)', minHeight: 200}} mt={2} pb={1} >
                 <Container maxWidth="md">
                     {
-                        termInfo?.descriptions? <MultiSourceDescriptionDisplay descriptions={termInfo?.descriptions} /> : null
+                        termInfo?.descriptions? <MultiSourceDescriptionDisplay
+                            descriptions={termInfo?.descriptions}
+                            entity_label = {termInfo?.term_name + ","  + termInfo?.edition.year_published}
+                        /> : null
                     }
                 </Container>
             </Box>
             {
                 similarTerms?.length > 0 ?
                     <Container maxWidth={"md"}>
-                        <Typography variant={"h6"} mt={2}>Discover similar terms</Typography>
+                        <Typography variant={"h6"} mt={2}>Discover similar terms - {termInfo?.term_name + ","  + termInfo?.edition.year_published}</Typography>
                         <Box>
                             {
                                 similarTerms.map((value, index) => (
@@ -241,7 +244,11 @@ function TopicTermRecordPage() {
                 similarTermDescriptions?.length > 0?
                     <Box sx={{backgroundColor: 'rgba(240,240,240,0.5)', minHeight: 200}} mt={2} pb={1} >
                         <Container maxWidth="md">
-                            <MostSimilarDescriptions similar_descriptions={similarTermDescriptions} year={termInfo?.edition.year_published}></MostSimilarDescriptions>
+                            <MostSimilarDescriptions
+                                similar_descriptions={similarTermDescriptions}
+                                year={termInfo?.edition.year_published}
+                                entity_label = {termInfo?.term_name + ","  + termInfo?.edition.year_published}
+                            ></MostSimilarDescriptions>
                         </Container>
                     </Box>
                     : null
@@ -249,14 +256,20 @@ function TopicTermRecordPage() {
             {
                 yearWordFrequencies?
                     <Container maxWidth="md">
-                        <WordClouds year_word_frequencies={yearWordFrequencies} year={termInfo?.edition.year_published}/>
+                        <WordClouds
+                            year_word_frequencies={yearWordFrequencies}
+                            entity_label = {termInfo?.term_name + ","  + termInfo?.edition.year_published}
+                            year={termInfo?.edition.year_published}/>
                     </Container> : null
             }
             {
                 conceptTerms.length > 0 ?
                     <Box sx={{backgroundColor: 'rgba(240,240,240,0.5)', minHeight: 200}} mt={2} pb={1} >
                         <Container maxWidth="md">
-                            <ConceptTimeLine concept_terms={conceptTerms} year={termInfo?.edition.year_published}/>
+                            <ConceptTimeLine
+                                concept_terms={conceptTerms}
+                                entity_label = {termInfo?.term_name + ","  + termInfo?.edition.year_published}
+                                year={termInfo?.edition.year_published}/>
                         </Container>
                     </Box> : null
             }
