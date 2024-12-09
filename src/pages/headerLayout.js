@@ -3,6 +3,8 @@ import Box from "@mui/material/Box";
 import React, {useEffect, useState} from 'react';
 import {Outlet, useLocation} from 'react-router-dom'
 import Copyright from "../components/copyright";
+import SiteStats from "../components/siteStats";
+import Footer from "../components/footer";
 
 function HeaderLayout() {
     const location = useLocation();
@@ -22,7 +24,7 @@ function HeaderLayout() {
                 <Header index={currentIndex}/>
                 <Outlet/>
             </Box>
-            <Copyright sx={{ mt: 4, mb: 4}} color={'text.secondary'}/>
+            <Footer />
         </Box>
     )
 }
