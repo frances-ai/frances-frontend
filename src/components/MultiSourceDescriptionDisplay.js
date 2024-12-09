@@ -1,6 +1,5 @@
 import Box from "@mui/material/Box";
 import {
-    Divider,
     IconButton,
     Link,
     Menu,
@@ -9,7 +8,6 @@ import {
     Stack,
     Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow,
-    Tooltip,
     Typography
 } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -19,7 +17,7 @@ import {useEffect, useState} from "react";
 import { grey } from '@mui/material/colors';
 import {GraphCanvas, RadialMenu} from 'reagraph';
 import QueryAPI from "../apis/query"
-import {hto_uri_to_path} from "../utils/stringUtil";
+import {hto_uri_to_path, is_valid_link} from "../utils/stringUtil";
 
 function TrackSourceGraph(props) {
     const {entry_uri} = props
@@ -196,10 +194,13 @@ function TrackSourceGraph(props) {
                     sx={{backgroundColor: grey[100], borderTopLeftRadius: 5, borderBottomLeftRadius: 5}}
                 >
                     <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>Node: </Typography>
-                    <Link href={hto_uri_to_path(selections[0])} underline={"none"}>
-                        <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>{get_simple_name_from_uri(selections[0])}</Typography>
-                    </Link>
-
+                    {
+                        is_valid_link(hto_uri_to_path(selections[0])) ?
+                            <Link href={hto_uri_to_path(selections[0])} underline={"none"}>
+                                <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>{get_simple_name_from_uri(selections[0])}</Typography>
+                            </Link> :
+                            <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>{get_simple_name_from_uri(selections[0])}</Typography>
+                    }
                     {
                         selections[0] in nodesInfo ?
                             <TableContainer sx={{marginTop: 1}}>
@@ -357,7 +358,7 @@ function DescriptionTabPanel(props) {
 
 function MultiSourceDescriptionDisplay(props) {
 
-    const {descriptions} = props;
+    const {descriptions, entity_label} = props;
 
     const [currentDescriptionIndex, setCurrentDescriptionIndex] = useState(0);
 
@@ -379,7 +380,7 @@ function MultiSourceDescriptionDisplay(props) {
     return (
         <>
             <Box pt={2} pb={1}>
-                <Typography variant={"h6"}>Description</Typography>
+                <Typography variant={"h6"}>Description - {entity_label}</Typography>
             </Box>
             <Paper component={"div"} sx={{minHeight: 130, pd: 1}}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
