@@ -464,14 +464,17 @@ function SearchResultPage() {
                                             />
                                         </Stack>: null
                                 }
-                                <Stack mt={2} direction="row" spacing={1} alignItems="center"
-                                       justifyContent={"space-between"}>
-                                    <Typography component="div" variant="body1" fontWeight={"bold"} >Phrase Match</Typography>
-                                    <Switch
-                                        checked={phraseMatch}
-                                        onChange={(e) => setPhraseMatch(e.target.checked)}
-                                    />
-                                </Stack>
+                                {
+                                    search_type === "full_text" ?
+                                        <Stack mt={2} direction="row" spacing={1} alignItems="center"
+                                               justifyContent={"space-between"}>
+                                            <Typography component="div" variant="body1" fontWeight={"bold"} >Phrase Match</Typography>
+                                            <Switch
+                                                checked={phraseMatch}
+                                                onChange={(e) => setPhraseMatch(e.target.checked)}
+                                            />
+                                        </Stack> : null
+                                }
                                 <Box mt={2}>
                                     <Typography component="div" variant="body1" fontWeight={"bold"} color={"text.secondary"} pb={2}>
                                         Print Location
