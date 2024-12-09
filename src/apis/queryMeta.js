@@ -26,6 +26,20 @@ export const preprocess = [
   ]
 ]
 
+export const eb_levels = {
+  "collection": ["Collection", "Apply this query to collection level"],
+  "volume": ["Volume", "Apply this query to volume level"],
+  "edition": ["Edition", "Apply this query to edition level"],
+  "year": ["Year", "Apply this query to year level"]
+}
+
+export const nls_levels = {
+  "collection": ["Collection", "Apply this query to collection level"],
+  "volume": ["Volume", "Apply this query to volume level"],
+  "series": ["Series", "Apply this query to series level"],
+  "year": ["Year", "Apply this query to year level"]
+}
+
 export const sourceProvidersInfo = {
   "NLS": ["All data from National Library of Scotland"],
   "HQ": ["Data from several sources with high quality text"],
@@ -34,14 +48,14 @@ export const sourceProvidersInfo = {
 
 export const gazetteer =[
     [
-        "geonames",
-        "Geonames",
-        "A world-wide gazetteer of over eight million placenames, made available free of charge."
-    ],
-    [
         "os",
         "OS",
         "A detailed gazetteer of UK places,derived from the Ordnance Survey 1:50,000 scale gazetteer, under the OS Open Data initiative. The geoparser code adds GeoNames entries for large populated places around the globe when using this option to allow resolution of place names outside the UK."
+    ],
+    [
+      "geonames",
+      "Geonames",
+      "A world-wide gazetteer of over eight million placenames, made available free of charge."
     ],
     [
         "naturalearth",
@@ -171,17 +185,39 @@ export const queryMeta = {
         }
       }
     },
-    "frequency-distribution": {
-      "description": "It calculates the frequency of the most ‘N’ common tokens in terms definitions",
-      "inputs": {}
+    "frequency_distribution": {
+      "description": "It calculates the frequency of the most ‘N’ common tokens in the collection",
+      "inputs": {
+        "preprocess": true,
+        "level": true,
+        "filter": {
+          "exclude_words": false,
+          "start_year": false,
+          "end_year": false
+        }
+      }
     },
-    "lexicon-diversity": {
+    "lexicon_diversity": {
       "description": "It computes the lexical diversity metric, which is the ratio of the vocabulary size to the total number of words in the text",
-      "inputs": {}
+      "inputs": {
+        "preprocess": true,
+        "level": true,
+        "filter": {
+          "start_year": false,
+          "end_year": false
+        }
+      }
     },
     "person_entity_recognition": {
       "description": "It identifies people mentioned in text and estimates the gender distribution",
-      "inputs": {}
+      "inputs": {
+        "level": true,
+        "filter": {
+          "exclude_words": false,
+          "start_year": false,
+          "end_year": false
+        }
+      }
     }
   },
   "NLS": {
@@ -258,17 +294,39 @@ export const queryMeta = {
         }
       }
     },
-    "frequency-distribution": {
-      "description": "It calculates the frequency of the most ‘N’ common tokens in pages",
-      "inputs": {}
+    "frequency_distribution": {
+      "description": "It calculates the frequency of the most ‘N’ common tokens in the collection",
+      "inputs": {
+        "preprocess": true,
+        "level": true,
+        "filter": {
+          "exclude_words": false,
+          "start_year": false,
+          "end_year": false
+        }
+      }
     },
-    "lexicon-diversity": {
+    "lexicon_diversity": {
       "description": "It computes the lexical diversity metric, which is the ratio of the vocabulary size to the total number of words in the text",
-      "inputs": {}
+      "inputs": {
+        "preprocess": true,
+        "level": true,
+        "filter": {
+          "start_year": false,
+          "end_year": false
+        }
+      }
     },
     "person_entity_recognition": {
       "description": "It identifies people mentioned in text and estimates the gender distribution",
-      "inputs": {}
+      "inputs": {
+        "level": true,
+        "filter": {
+          "exclude_words": false,
+          "start_year": false,
+          "end_year": false
+        }
+      }
     }
   }
 }

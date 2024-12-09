@@ -5,7 +5,7 @@ import {
     CardContent,
     CardMedia, CircularProgress,
     Container, Divider,
-    Grid, Link,
+    Grid, IconButton, Link,
     Paper,
     Stack, TextField,
     Typography
@@ -14,6 +14,7 @@ import {useLocation} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import CollectionAPI from "../apis/collection"
 import Box from "@mui/material/Box";
+import DownloadIcon from "@mui/icons-material/Download";
 
 function Editions(props) {
     const {collection, selectedES, setSelectedES} = props;
@@ -51,7 +52,7 @@ function Editions(props) {
 
 
     useEffect(() => {
-        if (collection.id === 1) {
+        if (collection.uri.includes("EncyclopaediaBritannica")) {
             CollectionAPI.get_eb_editions().then((response) => {
                 const es = response?.data;
                 setEditionsOrSeries(es);
@@ -87,7 +88,7 @@ function Editions(props) {
 
     useEffect(() => {
         if (selectedES !== undefined) {
-            if (collection.id === 1) {
+            if (collection.uri.includes("EncyclopaediaBritannica")) {
                 CollectionAPI.get_eb_edition_detail(selectedES.uri).then((response) => {
                     console.log(response?.data);
                     const es = response?.data;
@@ -107,7 +108,7 @@ function Editions(props) {
     return (
         <React.Fragment>
             <Typography gutterBottom variant={"h5"} component="div">
-                {(collection.id === 1? "Editions" : "Series")} for {collection.name}
+                {(collection.uri.includes("EncyclopaediaBritannica")? "Editions" : "Series")} for {collection.name}
             </Typography>
             <Grid container columnSpacing={{ sm: 1, md: 5}} sx={{mt:3}}>
                 <Grid item md={5} xs={12}>
@@ -115,7 +116,7 @@ function Editions(props) {
                         sx={{marginBottom: 2}}
                         fullWidth
                         onChange={handleEditionSerieSearch}
-                        label={"Search " + (collection.id === 1? "Edition" : "Serie")}
+                        label={"Search " + (collection.uri.includes("EncyclopaediaBritannica")? "Edition" : "Serie")}
                         variant="outlined"/>
                     <Stack direction={"column"} maxHeight={300} sx={{overflowY: "scroll"}}>
                         {
@@ -160,14 +161,14 @@ function Editions(props) {
                                                 {esDetail?.subtitle}
                                             </Typography>
                                         </Grid>
-                                        <Grid item md={3}>
-                                            <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                                Publication Year:
-                                            </Typography>
-                                        </Grid>
                                     </React.Fragment>
                                     : null
                             }
+                            <Grid item md={3}>
+                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                    Publication Year:
+                                </Typography>
+                            </Grid>
                             <Grid item md={2}>
                                 <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
                                     {esDetail?.year}
@@ -257,6 +258,12 @@ function Editions(props) {
                                     {esDetail?.numOfVolumes}
                                 </Typography>
                             </Grid>
+                            <Button
+                                aria-label="download-edition"
+                                color={"primary"}
+                                onClick={() => CollectionAPI.download_es(selectedES.uri)}>
+                                Download
+                            </Button>
                         </Grid>
                     </Paper>
                 </Grid>
@@ -276,7 +283,7 @@ function Volumes(props) {
     const [volumeDetail, setVolumeDetail] = useState();
 
     useEffect(() => {
-        CollectionAPI.get_volumes(collection.name, selectedES.uri).then ((response) => {
+        CollectionAPI.get_volumes(selectedES.uri).then ((response) => {
             console.log(response?.data);
             const volumes = response?.data;
             setVolumes(volumes);
@@ -524,6 +531,12 @@ function Volumes(props) {
                                     : null
                             }
                         </Grid>
+                        <Button
+                            aria-label="download-volume"
+                            color={"primary"}
+                            onClick={() => CollectionAPI.download_volume(selectedVolume.uri)}>
+                            Download
+                        </Button>
                     </Paper>
                 </Grid>
             </Grid>
@@ -539,7 +552,8 @@ function CollectionDetailResult() {
 
 
     useEffect(() => {
-        CollectionAPI.get_collection_detail(collection.id).then((response) => {
+        console.log(collection.uri)
+        CollectionAPI.get_collection_detail(collection.uri).then((response) => {
             console.log(response?.data);
             setCollectionDetail(response?.data);
         })

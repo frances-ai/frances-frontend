@@ -1,5 +1,5 @@
-import {Button, Container, Divider, Grid, IconButton, Link, makeStyles, Paper, Stack, Typography} from "@mui/material";
-import {useParams} from "react-router-dom";
+import {Button, Container, Divider, Stack, Typography, Link} from "@mui/material";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import QueryAPI from "../../apis/query"
 import Box from "@mui/material/Box";
@@ -18,6 +18,7 @@ function ArticleTermRecordPage() {
     const [similarTerms, setSimilarTerms] = useState([]);
     const [yearWordFrequencies, setYearWordFrequencies] = useState();
     const [conceptTerms, setConceptTerms] = useState([])
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -56,6 +57,21 @@ function ArticleTermRecordPage() {
             })
         }
     }, [termInfo])
+
+
+    const get_collection_name = (collection_name) => {
+        // example: collection_name: Encyclopaedia Britannica Collection
+
+        return collection_name.substring(0, collection_name.indexOf("Collection") -1)
+    }
+
+    const handleCollectionClick = (event, collection) => {
+        navigate("/collectionDetails/detail", {state:
+                {collection: {
+                        uri: collection.uri, name: get_collection_name(collection.name)
+                    }}
+        })
+    }
 
 
 
@@ -192,7 +208,7 @@ function ArticleTermRecordPage() {
                             <Typography variant={"body1"}>Collection</Typography>
                         </Box>
                         <Box>
-                            <Link>
+                            <Link component="button" onClick={(event) => handleCollectionClick(event, termInfo?.collection)}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.collection.name}</Typography>
                             </Link>
                         </Box>

@@ -14,6 +14,86 @@ export function get_plot_frequency_count_data(query_results) {
     return data;
 }
 
+export function get_word_cloud_words_frequency(words_frequency) {
+    /**
+     * words_frequency: [(word,... 10), (word,... 2), ....]
+     * return: [
+     * {text: word,
+     * value: frequency,
+     * }, ....
+     * ]
+     */
+    let words = []
+    words_frequency.forEach(wf => {
+        words.push({
+            text: wf[0],
+            value: wf[wf.length-1]
+        })
+    })
+    return words;
+}
+
+
+export function get_plot_words_frequency(words_frequency) {
+    /**
+     * words_frequency: [(word, .... 10), (word,.... 2), ....]
+     * return: [
+     * {x: [values in x-axis],
+     * y: [values in y-axis],
+     * type: 'bar'
+     * }
+     * ]
+     */
+    let words = [];
+    let frequencies = [];
+    words_frequency.forEach(wf => {
+        words.push(wf[0])
+        frequencies.push(wf[wf.length-1])
+    })
+    return [{
+        x: words,
+        y: frequencies,
+        type: 'bar'
+    }]
+}
+
+export function get_plot_lexicon_diversity_year(query_results) {
+    /*
+    query_results: {
+     year: [unique words, words, ttr, maas, mtld]
+    }
+     */
+    let data = [];
+    const trace_names = ["Unique Words", "Words", "TTR", "Maas", "MTLD"]
+    let trace_values = {}
+    trace_names.forEach(trace_name => {
+        trace_values[trace_name] = []
+    })
+
+    for (const year in query_results) {
+        const row = query_results[year][0]
+        console.log(row)
+        for (let i = 0; i < trace_names.length; i++) {
+            const trace_name = trace_names[i]
+            trace_values[trace_name].push(row[i])
+        }
+    }
+    console.log(trace_values)
+    const years = Object.keys(query_results)
+    trace_names.forEach(trace_name => {
+        const trace = {
+            x: years,
+            y: trace_values[trace_name],
+            type: 'scatter',
+            name: trace_name
+        }
+        data.push(trace);
+    })
+
+    return data;
+
+}
+
 
 function get_frequency_count(query_results) {
     let freq_count={};

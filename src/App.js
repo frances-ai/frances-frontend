@@ -23,10 +23,10 @@ import TopicTermRecord from "./pages/records/TopicTermRecord";
 
 function App() {
 
-    const update = localStorage.getItem("update-v0");
+    const update = localStorage.getItem("update-v2.1");
     if (!update) {
         localStorage.clear();
-        localStorage.setItem("update-v0", "0");
+        localStorage.setItem("update-v2.1", "0");
     }
 
 

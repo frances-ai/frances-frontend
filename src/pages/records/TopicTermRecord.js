@@ -1,4 +1,4 @@
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import QueryAPI from "../../apis/query";
 import Box from "@mui/material/Box";
@@ -10,15 +10,16 @@ import PageImageDisplay from "../../components/PageImageDisplay";
 import MostSimilarDescriptions from "../../components/timelines/mostSimilarDescriptionsTimeLine";
 import WordClouds from "../../components/timelines/wordCloudsTimeLine";
 import ConceptTimeLine from "../../components/timelines/conceptTimeLine";
+import MultiSourceDescriptionDisplay from "../../components/MultiSourceDescriptionDisplay";
 
-function ArticleTermRecordPage() {
+function TopicTermRecordPage() {
     let { termId } = useParams();
     const [termInfo, setTermInfo] = useState();
     const [similarTermDescriptions, setSimilarTermDescriptions] = useState([])
     const [similarTerms, setSimilarTerms] = useState([]);
-    const [currentDescriptionIndex, setCurrentDescriptionIndex] = useState(0);
     const [yearWordFrequencies, setYearWordFrequencies] = useState();
     const [conceptTerms, setConceptTerms] = useState([])
+    const navigate = useNavigate();
 
 
     useEffect(() => {
@@ -39,7 +40,8 @@ function ArticleTermRecordPage() {
             console.log(data)
             setSimilarTerms(data)
         })
-    }, [])
+    }, [termId])
+
 
     useEffect(() => {
         if (termInfo !== undefined) {
@@ -57,31 +59,40 @@ function ArticleTermRecordPage() {
         }
     }, [termInfo])
 
+    const get_collection_name = (collection_name) => {
+        // example: collection_name: Encyclopaedia Britannica Collection
 
-    const handleDescriptionTabClick = (event, newValue) => {
-        console.log(newValue)
-        setCurrentDescriptionIndex(newValue);
+        return collection_name.substring(0, collection_name.indexOf("Collection") -1)
     }
+
+    const handleCollectionClick = (event, collection) => {
+        navigate("/collectionDetails/detail", {state:
+                {collection: {
+                        uri: collection.uri, name: get_collection_name(collection.name)
+                    }}
+        })
+    }
+
 
 
     return (
         <Box sx={{ minHeight: '70vh'}}>
             {
-                termInfo ? <PageImageDisplay init_page_uri={termInfo.start_page.uri}/> : null
+                termInfo?.start_page?.uri ? <PageImageDisplay init_page_uri={termInfo.start_page.uri}/> : null
             }
             <Container maxWidth="md">
                 <Typography mt={2} mb={2} component={"div"} variant={"h4"}>{termInfo?.term_name}</Typography>
                 <Typography mt={1} mb={1} component={"div"} variant={"body1"}>{termInfo?.note}</Typography>
                 {
                     termInfo?.reference_terms?.length > 0 ?
-                        <Stack mt={2} mb={2} direction={"row"} spacing={2} alignItems={"center"} >
-                            <Typography component={"div"} variant={"body1"}>See also</Typography>
+                        <Box m={1}>
+                            <Typography component={"span"} mr={2} variant={"body1"}>See also</Typography>
                             {
                                 termInfo?.reference_terms.map((value, index) => (
-                                    <Button key={index} href={value.uri.substring(value.uri.indexOf("/hto/"))}>{value.name}</Button>
+                                    <Button m={1} key={index} href={value.uri.substring(value.uri.indexOf("/hto/"))}>{value.name}</Button>
                                 ))
                             }
-                        </Stack> : null
+                        </Box> : null
                 }
                 <Typography mb={1} variant={"h6"}>Metadata</Typography>
                 <Divider />
@@ -145,6 +156,19 @@ function ArticleTermRecordPage() {
                             </Link>
                         </Box>
                     </Stack>
+                    {
+                        termInfo?.sentiment?
+                            <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
+                                <Box>
+                                    <Typography variant={"body1"}>Sentiment</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>
+                                        {(termInfo?.sentiment?.score * 100).toFixed(1)} % {termInfo?.sentiment.label}
+                                    </Typography>
+                                </Box>
+                            </Stack> : null
+                    }
                     <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
                         <Box>
                             <Typography variant={"body1"}>Volume</Typography>
@@ -184,7 +208,7 @@ function ArticleTermRecordPage() {
                             <Typography variant={"body1"}>Collection</Typography>
                         </Box>
                         <Box>
-                            <Link>
+                            <Link component="button" onClick={(event) => handleCollectionClick(event, termInfo?.collection)}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.collection.name}</Typography>
                             </Link>
                         </Box>
@@ -193,36 +217,9 @@ function ArticleTermRecordPage() {
             </Container>
             <Box sx={{backgroundColor: 'rgba(240,240,240,0.5)', minHeight: 200}} mt={2} pb={1} >
                 <Container maxWidth="md">
-                    <Box pt={2} pb={1}>
-                        <Typography variant={"h6"}>Description</Typography>
-                    </Box>
-                    <Paper component={"div"} sx={{minHeight: 130, pd: 1}}>
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                            <Tabs value={currentDescriptionIndex} onChange={handleDescriptionTabClick} >
-                                {
-                                    termInfo?.descriptions.map((record, key) => (
-                                        <Tab key={key} label={record.text_quality.split("#")[1]} />
-                                    ))
-                                }
-                            </Tabs>
-                        </Box>
-                        {
-                            termInfo?.descriptions.map((record, index) => (
-                                <div
-                                    key={index}
-                                    role="tabpanel"
-                                    hidden={currentDescriptionIndex !== index}
-                                >
-                                    {currentDescriptionIndex === index && (
-                                        <Box p={2} sx={{maxHeight: 700, overflowY: "scroll"}}>
-                                            <Typography>{termInfo?.descriptions[currentDescriptionIndex].description}</Typography>
-                                        </Box>
-                                    )}
-                                </div>
-                            ))
-                        }
-                    </Paper>
-
+                    {
+                        termInfo?.descriptions? <MultiSourceDescriptionDisplay descriptions={termInfo?.descriptions} /> : null
+                    }
                 </Container>
             </Box>
             {
@@ -244,7 +241,7 @@ function ArticleTermRecordPage() {
                 similarTermDescriptions?.length > 0?
                     <Box sx={{backgroundColor: 'rgba(240,240,240,0.5)', minHeight: 200}} mt={2} pb={1} >
                         <Container maxWidth="md">
-                            <MostSimilarDescriptions similar_descriptions={similarTermDescriptions}></MostSimilarDescriptions>
+                            <MostSimilarDescriptions similar_descriptions={similarTermDescriptions} year={termInfo?.edition.year_published}></MostSimilarDescriptions>
                         </Container>
                     </Box>
                     : null
@@ -252,7 +249,7 @@ function ArticleTermRecordPage() {
             {
                 yearWordFrequencies?
                     <Container maxWidth="md">
-                        <WordClouds year_word_frequencies={yearWordFrequencies}/>
+                        <WordClouds year_word_frequencies={yearWordFrequencies} year={termInfo?.edition.year_published}/>
                     </Container> : null
             }
             {
@@ -267,4 +264,4 @@ function ArticleTermRecordPage() {
     )
 }
 
-export default ArticleTermRecordPage;
+export default TopicTermRecordPage;

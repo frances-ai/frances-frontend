@@ -1,22 +1,27 @@
 import {
     Button,
     Container,
-    Divider,
-    Grid, Modal, Paper,
+    Divider, FormControl,
+    Grid, Input, Link, Modal, Paper,
     Stack,
     Table, TableBody, TableCell,
-    TableContainer, TableHead, TablePagination, TableRow,
+    TableContainer, TableHead, TablePagination, TableRow, TextField,
     Typography
 } from "@mui/material";
 import {useLocation} from "react-router-dom";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
 import DownloadIcon from '@mui/icons-material/Download';
-import {getLexiconFileOriginalName} from "../utils/stringUtil";
+import {getLexiconFileOriginalName, hto_uri_to_path} from "../utils/stringUtil";
 import TextMoreLess from "../components/textMoreLess";
 import Plot from "react-plotly.js";
-import {get_plot_frequency_count_data, get_plot_normalized_frequency_count_data} from "../utils/plotUtil";
+import {
+    get_plot_frequency_count_data,
+    get_plot_normalized_frequency_count_data,
+    get_plot_lexicon_diversity_year,
+    get_plot_words_frequency, get_word_cloud_words_frequency
+} from "../utils/plotUtil";
 import BasicMap from "../components/maps/basicMap";
 import VisualiseButton from "../components/buttons/visualiseButton";
 import GeoDataDeepVisualizeResult from "../components/geoDataDeepVisualizeResult";
@@ -28,6 +33,9 @@ import {
 } from "../utils/pagingUtil";
 import LinearProgressWithLabel from "../components/linearProgressWithLabel";
 import {getDisplayNameForGazetteer, getDisplayNameForHitCount, getDisplayNameForPreprocess} from "../apis/util";
+import WordFrequencyDisplay from "../components/wordFrequencyDisplay";
+import ReactWordcloud from "@cyberblast/react-wordcloud";
+import FrequencyVisOptions from "../components/frequencyVisOptions";
 
 export function Task(props) {
     const {task, showCollection, showQueryType, showSubmitTime, inputs} = props;
@@ -120,6 +128,18 @@ export function Task(props) {
                     </Grid>
                     : null
             }
+            {
+                showConfig("level", task.config.level)?
+                    <Grid item xs={6}>
+                        <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                            Level:
+                        </Typography>
+                        <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                            {task.config.level}
+                        </Typography>
+                    </Grid>
+                    : null
+            }
 
             {
                 showConfig("hit_count", task.config.hitCount)?
@@ -153,6 +173,21 @@ export function Task(props) {
                                 {
                                     (task.config.targetFilter === 'or') ? 'any' : 'all'
                                 }
+                            </Typography>
+                        </Grid>
+                    </React.Fragment>
+                    : null
+            }
+
+            {
+                showConfig("exclude_words", task.config.excludeWords)?
+                    <React.Fragment>
+                        <Grid item xs={6}>
+                            <Typography component={"span"} gutterBottom variant="h6" color={"text.secondary"} sx={{mt: 5, mr: 5}}>
+                                Exclude words:
+                            </Typography>
+                            <Typography component={"span"} gutterBottom variant="h6"  sx={{mt: 5}}>
+                                {task.config.excludeWords}
                             </Typography>
                         </Grid>
                     </React.Fragment>
@@ -233,7 +268,7 @@ function DefoeQueryResult() {
     const [paging, setPaging] = useState();
 
     const handlePageChangeYearPaged = (event, newPage) => {
-        if (task.config.queryType === "publication_normalized") {
+        if (task.config.queryType === "publication_normalized" || task.config.level === 'year') {
             setPaging(prevState => ({
                 ...prevState,
                 page: newPage,
@@ -250,7 +285,7 @@ function DefoeQueryResult() {
 
     const handleRowsPerPageChangeYearPaged = (event) => {
         const newRowsPerPage = event.target.value;
-        if (task.config.queryType === "publication_normalized") {
+        if (task.config.queryType === "publication_normalized" || task.config.level === 'year') {
             setPaging(prevState => ({
                 ...prevState,
                 rowsPerPage: newRowsPerPage,
@@ -313,12 +348,7 @@ function DefoeQueryResult() {
                     QueryAPI.getDefoeQueryResult(result_filepath).then((response) => {
                         console.log("Get data from the result file");
                         console.log(response?.data);
-                        if (task.config.queryType.includes("fulltext") || task.config.queryType.includes("snippet")) {
-                            setResult(response?.data?.results.terms_details);
-                        } else {
-                            setResult(response?.data?.results);
-                        }
-
+                        setResult(response?.data?.results);
                     });
                 }
             } else if (status?.state === "ERROR") {
@@ -330,7 +360,7 @@ function DefoeQueryResult() {
 
     useEffect(() => {
         if (result && task) {
-            if (task.config.queryType.includes("year")){
+            if (task?.config.queryType.includes("year")) {
                 console.log(result);
                 setPaging({
                     count: countTotalYearRecords(result),
@@ -338,7 +368,7 @@ function DefoeQueryResult() {
                     rowsPerPage: DEFAULT_ROWS_PER_PAGE,
                     result: getPagingYearResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
                 })
-            } else if (task.config.queryType === "publication_normalized")  {
+            } else if (task?.config.queryType === "publication_normalized")  {
                 console.log(result);
                 setPaging({
                     count: countTotalYearSingleRowRecords(result),
@@ -346,6 +376,24 @@ function DefoeQueryResult() {
                     rowsPerPage: DEFAULT_ROWS_PER_PAGE,
                     result: getPagingYearSingleRowResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
                 })
+            } else {
+                if (task?.config.level === "year") {
+                    console.log(result);
+                    setPaging({
+                        count: countTotalYearSingleRowRecords(result),
+                        page: DEFAULT_PAGE,
+                        rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+                        result: getPagingYearSingleRowResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
+                    })
+                } else if (task?.config.level !== "collection") {
+                    console.log(result);
+                    setPaging({
+                        count: countTotalYearRecords(result),
+                        page: DEFAULT_PAGE,
+                        rowsPerPage: DEFAULT_ROWS_PER_PAGE,
+                        result: getPagingYearResult(DEFAULT_PAGE, DEFAULT_ROWS_PER_PAGE, result)
+                    })
+                }
             }
         }
     }, [result])
@@ -495,18 +543,531 @@ function DefoeQueryResult() {
         );
     }
 
+    function FrequencyDistributionResult() {
+
+        const min_top_n = 1;
+        const max_top_n = 100;
+        const [top_n, setTopN] = useState(max_top_n);
+        const [editing, setEditing] = useState(false);
+        const input_top_n_ref = useRef(null);
+        const [error, setError] = useState(false);
+
+        let es = "Series";
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            es = "Edition"
+        }
+        let volume_cols = [es, "Volume"]
+        let es_cols = [es]
+        let year_cols = []
+
+        let cols = volume_cols
+        if (task.config.level === "edition" || task.config.level === "series") {
+            cols = es_cols
+        } else if (task.config.level === "year") {
+            cols = year_cols
+        }
+
+        const handleConfirmClick = () => {
+          const input_top_n = input_top_n_ref.current.value;
+          if (input_top_n > max_top_n || input_top_n < min_top_n) {
+                setError(true);
+          } else {
+              setTopN(input_top_n)
+              setEditing(false)
+          }
+        }
+
+        useEffect(() => {
+            setError(false);
+        }, [top_n])
+
+
+        return (
+            <Box>
+                <Stack mb={1} direction={"row"} spacing={2} alignItems={"center"}>
+                    <Box>
+                        <Typography variant={"body1"} component={"span"}>
+                            Most common
+                        </Typography>
+                        {
+                            editing?
+                                    <Input inputRef={input_top_n_ref}
+                                           sx={{width: 50, ml: 1, mr:1}}
+                                           variant={"standard"}
+                                           type={"number"}
+                                           inputProps={{min: min_top_n, max:max_top_n}}
+                                           defaultValue={top_n}
+                                           error={error}
+                                    />
+                                 :
+                                <Typography variant={"body1"} component={"span"} pl={1} pr={1} fontWeight={"bold"}>
+                                    {top_n}
+                                </Typography>
+                        }
+                        <Typography variant={"body1"} component={"span"}>
+                           words are presented in this result. Note that, you can only access maximum
+                            top {max_top_n} common words.
+                        </Typography>
+                    </Box>
+                    <Box>
+                        {
+                            editing?
+                                <Button variant={"contained"} onClick={handleConfirmClick}>Confirm</Button>:
+                                <Button  variant={"contained"}onClick={() => setEditing(!editing)}>Update</Button>
+                        }
+                    </Box>
+
+
+                </Stack>
+                {
+                    task.config.level === "collection" ?
+                        <>
+                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                <WordFrequencyDisplay words_frequency={result["words_freq"].slice(0, top_n)}/>
+                                <Box width={600} height={600}>
+                                    <ReactWordcloud
+                                        options={{
+                                            fontSizes: [10, 50],
+                                            rotations: 2,
+                                            rotationAngles: [0, 0],
+                                        }}
+                                        words={get_word_cloud_words_frequency(result["words_freq"].slice(0, top_n))}
+                                    />
+                                </Box>
+                            </Stack>
+                            <Plot
+                                data={get_plot_words_frequency(result['words_freq'].slice(0, top_n))}
+                                layout={
+                                    {
+                                        title: 'Frequency Distribution of most ' + top_n +  ' words in ' + task?.config.collection,
+                                        xaxis: {
+                                            title: 'Word'
+                                        },
+                                        yaxis: {
+                                            title: 'Frequency'
+                                        },
+                                        autosize: true
+                                    }
+                                }
+                                useResizeHandler={true}
+                                style={{ width: '100%', height: '100%', marginTop: 20}}/>
+                        </>
+                        :
+                        <>
+                            <TableContainer component={Paper}>
+                                <Table sx={{ minWidth: 650 }} aria-label="lexicon_diversity result table" stripe="2n">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell colSpan={1} align={"center"}>Year</TableCell>
+                                            {
+                                                cols.map((col, index) => (
+                                                    <TableCell key={index} align={"center"}> {col}</TableCell>
+                                                ))
+                                            }
+                                            <TableCell align={"center"}>Words Visualization Options</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {Object.keys(paging.result).map((value, key) => (
+                                            task.config.level === "year"?
+                                                <TableRow key={key}>
+                                                    <TableCell align={"center"} colSpan={1} rowSpan={1}>{value}</TableCell>
+                                                    <TableCell align={"center"} rowSpan={1}>
+                                                        <FrequencyVisOptions
+                                                            words_freqs={paging.result[value].slice(0, top_n)}
+                                                            />
+                                                    </TableCell>
+                                                </TableRow>:
+                                                paging.result[value].map((record, index) => (
+                                                    <TableRow key={'' + key + index}>
+                                                        {
+                                                            (index == 0) ? <TableCell align={"center"} colSpan={1} rowSpan={paging.result[value].length}>{value}</TableCell> : null
+                                                        }
+                                                        {
+                                                            cols.length === 2 ?
+                                                                (<>
+                                                                        <TableCell align={"center"} rowSpan={1}>
+                                                                            <TextMoreLess text={record[0]}/>
+                                                                        </TableCell>
+                                                                        <TableCell align={"center"} rowSpan={1}>
+                                                                            <TextMoreLess text={record[4]}/>
+                                                                        </TableCell>
+                                                                    </>
+                                                                ) : cols.length === 1 ?
+                                                                    (<>
+                                                                        <TableCell align={"center"} rowSpan={1}>
+                                                                            <TextMoreLess text={record[0]}/>
+                                                                        </TableCell>
+                                                                    </> ): null
+                                                        }
+                                                        {
+                                                            <TableCell align={"center"} rowSpan={1}>
+                                                                <FrequencyVisOptions
+                                                                    words_freqs={record[record.length - 1].slice(0, top_n)}
+                                                                    />
+                                                            </TableCell>
+                                                        }
+                                                    </TableRow>
+                                            ))
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                            <TablePagination
+                                component="div"
+                                count={paging.count}
+                                page={paging.page}
+                                rowsPerPage={paging.rowsPerPage}
+                                onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                                onPageChange={handlePageChangeYearPaged}/>
+                        </>
+                }
+            </Box>
+
+        );
+    }
+
+    function PersonNameRecognitionResult() {
+
+        const min_top_n = 1;
+        const max_top_n = 100;
+        const [top_n, setTopN] = useState(max_top_n);
+        const [editing, setEditing] = useState(false);
+        const input_top_n_ref = useRef(null);
+        const [error, setError] = useState(false);
+
+        let es = "Series";
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            es = "Edition"
+        }
+        let volume_cols = [es, "Volume"]
+        let es_cols = [es]
+        let year_cols = []
+
+        let cols = volume_cols
+        if (task.config.level === "edition" || task.config.level === "series") {
+            cols = es_cols
+        } else if (task.config.level === "year") {
+            cols = year_cols
+        }
+
+        const handleConfirmClick = () => {
+            const input_top_n = input_top_n_ref.current.value;
+            if (input_top_n > max_top_n || input_top_n < min_top_n) {
+                setError(true);
+            } else {
+                setTopN(input_top_n)
+                setEditing(false)
+            }
+        }
+
+        useEffect(() => {
+            setError(false);
+        }, [top_n])
+
+
+        return (
+            <Box>
+                <Stack mb={1} direction={"row"} spacing={2} alignItems={"center"}>
+                    <Box>
+                        <Typography variant={"body1"} component={"span"}>
+                            Most common
+                        </Typography>
+                        {
+                            editing?
+                                <Input inputRef={input_top_n_ref}
+                                       sx={{width: 50, ml: 1, mr:1}}
+                                       variant={"standard"}
+                                       type={"number"}
+                                       inputProps={{min: min_top_n, max:max_top_n}}
+                                       defaultValue={top_n}
+                                       error={error}
+                                >
+                                </Input> :
+                                <Typography variant={"body1"} component={"span"} pl={1} pr={1} fontWeight={"bold"}>
+                                    {top_n}
+                                </Typography>
+                        }
+                        <Typography variant={"body1"} component={"span"}>
+                            person names are presented in this result. Note that, you can only access maximum
+                            top {max_top_n} common person names.
+                        </Typography>
+                    </Box>
+                    <Box>
+                        {
+                            editing?
+                                <Button variant={"contained"} onClick={handleConfirmClick}>Confirm</Button>:
+                                <Button variant={"contained"} onClick={() => setEditing(!editing)}>Update</Button>
+                        }
+                    </Box>
+
+                </Stack>
+                {
+                    task.config.level === "collection" ?
+                        <>
+                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                <WordFrequencyDisplay
+                                    words_frequency={result["persons_freq"].slice(0, top_n)}
+                                    cols={["Person", "Gender", "Frequency"]}
+                                />
+                                <Box width={600} height={600}>
+                                    <ReactWordcloud
+                                        options={{
+                                            fontSizes: [10, 50],
+                                            rotations: 2,
+                                            rotationAngles: [0, 0],
+                                        }}
+                                        words={get_word_cloud_words_frequency(result["persons_freq"].slice(0, top_n))}
+                                    />
+                                </Box>
+                            </Stack>
+                            <Plot
+                                data={get_plot_words_frequency(result['persons_freq'].slice(0, top_n))}
+                                layout={
+                                    {
+                                        title: 'Frequency Distribution of most ' + top_n +  ' person names in ' + task?.config.collection,
+                                        xaxis: {
+                                            title: 'Word'
+                                        },
+                                        yaxis: {
+                                            title: 'Frequency'
+                                        },
+                                        autosize: true
+                                    }
+                                }
+                                useResizeHandler={true}
+                                style={{ width: '100%', height: '100%', marginTop: 20}}/>
+                        </>
+                        :
+                        <>
+                            <TableContainer component={Paper}>
+                                <Table sx={{ minWidth: 650 }} aria-label="person name recognition result table" stripe="2n">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell colSpan={1} align={"center"}>Year</TableCell>
+                                            {
+                                                cols.map((col, index) => (
+                                                    <TableCell key={index} align={"center"}>{col}</TableCell>
+                                                ))
+                                            }
+                                            <TableCell align={"center"}>Person Names Visualization Options</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {Object.keys(paging.result).map((value, key) => (
+                                            task.config.level === "year"?
+                                                <TableRow key={key}>
+                                                    <TableCell align={"center"} colSpan={1} rowSpan={1}>{value}</TableCell>
+                                                    <TableCell align={"center"} rowSpan={1}>
+                                                        <FrequencyVisOptions
+                                                            words_freqs={paging.result[value]["persons_freq"].slice(0, top_n)}
+                                                            type={"person"}/>
+                                                    </TableCell>
+                                                </TableRow> :
+                                                paging.result[value].map((record, index) => (
+                                                    <TableRow key={'' + key + index}>
+                                                        {
+                                                            (index === 0) ? <TableCell align={"center"} colSpan={1} rowSpan={paging.result[value].length}>{value}</TableCell> : null
+                                                        }
+                                                        {
+                                                            cols.length === 2 ?
+                                                                (<>
+                                                                        <TableCell align={"center"} rowSpan={1}>
+                                                                            <TextMoreLess text={record[0]}/>
+                                                                        </TableCell>
+                                                                        <TableCell align={"center"} rowSpan={1}>
+                                                                            <TextMoreLess text={record[4]}/>
+                                                                        </TableCell>
+                                                                    </>
+                                                                ) : cols.length === 1 ?
+                                                                    (<>
+                                                                        <TableCell align={"center"} rowSpan={1}>
+                                                                            <TextMoreLess text={record[0]}/>
+                                                                        </TableCell>
+                                                                    </> ): null
+                                                        }
+                                                        {
+                                                            <TableCell align={"center"} rowSpan={1}>
+                                                                <FrequencyVisOptions
+                                                                    words_freqs={record[record.length - 1]["persons_freq"].slice(0, top_n)}
+                                                                    type={"person"}/>
+                                                            </TableCell>
+                                                        }
+                                                    </TableRow>
+                                                ))
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                            <TablePagination
+                                component="div"
+                                count={paging.count}
+                                page={paging.page}
+                                rowsPerPage={paging.rowsPerPage}
+                                onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                                onPageChange={handlePageChangeYearPaged}/>
+                        </>
+                }
+            </Box>
+
+        );
+    }
+
+
+    function LexiconDiversityResult() {
+        let es = "Series";
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            es = "Edition"
+        }
+        let volume_cols = [es, "Volume", "Unique Words", "Words", "TTR", "Maas", "MTLD"]
+        let es_cols = [es, "Unique Words", "Words", "TTR", "Maas", "MTLD"]
+        let year_cols = ["Unique Words", "Words", "TTR", "Maas", "MTLD"]
+
+        let cols = volume_cols
+        if (task.config.level === "edition" || task.config.level === "series") {
+            cols = es_cols
+        } else if (task.config.level === "year" || task.config.level === "collection") {
+            cols = year_cols
+        }
+
+        console.log(cols.length)
+
+        return (
+            <Box>
+                {
+                    task.config.level === "collection" ?
+                        <TableContainer component={Paper}>
+                            <Table sx={{ minWidth: 650 }} aria-label="lexicon_diversity result table" stripe="2n">
+                                <TableHead>
+                                    <TableRow>
+                                        {
+                                            cols.map((col, index) => (
+                                                <TableCell key={index} align={"center"}> {col}</TableCell>
+                                            ))
+                                        }
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    <TableRow>
+                                    {
+                                        cols.map((col, index) => (
+                                                col === "Unique Words" ?
+                                                <TableCell key={index} align={"center"}> {result["terms"]}</TableCell> :
+                                                <TableCell key={index} align={"center"}> {result[col.toLowerCase()]}</TableCell>
+                                        ))
+                                    }
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </TableContainer> :
+                        <>
+                            <TableContainer component={Paper}>
+                                <Table sx={{ minWidth: 650 }} aria-label="lexicon_diversity result table" stripe="2n">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell colSpan={1} align={"center"}>Year</TableCell>
+                                            {
+                                                cols.map((col, index) => (
+                                                    <TableCell key={index} align={"center"}> {col}</TableCell>
+                                                ))
+                                            }
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {Object.keys(paging.result).map((value, key) => (
+                                            paging.result[value].map((record, index) => (
+                                                <TableRow key={'' + key + index}>
+                                                    {
+                                                        (index == 0) ? <TableCell align={"center"} colSpan={1} rowSpan={paging.result[value].length}>{value}</TableCell> : null
+                                                    }
+                                                    {
+                                                        cols.length === 7 ?
+                                                            (<>
+                                                                    <TableCell align={"center"} rowSpan={1}>
+                                                                        <TextMoreLess text={record[0]}/>
+                                                                    </TableCell>
+                                                                    <TableCell align={"center"} rowSpan={1}>
+                                                                        <TextMoreLess text={record[4]}/>
+                                                                    </TableCell>
+                                                                </>
+                                                            ) : cols.length === 6 ?
+                                                                (<>
+                                                                    <TableCell align={"center"} rowSpan={1}>
+                                                                        <TextMoreLess text={record[0]}/>
+                                                                    </TableCell>
+                                                                </> ): null
+                                                    }
+                                                    <TableCell align={"center"} rowSpan={1}>{record[record.length-5]}</TableCell>
+                                                    <TableCell align={"center"} rowSpan={1}>{record[record.length-4]}</TableCell>
+                                                    <TableCell align={"center"} rowSpan={1}>{record[record.length-3]}</TableCell>
+                                                    <TableCell align={"center"} rowSpan={1}>{record[record.length-2]}</TableCell>
+                                                    <TableCell align={"center"} rowSpan={1}>{record[record.length-1]}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                            <TablePagination
+                                component="div"
+                                count={paging.count}
+                                page={paging.page}
+                                rowsPerPage={paging.rowsPerPage}
+                                onRowsPerPageChange={handleRowsPerPageChangeYearPaged}
+                                onPageChange={handlePageChangeYearPaged}/>
+                        </>
+                }
+                {
+                    task?.config.level === "year" ?
+                        <Plot
+                            data={get_plot_lexicon_diversity_year(result)}
+                            layout={
+                                {
+                                    title: 'Lexicon Diversity per Years',
+                                    xaxis: {
+                                        title: 'Year'
+                                    },
+                                    yaxis: {
+                                        title: 'Value'
+                                    },
+                                    autosize: true
+                                }
+                            }
+                            useResizeHandler={true}
+                            style={{ width: '100%', height: '100%', marginTop: 20}}
+                        /> : null
+                }
+
+            </Box>
+
+        );
+    }
+
     function SnippetKeySearchByYearResult() {
-        const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Snippet'];
-        const col_key = {
+        const nls_cols = ['KeySearch Term', 'Page', 'Series', 'Volume', 'Volume Title', 'Snippet'];
+        const nls_col_key = {
             'KeySearch Term': 'keysearch-term',
-            'Term': 'term',
-            'Edition': 'edition',
-            'Volume': 'volume',
-            'Page': 'page number',
-            'Header': 'header',
-            'Letters': 'letters',
-            'Part': 'part',
+            'Page': 'page_number',
+            'Series': 'series_number',
+            'Volume': 'volume_number',
+            'Volume Title': 'volume_title',
             'Snippet': 'snippet'
+        }
+        const eb_cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Snippet'];
+        const eb_col_key = {
+            'KeySearch Term': 'keysearch-term',
+            'Term': 'term_name',
+            'Edition': 'edition_number',
+            'Volume': 'volume_number',
+            'Page': 'start_page_number',
+            'Snippet': 'snippet'
+        }
+
+        let cols = nls_cols
+        let col_key = nls_col_key
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            cols = eb_cols
+            col_key = eb_col_key
         }
 
         return (
@@ -524,13 +1085,13 @@ function DefoeQueryResult() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {paging.result.map((recordPerYear, key) => (
-                                recordPerYear[1].map((record, index) => (
+                            {Object.keys(paging.result).map((year, key) => (
+                                paging.result[year].map((record, index) => (
                                     <TableRow key={'' + key + index}>
                                         {
                                             (index == 0) ?
-                                                <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
-                                                    {recordPerYear[0]}
+                                                <TableCell align={"center"} colSpan={1} rowSpan={paging.result[year].length}>
+                                                    {year}
                                                 </TableCell>
                                                 : null
                                         }
@@ -539,13 +1100,13 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + key + index + col} >
                                                     {
                                                         col === 'Term'?
-                                                            <VisualiseButton
-                                                                uri={record["uri"]}
-                                                                collection={task.config.collection}
-                                                            >
+                                                            <Link href={hto_uri_to_path(record["term_uri"])}>
                                                                 {record[col_key[col]]}
-                                                            </VisualiseButton>
-                                                            : record[col_key[col]]
+                                                            </Link>
+                                                            : (col === 'Page'?
+                                                                <Link href={hto_uri_to_path(record["page_uri"])}>
+                                                                    {record[col_key[col]]}
+                                                                </Link>: record[col_key[col]])
                                                     }
                                                 </TableCell>
                                             ))
@@ -567,54 +1128,31 @@ function DefoeQueryResult() {
         )
     }
 
-    function UrisKeySearchResult() {
-        return (
-            <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="uris key search result table">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Uri</TableCell>
-                        <TableCell>KeySearch Term</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {Object.keys(result).map((value, key) => (
-                        result[value].map((record, index) => (
-                            <TableRow key={'' + key + index}>
-                                {
-                                    (index == 0) ? <TableCell rowSpan={result[value].length}>
-                                        {
-                                            <VisualiseButton
-                                                uri={value}
-                                                collection={task.config.collection}
-                                            >
-                                                {value}
-                                            </VisualiseButton>
-                                        }
-                                    </TableCell> : null
-                                }
-                                <TableCell rowSpan={1}>{record}</TableCell>
-                            </TableRow>
-                        ))
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
-        )
-    }
 
     function GeoParserByYearResult() {
-        const cols = ['Series', 'Volume', 'Volume ID', 'Volume Title', 'Page', 'Words', 'Part', 'Geo'];
-        const col_key = {
-            'Series': 'serie',
-            'Volume': 'volume',
-            'Volume ID': 'volumeId',
-            'Volume Title': 'volumeTitle',
-            'Page': 'page number',
-            'Words': 'numWords',
-            'Part': 'part',
+        const nls_cols = ['Series', 'Volume', 'Volume Title', 'Page', 'Geo'];
+        const nls_col_key = {
+            'Series': 'series_number',
+            'Volume': 'volume_number',
+            'Volume Title': 'volume_title',
+            'Page': 'page_number',
             'Geo': 'georesolution'
         }
+        const eb_cols = ['Edition', 'Volume', 'Term', 'Geo'];
+        const eb_col_key = {
+            'Edition': 'edition_number',
+            'Volume': 'volume_number',
+            'Term': 'term_name',
+            'Geo': 'georesolution'
+        }
+
+        let cols = nls_cols
+        let col_key = nls_col_key
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            cols = eb_cols
+            col_key = eb_col_key
+        }
+
 
         function GeoCell(props) {
             const {geo, sx} = props;
@@ -724,16 +1262,17 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + year + index + col} align={"center"}>
                                                     {
                                                         col === 'Page'?
-                                                            <VisualiseButton
-                                                                uri={record["uri"]}
-                                                                collection={task.config.collection}
-                                                            >
+                                                            <Link href={hto_uri_to_path(record["page_uri"])}>
                                                                 {record[col_key[col]]}
-                                                            </VisualiseButton>
+                                                            </Link>
                                                             : (
+                                                                col === 'Term'?
+                                                                    <Link href={hto_uri_to_path(record["term_uri"])}>
+                                                                        {record[col_key[col]]}
+                                                                    </Link> : (
                                                                 col === 'Geo'?
                                                                     <GeoCell geo={record[col_key[col]]}/>
-                                                                    : record[col_key[col]]
+                                                                    : record[col_key[col]])
                                                             )
                                                     }
                                                 </TableCell>
@@ -758,17 +1297,30 @@ function DefoeQueryResult() {
     }
 
     function FullTextKeySearchByYearResult() {
-        const cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Header', 'Letters', 'Part', 'Definition'];
-        const col_key = {
+        const nls_cols = ['KeySearch Term', 'Page', 'Series', 'Volume', 'Volume Title', 'Description'];
+        const nls_col_key = {
             'KeySearch Term': 'keysearch-term',
-            'Term': 'term',
-            'Edition': 'edition',
-            'Volume': 'volume',
-            'Page': 'page number',
-            'Header': 'header',
-            'Letters': 'letters',
-            'Part': 'part',
-            'Definition': 'term-definition'
+            'Page': 'page_number',
+            'Series': 'series_number',
+            'Volume': 'volume_number',
+            'Volume Title': 'volume_title',
+            'Description': 'description'
+        }
+        const eb_cols = ['KeySearch Term', 'Term', 'Edition', 'Volume', 'Page', 'Description'];
+        const eb_col_key = {
+            'KeySearch Term': 'keysearch-term',
+            'Term': 'term_name',
+            'Edition': 'edition_number',
+            'Volume': 'volume_number',
+            'Page': 'start_page_number',
+            'Description': 'description'
+        }
+
+        let cols = nls_cols
+        let col_key = nls_col_key
+        if (task.config.collection === "Encyclopaedia Britannica") {
+            cols = eb_cols
+            col_key = eb_col_key
         }
 
         return (
@@ -786,13 +1338,13 @@ function DefoeQueryResult() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {paging.result.map((recordPerYear, key) => (
-                                recordPerYear[1].map((record, index) => (
+                            {Object.keys(paging.result).map((year, key) => (
+                                paging.result[year].map((record, index) => (
                                     <TableRow key={'' + key + index}>
                                         {
                                             (index == 0) ?
-                                                <TableCell align={"center"} colSpan={1} rowSpan={recordPerYear[1].length}>
-                                                    {recordPerYear[0]}
+                                                <TableCell align={"center"} colSpan={1} rowSpan={paging.result[year].length}>
+                                                    {year}
                                                 </TableCell>
                                                 : null
                                         }
@@ -801,14 +1353,15 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + key + index + col} >
                                                     {
                                                         col === 'Term'?
-                                                            <VisualiseButton
-                                                                uri={record["uri"]}
-                                                                collection={task.config.collection}
-                                                            >
+                                                            <Link href={hto_uri_to_path(record["term_uri"])}>
                                                                 {record[col_key[col]]}
-                                                            </VisualiseButton>
+                                                            </Link>
                                                             : (
-                                                                col === 'Definition'?
+                                                                col === 'Page'?
+                                                                    <Link href={hto_uri_to_path(record["page_uri"])}>
+                                                                        {record[col_key[col]]}
+                                                                    </Link> :
+                                                                col === 'Description'?
                                                                     <TextMoreLess text={record[col_key[col]]} />
                                                                     : record[col_key[col]]
                                                             )
@@ -852,12 +1405,16 @@ function DefoeQueryResult() {
                 return <FrequencyKeySearchByYearResult/>
             case "fulltext_keysearch_by_year":
                 return <FullTextKeySearchByYearResult/>;
-            case "uris_keysearch":
-                return <UrisKeySearchResult/>
             case "snippet_keysearch_by_year":
                 return <SnippetKeySearchByYearResult/>;
             case "geoparser_by_year":
                 return <GeoParserByYearResult/>;
+            case "lexicon_diversity":
+                return <LexiconDiversityResult/>;
+            case "frequency_distribution":
+                return <FrequencyDistributionResult/>;
+            case "person_entity_recognition":
+                return <PersonNameRecognitionResult />;
             default:
                 return (<Box>
                     No Such Query Type!
@@ -928,7 +1485,7 @@ function DefoeQueryResult() {
                     </Typography> : null
             }
             {
-                (status?.state === "DONE" && (result !== undefined && paging !== undefined)) ?
+                (status?.state === "DONE" && (result !== undefined && (task?.config.level === "collection" || paging !== undefined))) ?
                     <Box>
                         <Stack direction={"row"} sx={{mt: 5, mb: 3}} alignItems="baseline" justifyContent="space-between">
                             <Typography component={"div"} gutterBottom variant="h5" >

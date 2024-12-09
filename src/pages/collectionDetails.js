@@ -23,7 +23,7 @@ function CollectionCard(props) {
     const handleCardClick = () => {
         navigate("/collectionDetails/detail", {state:
                 {collection: {
-                    id: collection.id, name: collection.name
+                    uri: collection.uri, name: collection.name
                     }}
         })
     }

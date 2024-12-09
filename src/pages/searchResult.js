@@ -1,12 +1,9 @@
 import {
-    Button,
     Card, CardActionArea,
     CardContent,
-    CircularProgress,
-    Container, Divider, FormControl,
-    Grid, InputLabel, List, ListItem, MenuItem, OutlinedInput, Paper, Select,
-    Stack, TablePagination,
-    TextField,
+    CircularProgress, Divider, FormControl,
+    Grid, MenuItem, Select,
+    Stack, Switch, TablePagination,
     Typography
 } from "@mui/material";
 
@@ -143,6 +140,8 @@ function SearchResultPage() {
     const [result, setResult] = useState();
     const [searchFieldOptions, setSearchFieldOptions] = useState(full_text_search_field_options)
     const [isSearching, setIsSearching] = useState(true)
+    const [exactMatch, setExactMatch] = useState(false);
+    const [phraseMatch, setPhraseMatch] = useState(false);
     const [collections, setCollections] = useState([])
     const [selectedSortIndex, setSelectedSortIndex] = useState(0);
     const [selectedSearchField, setSelectedSearchField] = useState(full_text_search_field_options[0].value);
@@ -151,8 +150,6 @@ function SearchResultPage() {
     const [selectedPrintLocation, setSelectedPrintLocation] = useState('All Locations');
     const [editions, setEditions] = useState([])
     const [selectedEdition, setSelectedEdition] = useState('All Editions');
-    const [volumeTitles, setVolumeTitles] = useState([])
-    const [selectedVolumeTitle, setSelectedVolumeTitle] = useState('All Volumes');
 
 
     useEffect(() => {
@@ -184,15 +181,11 @@ function SearchResultPage() {
                     if (selectedCollection === "Encyclopaedia Britannica") {
                         const edition_names = aggregations.unique_edition_names.buckets.map(edition_name => edition_name.key);
                         setEditions(edition_names)
-                        setVolumeTitles([])
                     } else {
-                        const volume_titles = aggregations.unique_vol_titles.buckets.map(vol_title => vol_title.key);
-                        setVolumeTitles(volume_titles)
                         setEditions([])
                     }
                 } else {
                     setEditions([])
-                    setVolumeTitles([])
                 }
             })
         }
@@ -265,13 +258,34 @@ function SearchResultPage() {
 
     useEffect(() => {
         if (selectedSearchField !== undefined) {
-            setQuery(prevState => ({
-                ...prevState,
-                search_field: selectedSearchField
-            }))
+            if (selectedSearchField === "full_text") {
+                setQuery(prevState => ({
+                    ...prevState,
+                    search_field: selectedSearchField,
+                    exact_match: false
+                }))
+            } else {
+                setQuery(prevState => ({
+                    ...prevState,
+                    search_field: selectedSearchField
+                }))
+            }
         }
-
     }, [selectedSearchField])
+
+    useEffect(() => {
+        setQuery(prevState => ({
+            ...prevState,
+            exact_match: exactMatch
+        }))
+    }, [exactMatch])
+
+    useEffect(() => {
+        setQuery(prevState => ({
+            ...prevState,
+            phrase_match: phraseMatch
+        }))
+    }, [phraseMatch])
 
 
     useEffect(() => {
@@ -294,7 +308,6 @@ function SearchResultPage() {
         setIsSearching(true)
 
     }
-
 
     const handleChangeRowsPerPage = (event) => {
         const newRowsPerPage = event.target.value;
@@ -422,7 +435,7 @@ function SearchResultPage() {
                                     </FormControl>
                                 </Box>
                                 {
-                                    search_type === "full_text" ? <Box >
+                                    search_type === "full_text" ? <Box mt={2}>
                                         <Typography component="div" variant="body1" fontWeight={"bold"}  color={"text.secondary"} pb={2}>
                                             Search Field
                                         </Typography>
@@ -440,6 +453,25 @@ function SearchResultPage() {
                                         </FormControl>
                                     </Box> : null
                                 }
+                                {
+                                    selectedSearchField != "full_text" ?
+                                        <Stack mt={2} direction="row" spacing={1} alignItems="center"
+                                               justifyContent={"space-between"}>
+                                            <Typography component="div" variant="body1" fontWeight={"bold"} >Exact Match</Typography>
+                                            <Switch
+                                                checked={exactMatch}
+                                                onChange={(e) => setExactMatch(e.target.checked)}
+                                            />
+                                        </Stack>: null
+                                }
+                                <Stack mt={2} direction="row" spacing={1} alignItems="center"
+                                       justifyContent={"space-between"}>
+                                    <Typography component="div" variant="body1" fontWeight={"bold"} >Phrase Match</Typography>
+                                    <Switch
+                                        checked={phraseMatch}
+                                        onChange={(e) => setPhraseMatch(e.target.checked)}
+                                    />
+                                </Stack>
                                 <Box mt={2}>
                                     <Typography component="div" variant="body1" fontWeight={"bold"} color={"text.secondary"} pb={2}>
                                         Print Location

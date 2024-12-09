@@ -20,7 +20,7 @@ function SearchPage() {
     return (
         <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
             <Typography component="div" gutterBottom variant="h2" sx={{mt: 10}} textAlign={"center"}>
-                Explore the digital textual heritage
+                Explore digital textual heritage
             </Typography>
 
             <Box component="form" onSubmit={handleSearchSubmit} noValidate sx={{ mt: 1 }}>
@@ -34,7 +34,7 @@ function SearchPage() {
                             name="keyword"
                         />
                     </Grid>
-                    <Grid item sm={2}>
+                    <Grid item sm={1}>
                         <Button
                             type="submit"
                             variant="contained"

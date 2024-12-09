@@ -1,5 +1,5 @@
 import {axiosPrivate, axiosPublic} from "./axios";
-import {queryMeta} from './queryMeta.js'
+import {queryMeta, eb_levels, nls_levels} from './queryMeta.js'
 import FileDownload from 'js-file-download';
 import {store_response_data_in_local_storage} from "./util";
 
@@ -186,6 +186,20 @@ class QueryAPI {
         })
     }
 
+    get_kg_triples(entry_uri) {
+        // const test_data = [{'pre': {'type': 'uri', 'value': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'}, 'obj': {'type': 'uri', 'value': 'https://w3id.org/hto#InformationResource'}}, {'pre': {'type': 'uri', 'value': 'http://www.w3.org/ns/prov#wasAttributedTo'}, 'obj': {'type': 'uri', 'value': 'https://w3id.org/hto/Organization/NCKP'}}, {'pre': {'type': 'uri', 'value': 'http://www.w3.org/ns/prov#wasAttributedTo'}, 'obj': {'type': 'uri', 'value': 'https://pdf.abbyy.com'}}, {'pre': {'type': 'uri', 'value': 'http://www.w3.org/ns/prov#value'}, 'obj': {'type': 'literal', 'value': './eb07_TXT_v2/e8/kp-eb0708-039107-8218-v2.txt'}}]
+        // return new Promise((resolve => {
+        //     console.log('Test data');
+        //     resolve(test_data);
+        // }));
+        return axiosPublic.post("/search/hto_triples", {
+            entry_uri: entry_uri,
+        }).then(response => {
+            console.log('Server');
+            return response;
+        })
+    }
+
     visualise(uri, collection) {
         const key = 'visualise' + uri + collection;
         const result = localStorage.getItem(key);
@@ -289,6 +303,14 @@ class QueryAPI {
         }
     }
 
+    getLevels(collection) {
+        if (collection === 'Encyclopaedia Britannica') {
+            return eb_levels;
+        } else {
+            return nls_levels;
+        }
+    }
+
     getQueryMeta(collection) {
         if (collection === 'Encyclopaedia Britannica') {
             return queryMeta['EB'];
@@ -299,6 +321,13 @@ class QueryAPI {
 
     getAllDefoeQueryTasks(options) {
         return axiosPrivate.post("/query/defoe_query_tasks", options).then(response => {
+            return response;
+        })
+    }
+
+
+    deleteDefoeQueryTasks(task_ids) {
+        return axiosPrivate.post("/query/delete_defoe_query_tasks", {taskIDs: task_ids}).then(response => {
             return response;
         })
     }

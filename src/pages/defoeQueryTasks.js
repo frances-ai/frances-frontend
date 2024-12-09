@@ -1,13 +1,13 @@
 import {
-    Button, CircularProgress, Collapse,
+    Button, Checkbox, CircularProgress, Collapse,
     Container, IconButton,
-    Paper, Stack,
+    Paper, Snackbar, Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead, TablePagination,
-    TableRow, TableSortLabel,
+    TableRow, TableSortLabel, Toolbar, Tooltip,
     Typography
 } from "@mui/material";
 import React, {useEffect, useState} from "react";
@@ -16,6 +16,7 @@ import {useNavigate} from "react-router-dom";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Box from "@mui/material/Box";
+import DeleteIcon from '@mui/icons-material/Delete';
 import {Task} from "./defoeQueryResult";
 import {getLexiconFileOriginalName} from "../utils/stringUtil";
 
@@ -66,7 +67,7 @@ function TaskConfigCell(props) {
 
 
 function TaskRow(props) {
-    const { task, sx } = props;
+    const { task, sx, handleCheckBoxClick, isTaskSelected } = props;
     const [open, setOpen] = React.useState(false);
 
 
@@ -81,6 +82,13 @@ function TaskRow(props) {
     return (
         <React.Fragment>
             <TableRow sx={sx}>
+                <TableCell padding="checkbox">
+                    <Checkbox
+                        color="primary"
+                        checked={isTaskSelected}
+                        onChange={(event) => handleCheckBoxClick(event, task.task_id)}
+                    />
+                </TableCell>
                 <TableCell component="th" scope="row">
                     {task.config.collection}
                 </TableCell>
@@ -133,6 +141,15 @@ function DefoeQueryTasksPage() {
     const [tasks, setTasks] = useState();
     const [options, setOptions] = useState(init_options);
     const [total, setTotal] = useState(0);
+    const [selected, setSelected] = useState([]);
+    const [snackBarInfo, setSnackBarInfo] = useState({
+        open: false,
+        message: ''
+    })
+
+    const handleClose = () => {
+        setSnackBarInfo({ open: false, message: '' });
+    };
 
 
     useEffect(() => {
@@ -145,6 +162,39 @@ function DefoeQueryTasksPage() {
             })
         }
     }, [options])
+
+
+    const handleSelectAllClick = (event) => {
+        if (event.target.checked) {
+            const newSelected = tasks.map((n) => n.task_id);
+            setSelected(newSelected);
+            return;
+        }
+        setSelected([]);
+    };
+
+    const isSelected = (id) => selected.indexOf(id) !== -1;
+
+    const handleCheckBoxClick = (event, id) => {
+        const selectedIndex = selected.indexOf(id);
+        let newSelected = [];
+
+        if (selectedIndex === -1) {
+            newSelected = newSelected.concat(selected, id);
+        } else if (selectedIndex === 0) {
+            newSelected = newSelected.concat(selected.slice(1));
+        } else if (selectedIndex === selected.length - 1) {
+            newSelected = newSelected.concat(selected.slice(0, -1));
+        } else if (selectedIndex > 0) {
+            newSelected = newSelected.concat(
+                selected.slice(0, selectedIndex),
+                selected.slice(selectedIndex + 1),
+            );
+        }
+        console.log(newSelected)
+        setSelected(newSelected);
+    };
+
 
 
     const handleSubmitTimeSortClick = (event) => {
@@ -177,12 +227,46 @@ function DefoeQueryTasksPage() {
         }))
     }
 
+
+    const handleDeleteClick = (event) => {
+        QueryAPI.deleteDefoeQueryTasks(selected).then(res => {
+            const data = res?.data;
+            console.log(data)
+            setSnackBarInfo({
+                open: true,
+                message: selected.length + ' tasks deleted!'
+            })
+            setSelected([]);
+            QueryAPI.getAllDefoeQueryTasks(options).then((response) => {
+                console.log(response?.data);
+                setTasks(response?.data?.tasks);
+                setTotal(response?.data?.total_count);
+            })
+        })
+
+    }
+
+
     return (
         <Container maxWidth="lg" sx={{mt: 2, minHeight: '70vh'}}>
-            <Typography component="div" gutterBottom variant="h4" sx={{mt: 5}}>
-                Defoe Query Tasks
-            </Typography>
-
+            <Stack direction={"row"} justifyContent={"space-between"} sx={{mt: 5, mb:2}}>
+                <Typography component="div" variant="h4" >
+                    Defoe Query Tasks
+                </Typography>
+                {
+                    selected.length > 0 ?
+                    <Stack direction={"row"} alignItems={"center"} spacing={3}>
+                        <Typography component="div" color="inherit" variant="subtitle1">
+                            {selected.length} Selected
+                        </Typography>
+                        <Tooltip title="Delete">
+                            <IconButton onClick={handleDeleteClick}>
+                                <DeleteIcon color={"error"}/>
+                            </IconButton>
+                        </Tooltip>
+                    </Stack> : null
+                }
+            </Stack>
             {
                 (tasks !== undefined) ?
                     (<Box>
@@ -190,6 +274,13 @@ function DefoeQueryTasksPage() {
                             <Table sx={{ minWidth: 650 }} aria-label="defoe query tasks table">
                                 <TableHead>
                                     <TableRow>
+                                        <TableCell padding="checkbox">
+                                            <Checkbox
+                                                color="primary"
+                                                checked={tasks.length > 0 && tasks.length === selected.length}
+                                                onChange={handleSelectAllClick}
+                                            />
+                                        </TableCell>
                                         <TableCell>Collection</TableCell>
                                         <TableCell>Query Type</TableCell>
                                         <TableCell>Configuration</TableCell>
@@ -215,7 +306,11 @@ function DefoeQueryTasksPage() {
                                 <TableBody>
                                     {tasks.map((task, key) => (
                                         <TaskRow  key={key}
-                                                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }} task={task}/>
+                                                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                  task={task}
+                                                  isTaskSelected={isSelected(task.task_id)}
+                                                  handleCheckBoxClick={handleCheckBoxClick}
+                                        />
                                     ))}
                                 </TableBody>
                             </Table>
@@ -232,6 +327,12 @@ function DefoeQueryTasksPage() {
                     </Box>) :
                 <CircularProgress/>
             }
+            <Snackbar
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                open={snackBarInfo?.open}
+                onClose={handleClose}
+                message={snackBarInfo?.message}
+            />
         </Container>
     )
 }

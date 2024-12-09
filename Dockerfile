@@ -1,5 +1,5 @@
 FROM node:14-alpine AS production
-ENV NODE_ENV production
+ENV NODE_ENV=production
 # Add a work directory
 WORKDIR /app
 # Cache and Install dependencies
