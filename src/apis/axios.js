@@ -4,8 +4,8 @@ import Cookies from 'js-cookie'
 import config from '../config.json'
 
 let baseUrl = config.BACKEND_BASE_URL;
-if (process.env.REACT_APP_FRANCES_API_ADDRESS !== undefined && process.env.REACT_APP_FRANCES_API_ADDRESS !== null) {
-    baseUrl = process.env.REACT_APP_FRANCES_API_ADDRESS;
+if (import.meta.env.VITE_FRANCES_API_ADDRESS !== undefined && import.meta.env.VITE_FRANCES_API_ADDRESS !== null) {
+    baseUrl = import.meta.env.VITE_FRANCES_API_ADDRESS;
 }
 
 export const getBaseUrl = () => {

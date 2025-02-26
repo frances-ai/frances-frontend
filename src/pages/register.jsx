@@ -271,7 +271,7 @@ function RegisterForm(props) {
                 </Button>
                 <Grid container justifyContent="center">
                     <Grid item>
-                        <Link href="/login" variant="body2">
+                        <Link href="/src/pages/login" variant="body2">
                             Already have an account? Sign in
                         </Link>
                     </Grid>
@@ -299,7 +299,7 @@ function RegisterPage() {
                         registered?
                             <Typography component="div" variant="h5" sx={{mt: 2}}>
                                 Thanks for your interest! Your registered account is pending for approval! If your account has been approved, please
-                                <Link href="/login" marginLeft={1}>
+                                <Link href="/src/pages/login" marginLeft={1}>
                                     sign in
                                 </Link>
                             </Typography>

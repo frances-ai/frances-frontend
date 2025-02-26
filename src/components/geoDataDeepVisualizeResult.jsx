@@ -1,5 +1,5 @@
 import Box from "@mui/material/Box";
-import * as dfd from "danfojs"
+import * as dfd from "danfojs/dist/danfojs-browser/src"
 import Plot from "react-plotly.js";
 import TimeSlideMap from "./maps/timeSlideMap";
 

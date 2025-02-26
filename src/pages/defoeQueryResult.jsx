@@ -23,7 +23,6 @@ import {
     get_plot_words_frequency, get_word_cloud_words_frequency
 } from "../utils/plotUtil";
 import BasicMap from "../components/maps/basicMap";
-import VisualiseButton from "../components/buttons/visualiseButton";
 import GeoDataDeepVisualizeResult from "../components/geoDataDeepVisualizeResult";
 import {
     countTotalYearRecords,
