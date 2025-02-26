@@ -47,7 +47,7 @@ Before running the frontend, make up the [backend](https://github.com/frances-ai
 
 In the `frances-frontend` directory, you can run:
 
-`npm start`
+`npm run dev`
 
 Your local frances frontend can be accessed here: http://127.0.0.1:3000
 
