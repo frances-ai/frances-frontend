@@ -504,7 +504,8 @@ function DefoeQueryPage() {
         const handleLocationButtonClick = (index) => {
             setSelectedLocationIndex(index);
             const location_bounding_box = locations[index].bounding_box;
-            // location.bounding_box: n s w e
+            // location.bounding_box: s n w e
+            // see https://nominatim.org/release-docs/develop/api/Output/#boundingbox
             console.log(location_bounding_box)
             setNorth(location_bounding_box[0]);
             setSouth(location_bounding_box[1]);
