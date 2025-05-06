@@ -12,15 +12,15 @@ class QueryAPI {
         })
     }
 
-    get_similar_terms(term_uri) {
-        return axiosPublic.post("/search/similar_terms", {"term_uri": term_uri}).then(response => {
+    get_similar_records(record_uri, collection_name) {
+        return axiosPublic.post("/search/similar_records", {record_uri: record_uri, collection: collection_name}).then(response => {
             console.log('Server');
             return response;
         })
     }
 
-    get_word_frequencies(term_name){
-        return axiosPublic.get("/search/word_frequencies", {params: {term_name: term_name}}).then(response => {
+    get_word_frequencies(record_name, collection_name){
+        return axiosPublic.post("/search/word_frequencies", {record_name: record_name, collection: collection_name}).then(response => {
             console.log('Server');
             return response;
         })
@@ -33,9 +33,29 @@ class QueryAPI {
         })
     }
 
-    get_similar_term_descriptions(term_uri) {
-        return axiosPublic.post("/search/similar_term_descriptions", {"term_uri": term_uri}).then(response => {
+    get_similar_record_descriptions(record_uri, collection_name) {
+        return axiosPublic.post("/search/similar_record_descriptions", {record_uri: record_uri, collection: collection_name}).then(response => {
             console.log('Server');
+            return response;
+        })
+    }
+
+
+    check_page_exists(page_path) {
+        const key = 'check_page_exists' + page_path;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return axiosPublic.get("/search/page_exists", {params: {page_path: page_path}}).then(response => {
+            console.log('Server');
+            store_response_data_in_local_storage(key, response)
             return response;
         })
     }
@@ -93,6 +113,44 @@ class QueryAPI {
         }
 
         return axiosPublic.get("/search/term", {params: {term_path: term_path}}).then(response => {
+            console.log('Server');
+            store_response_data_in_local_storage(key, response)
+            return response;
+        })
+    }
+
+    get_location_record_info(record_path) {
+        const key = 'get_location_record_info' + record_path;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return axiosPublic.get("/search/location_record", {params: {record_path: record_path}}).then(response => {
+            console.log('Server');
+            store_response_data_in_local_storage(key, response)
+            return response;
+        })
+    }
+
+    get_broadside_record_info(record_path) {
+        const key = 'get_broadside_record_info' + record_path;
+        const result = localStorage.getItem(key);
+        if (result) {
+            return new Promise((resolve => {
+                console.log('Local');
+                resolve({
+                    data: JSON.parse(result)
+                });
+            }));
+        }
+
+        return axiosPublic.get("/search/broadside", {params: {record_path: record_path}}).then(response => {
             console.log('Server');
             store_response_data_in_local_storage(key, response)
             return response;

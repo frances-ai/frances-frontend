@@ -34,7 +34,7 @@ function TopicTermRecordPage() {
             console.log(data)
             setSimilarTermDescriptions(data)
         })
-        QueryAPI.get_similar_terms(term_uri).then(res => {
+        QueryAPI.get_similar_records(term_uri, termInfo?.collection.name).then(res => {
             const data = res?.data
             console.log(data)
             setSimilarTerms(data)
