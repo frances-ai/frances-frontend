@@ -17,7 +17,7 @@ import Box from "@mui/material/Box";
 import DownloadIcon from "@mui/icons-material/Download";
 
 function Editions(props) {
-    const {collection, selectedES, setSelectedES} = props;
+    const {collection, selectedES, setSelectedES, first_level_label, second_level_label} = props;
 
     const [editionsOrSeries, setEditionsOrSeries] = useState([]);
     const [editionsOrSeriesSearchResults, setEditionsOrSeriesSearchResults] = useState([]);
@@ -108,7 +108,7 @@ function Editions(props) {
     return (
         <React.Fragment>
             <Typography gutterBottom variant={"h5"} component="div">
-                {(collection.uri.includes("EncyclopaediaBritannica")? "Editions" : "Series")} for {collection.name}
+                {first_level_label}
             </Typography>
             <Grid container columnSpacing={{ sm: 1, md: 5}} sx={{mt:3}}>
                 <Grid item md={5} xs={12}>
@@ -116,7 +116,7 @@ function Editions(props) {
                         sx={{marginBottom: 2}}
                         fullWidth
                         onChange={handleEditionSerieSearch}
-                        label={"Search " + (collection.uri.includes("EncyclopaediaBritannica")? "Edition" : "Serie")}
+                        label={"Search " + first_level_label}
                         variant="outlined"/>
                     <Stack direction={"column"} maxHeight={300} sx={{overflowY: "scroll"}}>
                         {
@@ -138,126 +138,130 @@ function Editions(props) {
                 <Grid item md={6} xs={12}>
                     <Paper sx={{padding: 3}}>
                         <Grid container rowSpacing={2} justifyContent="space-between">
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"h6"}  color={"text.secondary"} component="div">
-                                    Title:
-                                </Typography>
-                            </Grid>
-                            <Grid item md={10}>
-                                <Typography gutterBottom variant={"h6"} textAlign={"end"} component="div">
-                                    {esDetail?.title}
-                                </Typography>
+                            <Grid item md={12}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"h6"}  color={"text.secondary"} component="div">
+                                        Title:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"h6"} textAlign={"end"} component="div">
+                                        {esDetail?.title}
+                                    </Typography>
+                                </Stack>
                             </Grid>
                             {
                                 esDetail?.subtitle?
                                     <React.Fragment>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
-                                                SubTitle:
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item md={10}>
-                                            <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
-                                                {esDetail?.subtitle}
-                                            </Typography>
+                                        <Grid item md={12}>
+                                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                                <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
+                                                    SubTitle:
+                                                </Typography>
+                                                <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
+                                                    {esDetail?.subtitle}
+                                                </Typography>
+                                            </Stack>
                                         </Grid>
                                     </React.Fragment>
                                     : null
                             }
-                            <Grid item md={3}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Publication Year:
-                                </Typography>
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Publication Year:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {esDetail?.year}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.year}
-                                </Typography>
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Number:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {esDetail?.number}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={3}></Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Number:
-                                </Typography>
+                            {
+                                esDetail?.printedAt?
+                                    <>
+                                        <Grid item md={5}>
+                                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                                    Printed At:
+                                                </Typography>
+                                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                                    {esDetail?.printedAt}
+                                                </Typography>
+                                            </Stack>
+                                        </Grid>
+                                    </>
+                                     : null
+                            }
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Shelf Locator:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {esDetail?.shelfLocator}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.number}
-                                </Typography>
+                            <Grid item md={12}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Physical Description:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {esDetail?.physicalDescription}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Printed At:
-                                </Typography>
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        MMSID
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {esDetail?.MMSID}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={3}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.printedAt}
-                                </Typography>
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Genre:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {esDetail?.genre}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={2} />
-                            <Grid item md={3}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Shelf Locator:
-                                </Typography>
+
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Language:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {esDetail?.language}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.shelfLocator}
-                                </Typography>
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Number of {second_level_label}s:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {esDetail?.numOfVolumes}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={4}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Physical Description:
-                                </Typography>
-                            </Grid>
-                            <Grid item md={8}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.physicalDescription}
-                                </Typography>
-                            </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    MMSID
-                                </Typography>
-                            </Grid>
-                            <Grid item md={4}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.MMSID}
-                                </Typography>
-                            </Grid>
-                            <Grid item md={1}/>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Genre:
-                                </Typography>
-                            </Grid>
-                            <Grid item md={3}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.genre}
-                                </Typography>
-                            </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Language:
-                                </Typography>
-                            </Grid>
-                            <Grid item md={3}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.language}
-                                </Typography>
-                            </Grid>
-                            <Grid item md={1}/>
-                            <Grid item md={4}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Number of Volumes:
-                                </Typography>
-                            </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {esDetail?.numOfVolumes}
-                                </Typography>
-                            </Grid>
+
                             <Button
                                 aria-label="download-edition"
                                 color={"primary"}
@@ -275,7 +279,7 @@ function Editions(props) {
 
 function Volumes(props) {
 
-    const {collection, selectedES} = props;
+    const {collection, selectedES, second_level_label} = props;
 
     const [volumes, setVolumes] = useState([]);
     const [selectedVolume, setSelectedVolume] = useState();
@@ -351,7 +355,7 @@ function Volumes(props) {
     return (
         <React.Fragment>
             <Typography gutterBottom variant={"h5"} component="div">
-                Volumes for {limitTextLength(selectedES.name)}
+                {second_level_label}s for {limitTextLength(selectedES.name)}
             </Typography>
             <Grid container columnSpacing={{ sm: 1, md: 5}} sx={{mt:3}}>
                 <Grid item md={5} xs={12}>
@@ -359,7 +363,7 @@ function Volumes(props) {
                         sx={{marginBottom: 2}}
                         fullWidth
                         onChange={handleVolumeSearch}
-                        label={"Search Volume"}
+                        label={"Search " + second_level_label}
                         variant="outlined"/>
                     <Stack direction={"column"} maxHeight={300} sx={{overflowY: "scroll"}}>
                         {
@@ -380,72 +384,75 @@ function Volumes(props) {
                 </Grid>
                 <Grid item md={6} xs={12}>
                     <Paper sx={{padding: 3}}>
-                        <Grid container rowSpacing={2} columnSpacing={3} justifyContent="space-between">
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"h6"}  color={"text.secondary"} component="div">
-                                    Title:
-                                </Typography>
-                            </Grid>
-                            <Grid item md={10}>
-                                <Typography gutterBottom variant={"h6"} textAlign={"end"} component="div">
-                                    {volumeDetail?.detail?.title}
-                                </Typography>
-                            </Grid>
-                            <Grid item md={4}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Permanent URL:
-                                </Typography>
-                            </Grid>
-                            <Grid item md={8}>
-                                <Link href={volumeDetail?.detail?.permanentURL}>
-                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                        {volumeDetail?.detail?.permanentURL}
+                        <Grid container rowSpacing={2} justifyContent="space-between">
+                            <Grid item md={12}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"h6"}  color={"text.secondary"} component="div">
+                                        Title:
                                     </Typography>
-                                </Link>
+                                    <Typography gutterBottom variant={"h6"} textAlign={"end"} component="div">
+                                        {volumeDetail?.detail?.title}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
-                                    ID:
-                                </Typography>
+
+                            <Grid item md={12}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Permanent URL:
+                                    </Typography>
+                                    <Link href={volumeDetail?.detail?.permanentURL}>
+                                        <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                            {volumeDetail?.detail?.permanentURL}
+                                        </Typography>
+                                    </Link>
+                                </Stack>
                             </Grid>
-                            <Grid item md={3}>
-                                <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
-                                    {volumeDetail?.detail?.id}
-                                </Typography>
+
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
+                                        ID:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
+                                        {volumeDetail?.detail?.id}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={3}/>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Number:
-                                </Typography>
+
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Number:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {volumeDetail?.detail?.number}
+                                    </Typography>
+                                </Stack>
                             </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {volumeDetail?.detail?.number}
-                                </Typography>
-                            </Grid>
-                            <Grid item md={4}>
-                                <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
-                                    Number of Pages:
-                                </Typography>
-                            </Grid>
-                            <Grid item md={2}>
-                                <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
-                                    {volumeDetail?.detail?.numOfPages}
-                                </Typography>
+
+                            <Grid item md={5}>
+                                <Stack direction={"row"} justifyContent={"space-between"}>
+                                    <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
+                                        Number of Pages:
+                                    </Typography>
+                                    <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
+                                        {volumeDetail?.detail?.numOfPages}
+                                    </Typography>
+                                </Stack>
                             </Grid>
                             {
                                 volumeDetail?.detail?.letters?
                                     <React.Fragment>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
-                                                Letters:
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
-                                                {volumeDetail?.detail?.letters}
-                                            </Typography>
+                                        <Grid item md={5}>
+                                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                                <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
+                                                    Letters:
+                                                </Typography>
+                                                <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
+                                                    {volumeDetail?.detail?.letters}
+                                                </Typography>
+                                            </Stack>
                                         </Grid>
                                     </React.Fragment>
                                     : null
@@ -453,15 +460,15 @@ function Volumes(props) {
                             {
                                 volumeDetail?.detail?.part?
                                     <React.Fragment>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
-                                                Part:
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
-                                                {volumeDetail?.detail?.part}
-                                            </Typography>
+                                        <Grid item md={5}>
+                                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                                <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
+                                                    Part:
+                                                </Typography>
+                                                <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
+                                                    {volumeDetail?.detail?.part}
+                                                </Typography>
+                                            </Stack>
                                         </Grid>
                                     </React.Fragment>
                                     : null
@@ -469,15 +476,15 @@ function Volumes(props) {
                             {
                                 volumeDetail?.statistics?.numOfArticles?
                                     <React.Fragment>
-                                        <Grid item md={4}>
-                                            <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
-                                                Number of Articles:
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
-                                                {volumeDetail?.statistics?.numOfArticles}
-                                            </Typography>
+                                        <Grid item md={5}>
+                                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                                <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
+                                                    Number of Articles:
+                                                </Typography>
+                                                <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
+                                                    {volumeDetail?.statistics?.numOfArticles}
+                                                </Typography>
+                                            </Stack>
                                         </Grid>
                                     </React.Fragment>
                                     : null
@@ -485,15 +492,15 @@ function Volumes(props) {
                             {
                                 volumeDetail?.statistics?.numOfTopics?
                                     <React.Fragment>
-                                        <Grid item md={4}>
-                                            <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
-                                                Number of Topics:
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
-                                                {volumeDetail?.statistics?.numOfTopics}
-                                            </Typography>
+                                        <Grid item md={5}>
+                                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                                <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
+                                                    Number of Topics:
+                                                </Typography>
+                                                <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
+                                                    {volumeDetail?.statistics?.numOfTopics}
+                                                </Typography>
+                                            </Stack>
                                         </Grid>
                                     </React.Fragment>
                                     : null
@@ -501,31 +508,32 @@ function Volumes(props) {
                             {
                                 volumeDetail?.statistics?.numOfDistinctArticles?
                                     <React.Fragment>
-                                        <Grid item md={4}>
-                                            <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
-                                                Number of Distinct Articles:
-                                            </Typography>
+                                        <Grid item md={5}>
+                                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                                <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
+                                                    Number of Distinct Articles:
+                                                </Typography>
+                                                <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
+                                                    {volumeDetail?.statistics?.numOfDistinctArticles}
+                                                </Typography>
+                                            </Stack>
                                         </Grid>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
-                                                {volumeDetail?.statistics?.numOfDistinctArticles}
-                                            </Typography>
-                                        </Grid>
+
                                     </React.Fragment>
                                     : null
                             }
                             {
                                 volumeDetail?.statistics?.numOfDistinctTopics?
                                     <React.Fragment>
-                                        <Grid item md={4}>
-                                            <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
-                                                Number of Distinct Topics:
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item md={2}>
-                                            <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
-                                                {volumeDetail?.statistics?.numOfDistinctTopics}
-                                            </Typography>
+                                        <Grid item md={5}>
+                                            <Stack direction={"row"} justifyContent={"space-between"}>
+                                                <Typography gutterBottom variant={"subtitle1"}  color={"text.secondary"} component="div">
+                                                    Number of Distinct Topics:
+                                                </Typography>
+                                                <Typography gutterBottom variant={"subtitle1"} textAlign={"end"} component="div">
+                                                    {volumeDetail?.statistics?.numOfDistinctTopics}
+                                                </Typography>
+                                            </Stack>
                                         </Grid>
                                     </React.Fragment>
                                     : null
@@ -547,6 +555,9 @@ function Volumes(props) {
 function CollectionDetailResult() {
     const state = useLocation().state;
     const collection = state?.collection;
+    const [first_level_label, setFirst_level_label] = useState("Series")
+    const [second_level_label, setSecond_level_label] = useState("Volume")
+
     const [collectionDetail, setCollectionDetail] = useState();
     const [selectedES, setSelectedES] = useState();
 
@@ -557,6 +568,12 @@ function CollectionDetailResult() {
             console.log(response?.data);
             setCollectionDetail(response?.data);
         })
+        if (collection.name.includes("Broadsides")) {
+            setSecond_level_label("Broadside");
+        }
+        if (collection.name.includes("Encyclopaedia")) {
+            setFirst_level_label("Edition");
+        }
     }, [])
 
 
@@ -614,14 +631,18 @@ function CollectionDetailResult() {
             </Container>
             <Box sx={{backgroundColor: "#f8f9fa", marginTop: 5}}>
                 <Container maxWidth="lg" sx={{paddingTop: 3, paddingBottom: 3}}>
-                    <Editions collection={collection} selectedES={selectedES} setSelectedES={setSelectedES}/>
+                    <Editions collection={collection} selectedES={selectedES} setSelectedES={setSelectedES}
+                        first_level_label={first_level_label}
+                        second_level_label={second_level_label}/>
                 </Container>
             </Box>
             {
                 selectedES?
                     <Box sx={{backgroundColor: "#ffffff"}}>
                         <Container maxWidth="lg" sx={{paddingTop: 3, paddingBottom: 3}}>
-                            <Volumes collection={collection} selectedES={selectedES}/>
+                            <Volumes collection={collection} selectedES={selectedES}
+                                     second_level_label={second_level_label}
+                            />
                         </Container>
                     </Box>
                     : null
