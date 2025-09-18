@@ -92,7 +92,7 @@ function MultiSourceDescriptionDisplay(props) {
     const [currentDescriptionIndex, setCurrentDescriptionIndex] = useState(0);
 
     const handleDescriptionTabClick = (event, newValue) => {
-        console.log(newValue)
+        //console.log(newValue)
         setCurrentDescriptionIndex(newValue);
     }
 

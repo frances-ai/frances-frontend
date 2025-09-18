@@ -1,15 +1,19 @@
-FROM node:14-alpine AS production
-ENV NODE_ENV=production
-# Add a work directory
+# Stage 1: Build the app
+FROM node:18 AS builder
 WORKDIR /app
-# Cache and Install dependencies
-COPY package.json .
-COPY package-lock.json .
 
-RUN npm ci
-# Copy app files
+COPY package*.json ./
+RUN npm install
+
 COPY . .
-# Expose port
+RUN npm run build
+
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Replace default Nginx config (optional but recommended for single-page apps)
+COPY etc/nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
-# Start the app
-CMD [ "npm", "start" ]
+CMD ["nginx", "-g", "daemon off;"]

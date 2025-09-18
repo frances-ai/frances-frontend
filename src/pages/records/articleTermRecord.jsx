@@ -23,7 +23,6 @@ function ArticleTermRecordPage() {
 
     useEffect(() => {
         const term_path =  "ArticleTermRecord/" + termId
-        const term_uri = config.hto + "/"  + term_path
         QueryAPI.get_term_info(term_path).then(res => {
             const data = res?.data
             console.log(data)
@@ -36,8 +35,8 @@ function ArticleTermRecordPage() {
         if (termInfo !== undefined) {
             QueryAPI.get_terms_by_concept_uri(termInfo.concept_uri).then(res => {
                 const data = res?.data
-                console.log("concept terms")
-                console.log(data)
+                //console.log("concept terms")
+                //console.log(data)
                 setConceptTerms(data)
             })
         }
@@ -48,17 +47,17 @@ function ArticleTermRecordPage() {
             const collection_name = get_collection_name(termInfo?.collection.name)
             QueryAPI.get_similar_records(term_uri, collection_name).then(res => {
                 const data = res?.data
-                console.log(data)
+                //console.log(data)
                 setSimilarTerms(data)
             })
             QueryAPI.get_similar_record_descriptions(term_uri, collection_name).then(res => {
                 const data = res?.data
-                console.log(data)
+                //console.log(data)
                 setSimilarTermDescriptions(data)
             })
             QueryAPI.get_word_frequencies(termInfo.term_name, collection_name).then(res => {
                 const data = res?.data
-                console.log(data)
+                //console.log(data)
                 setYearWordFrequencies(data)
             })
         }

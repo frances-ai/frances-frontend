@@ -1,24 +1,23 @@
-import {Button, Container, Divider, Link, Stack, Typography} from "@mui/material";
+import { Container, Divider, Link, Stack, Typography} from "@mui/material";
 import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import QueryAPI from "../../apis/query";
 import PageImageDisplay from "../../components/PageImageDisplay";
 import Box from "@mui/material/Box";
 import MultiSourceDescriptionDisplay from "../../components/MultiSourceDescriptionDisplay";
-import ConceptTimeLine from "../../components/timelines/conceptTimeLine.jsx";
 
 function BroadsideRecordPage() {
     let { recordId } = useParams();
     const [recordInfo, setRecordInfo] = useState();
     const navigate = useNavigate();
-    console.log(recordId)
+    //console.log(recordId)
 
     useEffect(() => {
         const record_path =  "Broadside/" + recordId
 
         QueryAPI.get_broadside_record_info(record_path).then(res => {
             const data = res?.data
-            console.log(data)
+            //console.log(data)
             setRecordInfo(data)
         })
     }, [recordId])
@@ -45,7 +44,7 @@ function BroadsideRecordPage() {
                 recordInfo?.start_page?.uri ? <PageImageDisplay init_page_uri={recordInfo.start_page.uri}/> : null
             }
             <Container maxWidth="md">
-                <Typography mt={2} mb={2} component={"div"} variant={"h4"}>{recordInfo?.record_name}</Typography>
+                <Typography mt={2} mb={2} component={"div"} variant={"h4"}>{recordInfo?.name}</Typography>
                 <Typography mb={1} variant={"h6"}>Metadata</Typography>
                 <Divider />
                 <Stack
@@ -122,7 +121,7 @@ function BroadsideRecordPage() {
                     {
                         recordInfo?.descriptions? <MultiSourceDescriptionDisplay
                             descriptions={recordInfo?.descriptions}
-                            entity_label = {recordInfo?.record_name + ","  + recordInfo?.series.year_published}
+                            entity_label = {recordInfo?.name + ","  + recordInfo?.series.year_published}
                         /> : null
                     }
                 </Container>

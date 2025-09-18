@@ -44,20 +44,20 @@ function TrackSourceGraph(props) {
     }
 
     function onCanvasClick(event) {
-        console.log(event)
+        //console.log(event)
         setSelections([]);
     }
 
     function onNodeClick(event) {
-        console.log(event)
+        //console.log(event)
         setSelections([event.id]);
     }
 
     function onNodeDoubleClick(event) {
         QueryAPI.get_kg_triples(event.id).then(res => {
-            console.log(res)
+            //console.log(res)
             const data = parse_triples(res?.data, event.id)
-            console.log(data)
+            //console.log(data)
             if (data !== null) {
                 setNodes(prevNodes => [...prevNodes, ...data["nodes"]])
                 setEdges(prevEdges => [...prevEdges, ...data["edges"]])
@@ -124,10 +124,10 @@ function TrackSourceGraph(props) {
 
     function reset() {
         QueryAPI.get_kg_triples(entry_uri).then(res => {
-            console.log("track source")
-            console.log(res)
+            //console.log("track source")
+            //console.log(res)
             const data = parse_triples(res?.data, entry_uri, true)
-            console.log(data)
+            //console.log(data)
             if (data !== null) {
                 setNodes(data["nodes"])
                 //setSelections([entry_uri]);
@@ -138,12 +138,12 @@ function TrackSourceGraph(props) {
     }
 
     useEffect(() => {
-        console.log(nodesInfo)
+        //console.log(nodesInfo)
     }, [nodesInfo])
 
     useEffect(() => {
-        console.log("track source")
-        console.log(entry_uri)
+        //console.log("track source")
+        //console.log(entry_uri)
         if (entry_uri !== undefined) {
             reset();
         }

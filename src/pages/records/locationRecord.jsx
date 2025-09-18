@@ -18,11 +18,10 @@ function LocationRecordPage() {
     const [yearWordFrequencies, setYearWordFrequencies] = useState([]);
     const [conceptRecords, setConceptRecords] = useState([])
     const navigate = useNavigate();
-    console.log(recordId)
+    //console.log(recordId)
 
     useEffect(() => {
         const record_path =  "LocationRecord/" + recordId
-        const record_uri = config.hto + "/"  + record_path
         QueryAPI.get_location_record_info(record_path).then(res => {
             const data = res?.data
             console.log(data)
@@ -34,8 +33,8 @@ function LocationRecordPage() {
         if (recordInfo?.concept_uri) {
             QueryAPI.get_terms_by_concept_uri(recordInfo.concept_uri).then(res => {
                 const data = res?.data
-                console.log("concept terms")
-                console.log(data)
+                //console.log("concept terms")
+                //console.log(data)
                 setConceptRecords(data)
             })
         }
@@ -46,17 +45,17 @@ function LocationRecordPage() {
             const collection_name = get_collection_name(recordInfo?.collection.name)
             QueryAPI.get_similar_records(record_uri, collection_name).then(res => {
                 const data = res?.data
-                console.log(data)
+                //console.log(data)
                 setSimilarRecords(data)
             })
             QueryAPI.get_similar_record_descriptions(record_uri, collection_name).then(res => {
                 const data = res?.data
-                console.log(data)
+                //console.log(data)
                 setSimilarRecordDescriptions(data)
             })
             QueryAPI.get_word_frequencies(recordInfo?.record_name, collection_name).then(res => {
                 const data = res?.data
-                console.log(data)
+                //console.log(data)
                 setYearWordFrequencies(data)
             })
         }
@@ -151,14 +150,17 @@ function LocationRecordPage() {
                             </Link>
                         </Box>
                     </Stack>
-                    <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
-                        <Box>
-                            <Typography variant={"body1"}>Genre</Typography>
-                        </Box>
-                        <Box>
-                            <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{recordInfo?.series.genre}</Typography>
-                        </Box>
-                    </Stack>
+                    {
+                        recordInfo?.series?.genre !== "0.0"?
+                            <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
+                                <Box>
+                                    <Typography variant={"body1"}>Genre</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{recordInfo?.series.genre}</Typography>
+                                </Box>
+                            </Stack> : null
+                    }
                     <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
                         <Box>
                             <Typography variant={"body1"}>Printed in</Typography>

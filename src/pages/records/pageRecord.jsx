@@ -12,14 +12,14 @@ function PageRecordPage() {
     const [pageInfo, setPageInfo] = useState();
     const [pagePath, setPagePath] = useState("Page/" + pageId);
     const navigate = useNavigate();
-    console.log(pageId)
+    //console.log(pageId)
 
     useEffect(() => {
         const page_path = "Page/" + pageId;
         setPagePath(page_path)
         QueryAPI.get_page_info(page_path).then(res => {
             const data =  res?.data;
-            console.log(data)
+            //console.log(data)
             setPageInfo(data);
         })
     }, [pageId])
@@ -74,7 +74,7 @@ function PageRecordPage() {
                         </Box>
                     </Stack>
                     {
-                        pageInfo?.edition_or_series?.genre != 0 ?
+                        pageInfo?.edition_or_series?.genre != "0.0" ?
                             <Stack direction={"row"} justifyContent="space-between" width={"100%"}>
                                 <Box>
                                     <Typography variant={"body1"}>Genre</Typography>
