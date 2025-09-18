@@ -20,7 +20,7 @@ function Header(props) {
     return (
         <React.Fragment>
             <AppBar position={"sticky"} color={"white"}>
-                <Toolbar variant="dense" >
+                <Toolbar>
                     <FrancesLogo size={"2rem"} weight={"bold"} />
                     <NavTabs sections = {sections} currentIndex = {currentSectionIndex}/>
                     <UserMenu/>

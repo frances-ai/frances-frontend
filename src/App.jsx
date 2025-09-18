@@ -14,16 +14,18 @@ import DefoeQueryTasksPage from "./pages/defoeQueryTasks";
 import CollectionDetailResult from "./pages/collectionDetailResult";
 import SearchPage from "./pages/search";
 import SearchResultPage from "./pages/searchResult";
-import ArticleTermRecord from "./pages/records/ArticleTermRecord";
+import ArticleTermRecord from "./pages/records/articleTermRecord.jsx";
 import PageRecordPage from "./pages/records/pageRecord";
-import TopicTermRecord from "./pages/records/TopicTermRecord";
+import TopicTermRecord from "./pages/records/topicTermRecord.jsx";
+import LocationRecord from "./pages/records/locationRecord";
+import BroadsideRecord from "./pages/records/broadsideRecord.jsx";
 
 function App() {
 
-    const update = localStorage.getItem("update-v2.1.2");
+    const update = localStorage.getItem("update-v2.1.3");
     if (!update) {
         localStorage.clear();
-        localStorage.setItem("update-v2.1.2", "0");
+        localStorage.setItem("update-v2.1.3", "0");
     }
 
     const location = useLocation();
@@ -35,48 +37,109 @@ function App() {
             console.log(reason)
         }) // Track the visit with the current path
     }, [location.pathname]);
-
-
+    
     return (
-      <AuthProvider>
-          <Routes>
-              <Route path="/" element={<HeaderLayout/>}>
-                  <Route index element={<SearchPage/>} />
-                  <Route path="search" element={<SearchPage/>} />
-                  <Route path="searchResult" element={<SearchResultPage/>} />
-                  <Route path="collectionDetails">
-                      <Route index element={<CollectionDetailsPage/>} />
-                      <Route path="detail" element={<CollectionDetailResult/>} />
-                  </Route>
-                  <Route path="hto">
-                      <Route path="ArticleTermRecord/:termId" element={<ArticleTermRecord/>} />
-                      <Route path="TopicTermRecord/:termId" element={<TopicTermRecord/>} />
-                      <Route path="Page/:pageId" element={<PageRecordPage/>} />
-                  </Route>
+        <AuthProvider>
+            <Routes>
+                <Route
+                    element={<HeaderLayout />}
+                    path="/"
+                >
+                    <Route
+                        element={<SearchPage />}
+                        index
+                    />
 
-                  {/* Protected routes */}
-                  <Route path="defoeQuery" element={
-                      <RequireAuth>
-                          <DefoeQueryPage />
-                      </RequireAuth>}
-                  />
-                  <Route path="defoeQueryResult" element={
-                      <RequireAuth>
-                          <DefoeQueryResult />
-                      </RequireAuth>}
-                  />
-                  <Route path="defoeQueryTasks" element={
-                      <RequireAuth>
-                          <DefoeQueryTasksPage />
-                      </RequireAuth>}
-                  />
-              </Route>
+                    <Route
+                        element={<SearchPage />}
+                        path="search"
+                    />
 
-              <Route path="login" element={<LoginPage/>} />
-              <Route path="register" element={<RegisterPage/>} />
-          </Routes>
-      </AuthProvider>
-  );
+                    <Route
+                        element={<SearchResultPage />}
+                        path="searchResult"
+                    />
+
+                    <Route path="collectionDetails">
+                        <Route
+                            element={<CollectionDetailsPage />}
+                            index
+                        />
+
+                        <Route
+                            element={<CollectionDetailResult />}
+                            path="detail"
+                        />
+                    </Route>
+
+                    <Route path="hto">
+                        <Route
+                            element={<ArticleTermRecord />}
+                            path="ArticleTermRecord/:termId"
+                        />
+
+                        <Route
+                            element={<TopicTermRecord />}
+                            path="TopicTermRecord/:termId"
+                        />
+
+                        <Route
+                            element={<LocationRecord />}
+                            path="LocationRecord/:recordId"
+                        />
+
+                        <Route
+                            element={<PageRecordPage />}
+                            path="Page/:pageId"
+                        />
+
+                        <Route
+                            element={<BroadsideRecord />}
+                            path="Broadside/:recordId"
+                        />
+                    </Route>
+        
+                    {/* Protected routes */}
+                    <Route
+                        element={
+                            <RequireAuth>
+                                <DefoeQueryPage />
+                            </RequireAuth>
+}
+                        path="defoeQuery"
+                    />
+
+                    <Route
+                        element={
+                            <RequireAuth>
+                                <DefoeQueryResult />
+                            </RequireAuth>
+}
+                        path="defoeQueryResult"
+                    />
+
+                    <Route
+                        element={
+                            <RequireAuth>
+                                <DefoeQueryTasksPage />
+                            </RequireAuth>
+}
+                        path="defoeQueryTasks"
+                    />
+                </Route>
+        
+                <Route
+                    element={<LoginPage />}
+                    path="login"
+                />
+
+                <Route
+                    element={<RegisterPage />}
+                    path="register"
+                />
+            </Routes>
+        </AuthProvider>
+    );
 }
 
 export default App;

@@ -15,7 +15,7 @@ class GeoLocationAPI {
             response.data = response.data.map((location) => (
                 {
                     "name": location.display_name,
-                    "bounding_box": location.boundingbox
+                    "bounding_box": location.boundingbox //see https://nominatim.org/release-docs/develop/api/Output/#boundingbox
                 }
             ))
             console.log(response.data);

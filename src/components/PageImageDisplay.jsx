@@ -14,6 +14,8 @@ function PageImageDisplay({init_page_uri, content_reload=false}) {
 
     const [currentPageUri, setCurrentPageUri] = useState(init_page_uri);
     const [currentPageInfo, setCurrentPageInfo] = useState();
+    const [hasNextPage, setHasNextPage] = useState(false);
+    const [hasPreviousPage, setHasPreviousPage] = useState(false);
 
     const navigate = useNavigate();
 
@@ -31,7 +33,24 @@ function PageImageDisplay({init_page_uri, content_reload=false}) {
                     image_url: data.image_url
                 }))
             })
+
+            const index_of_page_number = page_path.lastIndexOf("_") + 1;
+            const previous_page_number = (parseInt(page_path.substring(index_of_page_number)) - 1);
+            if (previous_page_number < 1) {
+                setHasPreviousPage(false);
+            } else {
+                const previous_page_path = page_path.substring(0, index_of_page_number) + previous_page_number;
+                QueryAPI.check_page_exists(previous_page_path).then(res => {
+                    setHasPreviousPage(res?.data);
+                })
+            }
+            const next_page_number = (parseInt(page_path.substring(index_of_page_number)) + 1);
+            const next_page_path = page_path.substring(0, index_of_page_number) + next_page_number;
+            QueryAPI.check_page_exists(next_page_path).then(res => {
+                setHasNextPage(res?.data);
+            })
         }
+
     }, [currentPageUri])
 
     const handlePreviousPageImageClick = () => {
@@ -53,11 +72,8 @@ function PageImageDisplay({init_page_uri, content_reload=false}) {
         // to check if there exists previous page
         // For EB page, and the rule how to create page uri, the last number of the uri is the page number,
         // in this case, we could get the previous page uri base on the current one.
-        console.log(currentPageUri)
-        console.log(typeof currentPageUri)
         const index_of_page_number = currentPageUri.lastIndexOf("_") + 1;
         const next_page_uri =  currentPageUri.substring(0, index_of_page_number) + (parseInt(currentPageUri.substring(index_of_page_number)) + 1);
-        console.log((parseInt(currentPageUri.substring(index_of_page_number)) - 1))
         if (content_reload) {
             navigate(next_page_uri.substring(next_page_uri.indexOf("/hto/")))
         }
@@ -101,10 +117,10 @@ function PageImageDisplay({init_page_uri, content_reload=false}) {
                             alignContent: "center"
                         }}>
                             <Stack direction={"row"} spacing={2} justifyContent="center" textAlign={"center"}>
-                                <IconButton onClick={handlePreviousPageImageClick}>
+                                <IconButton onClick={handlePreviousPageImageClick} disabled={!hasPreviousPage}>
                                     <ArrowCircleLeftOutlinedIcon/>
                                 </IconButton>
-                                <IconButton onClick={handleNextPageImageClick}>
+                                <IconButton onClick={handleNextPageImageClick} disabled={!hasNextPage}>
                                     <ArrowCircleRightOutlinedIcon/>
                                 </IconButton>
                             </Stack>
