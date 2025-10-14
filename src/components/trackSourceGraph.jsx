@@ -3,8 +3,9 @@ import QueryAPI from "../apis/query.js";
 import Box from "@mui/material/Box";
 import {GraphCanvas} from "reagraph";
 import {grey} from "@mui/material/colors";
-import {Link, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography} from "@mui/material";
+import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography} from "@mui/material";
 import {hto_uri_to_path, is_valid_link} from "../utils/stringUtil.js";
+import { Link } from "react-router-dom";
 
 function TrackSourceGraph(props) {
     const {entry_uri} = props
@@ -183,7 +184,7 @@ function TrackSourceGraph(props) {
                     <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>Node: </Typography>
                     {
                         is_valid_link(hto_uri_to_path(selections[0])) ?
-                            <Link href={hto_uri_to_path(selections[0])} underline={"none"}>
+                            <Link to={hto_uri_to_path(selections[0])}>
                                 <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>{get_simple_name_from_uri(selections[0])}</Typography>
                             </Link> :
                             <Typography component={"span"} variant={"body1"} sx={{wordWrap: 'break-word'}} fontWeight={"bold"}>{get_simple_name_from_uri(selections[0])}</Typography>
@@ -211,7 +212,7 @@ function TrackSourceGraph(props) {
                                                             </Typography>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Link href={hto_uri_to_path(nodesInfo[selections[0]][rdfs_type_uri]["value"])} underline={"none"}>
+                                                            <Link to={hto_uri_to_path(nodesInfo[selections[0]][rdfs_type_uri]["value"])}>
                                                                 <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][rdfs_type_uri]["value"])}</Typography>
                                                             </Link>
                                                         </TableCell>
@@ -225,7 +226,7 @@ function TrackSourceGraph(props) {
                                                                     </Typography>
                                                                 </TableCell>
                                                                 <TableCell>
-                                                                    <Link href={hto_uri_to_path(nodesInfo[selections[0]][foaf_homepage_uri]["value"])} underline={"none"}>
+                                                                    <Link to={hto_uri_to_path(nodesInfo[selections[0]][foaf_homepage_uri]["value"])}>
                                                                         <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{nodesInfo[selections[0]][foaf_homepage_uri]["value"]}</Typography>
                                                                     </Link>
                                                                 </TableCell>
@@ -239,14 +240,14 @@ function TrackSourceGraph(props) {
                                                                     predicate_uri !== rdfs_type_uri && predicate_uri !== hto_text_uri && predicate_uri !== foaf_homepage_uri?
                                                                         <>
                                                                             <TableCell sx={{paddingRight: 2}}>
-                                                                                <Link href={hto_uri_to_path(predicate_uri)} underline={"none"}>
+                                                                                <Link to={hto_uri_to_path(predicate_uri)}>
                                                                                     <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(predicate_uri)}</Typography>
                                                                                 </Link>
                                                                             </TableCell>
                                                                             <TableCell>
                                                                                 {
                                                                                     nodesInfo[selections[0]][predicate_uri]["type"] === "uri" ?
-                                                                                        <Link href={hto_uri_to_path(nodesInfo[selections[0]][predicate_uri]["value"])} underline={"none"}>
+                                                                                        <Link to={hto_uri_to_path(nodesInfo[selections[0]][predicate_uri]["value"])}>
                                                                                             <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][predicate_uri]["value"])}</Typography>
                                                                                         </Link> :
                                                                                         <Typography variant={"body1"} sx={{wordWrap: 'break-word'}}>{get_simple_name_from_uri(nodesInfo[selections[0]][predicate_uri]["value"])}</Typography>

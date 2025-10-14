@@ -2,13 +2,13 @@ import {
     Button,
     Container,
     Divider, FormControl,
-    Grid, Input, Link, Modal, Paper,
+    Grid, Input, Modal, Paper,
     Stack,
     Table, TableBody, TableCell,
     TableContainer, TableHead, TablePagination, TableRow, TextField,
     Typography
 } from "@mui/material";
-import {useLocation} from "react-router-dom";
+import {useLocation, Link} from "react-router-dom";
 import React, {useEffect, useRef, useState} from "react";
 import QueryAPI from "../apis/query";
 import Box from "@mui/material/Box";
@@ -1099,11 +1099,11 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + key + index + col} >
                                                     {
                                                         col === 'Term'?
-                                                            <Link href={hto_uri_to_path(record["term_uri"])}>
+                                                            <Link to={hto_uri_to_path(record["term_uri"])}>
                                                                 {record[col_key[col]]}
                                                             </Link>
                                                             : (col === 'Page'?
-                                                                <Link href={hto_uri_to_path(record["page_uri"])}>
+                                                                <Link to={hto_uri_to_path(record["page_uri"])}>
                                                                     {record[col_key[col]]}
                                                                 </Link>: record[col_key[col]])
                                                     }
@@ -1261,12 +1261,12 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + year + index + col} align={"center"}>
                                                     {
                                                         col === 'Page'?
-                                                            <Link href={hto_uri_to_path(record["page_uri"])}>
+                                                            <Link to={hto_uri_to_path(record["page_uri"])}>
                                                                 {record[col_key[col]]}
                                                             </Link>
                                                             : (
                                                                 col === 'Term'?
-                                                                    <Link href={hto_uri_to_path(record["term_uri"])}>
+                                                                    <Link to={hto_uri_to_path(record["term_uri"])}>
                                                                         {record[col_key[col]]}
                                                                     </Link> : (
                                                                 col === 'Geo'?
@@ -1352,12 +1352,12 @@ function DefoeQueryResult() {
                                                 <TableCell key={'' + key + index + col} >
                                                     {
                                                         col === 'Term'?
-                                                            <Link href={hto_uri_to_path(record["term_uri"])}>
+                                                            <Link to={hto_uri_to_path(record["term_uri"])}>
                                                                 {record[col_key[col]]}
                                                             </Link>
                                                             : (
                                                                 col === 'Page'?
-                                                                    <Link href={hto_uri_to_path(record["page_uri"])}>
+                                                                    <Link to={hto_uri_to_path(record["page_uri"])}>
                                                                         {record[col_key[col]]}
                                                                     </Link> :
                                                                 col === 'Description'?

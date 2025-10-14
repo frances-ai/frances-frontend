@@ -1,5 +1,5 @@
-import {Button, Container, Divider, Stack, Typography, Link} from "@mui/material";
-import {useNavigate, useParams} from "react-router-dom";
+import {Button, Container, Divider, Stack, Typography} from "@mui/material";
+import {useNavigate, useParams, Link} from "react-router-dom";
 import {useEffect, useState} from "react";
 import QueryAPI from "../../apis/query"
 import Box from "@mui/material/Box";
@@ -25,7 +25,7 @@ function TopicTermRecordPage() {
         const term_path =  "TopicTermRecord/" + termId
         QueryAPI.get_term_info(term_path).then(res => {
             const data = res?.data
-            //console.log(data)
+            console.log(data)
             setTermInfo(data)
         })
     }, [termId])
@@ -152,11 +152,11 @@ function TopicTermRecordPage() {
                             <Typography variant={"body1"}>Was recorded in</Typography>
                         </Box>
                         <Box>
-                            <Link mr={1} href={termInfo?.start_page.permanent_url}>
+                            <Link to={termInfo?.start_page.permanent_url} style={{marginRight:1}}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.start_page.number}</Typography>
                             </Link>
                             -
-                            <Link ml={1} href={termInfo?.end_page.permanent_url}>
+                            <Link to={termInfo?.end_page.permanent_url} style={{marginRight:1}}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.end_page.number}</Typography>
                             </Link>
                         </Box>
@@ -179,7 +179,7 @@ function TopicTermRecordPage() {
                             <Typography variant={"body1"}>Volume</Typography>
                         </Box>
                         <Box>
-                            <Link mr={1} href={termInfo?.volume.permanent_url}>
+                            <Link to={termInfo?.volume.permanent_url} style={{marginRight:1}}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.volume.title}</Typography>
                             </Link>
                         </Box>
@@ -213,9 +213,11 @@ function TopicTermRecordPage() {
                             <Typography variant={"body1"}>Collection</Typography>
                         </Box>
                         <Box>
-                            <Link component="button" onClick={(event) => handleCollectionClick(event, termInfo?.collection)}>
+                            <Button
+                                style={{textTransform: "none"}}
+                                onClick={(event) => handleCollectionClick(event, termInfo?.collection)}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.collection.name}</Typography>
-                            </Link>
+                            </Button>
                         </Box>
                     </Stack>
                 </Stack>

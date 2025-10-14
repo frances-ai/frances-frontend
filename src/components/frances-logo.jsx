@@ -1,8 +1,8 @@
-import {Link} from "@mui/material";
+import { Link } from "react-router-dom";
 
 
 function FrancesLogo(props) {
-    return <Link style={{textDecoration: "none", fontSize: props.size, fontWeight: props.weight}}  href="/">
+    return <Link style={{textDecoration: "none", fontSize: props.size, fontWeight: props.weight}}  to="/">
         <span style={{color:"#02A7F0"}}>f</span>
         <span style={{color:"#D9001B"}}>r</span>
         <span style={{color:"#F59A23"}}>a</span>
