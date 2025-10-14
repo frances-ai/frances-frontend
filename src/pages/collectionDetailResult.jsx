@@ -5,12 +5,12 @@ import {
     CardContent,
     CardMedia, CircularProgress,
     Container, Divider,
-    Grid, IconButton, Link,
+    Grid,
     Paper,
     Stack, TextField,
     Typography
 } from "@mui/material";
-import {useLocation} from "react-router-dom";
+import {useLocation, Link} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import CollectionAPI from "../apis/collection"
 import Box from "@mui/material/Box";
@@ -401,7 +401,7 @@ function Volumes(props) {
                                     <Typography gutterBottom variant={"body1"}  color={"text.secondary"} component="div">
                                         Permanent URL:
                                     </Typography>
-                                    <Link href={volumeDetail?.detail?.permanentURL}>
+                                    <Link to={volumeDetail?.detail?.permanentURL}>
                                         <Typography gutterBottom variant={"body1"} textAlign={"end"} component="div">
                                             {volumeDetail?.detail?.permanentURL}
                                         </Typography>

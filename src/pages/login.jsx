@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {useLocation, useNavigate} from "react-router-dom"
+import {useLocation, useNavigate, Link} from "react-router-dom"
 import {
     Box,
     Button, Container,
-    Grid, Link,
+    Grid,
     TextField,
     Typography
 } from "@mui/material";
@@ -125,12 +125,12 @@ export default function LoginPage() {
                         </Button>
                         <Grid container>
                             <Grid item xs>
-                                <Link href="#" variant="body2">
+                                <Link to="#">
                                     Forgot password?
                                 </Link>
                             </Grid>
                             <Grid item>
-                                <Link href="/src/pages/register" variant="body2">
+                                <Link to="/register">
                                     {"Don't have an account? Sign Up"}
                                 </Link>
                             </Grid>

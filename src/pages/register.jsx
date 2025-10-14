@@ -3,8 +3,7 @@ import {
     Box,
     Button,
     Container,
-    createTheme,
-    Grid, Link,
+    Grid,
     TextField,
     Typography
 } from "@mui/material";
@@ -13,7 +12,7 @@ import FrancesLogo from "../components/frances-logo";
 import validator from "validator/es";
 import AuthAPI from '../apis/auth'
 import useAuth from "../hooks/useAuth";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useLocation, useNavigate, Link} from "react-router-dom";
 
 function RegisterForm(props) {
     const {setAuth} = useAuth();
@@ -271,7 +270,7 @@ function RegisterForm(props) {
                 </Button>
                 <Grid container justifyContent="center">
                     <Grid item>
-                        <Link href="/src/pages/login" variant="body2">
+                        <Link to="/login">
                             Already have an account? Sign in
                         </Link>
                     </Grid>
@@ -299,7 +298,7 @@ function RegisterPage() {
                         registered?
                             <Typography component="div" variant="h5" sx={{mt: 2}}>
                                 Thanks for your interest! Your registered account is pending for approval! If your account has been approved, please
-                                <Link href="/src/pages/login" marginLeft={1}>
+                                <Link to="/login" style={{marginLeft: 1}}>
                                     sign in
                                 </Link>
                             </Typography>

@@ -1,5 +1,5 @@
-import { Container, Divider, Link, Stack, Typography} from "@mui/material";
-import {useNavigate, useParams} from "react-router-dom";
+import {Button, Container, Divider, Stack, Typography} from "@mui/material";
+import {useNavigate, useParams, Link} from "react-router-dom";
 import {useEffect, useState} from "react";
 import QueryAPI from "../../apis/query";
 import PageImageDisplay from "../../components/PageImageDisplay";
@@ -62,7 +62,7 @@ function BroadsideRecordPage() {
                         <Box>
                             {
                                 recordInfo?.start_page?.permanent_url?
-                                    <Link mr={1} href={recordInfo?.start_page.permanent_url}>
+                                    <Link to={recordInfo?.start_page.permanent_url} style={{marginRight:1}}>
                                         <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{recordInfo?.start_page.number}</Typography>
                                     </Link>
                                     :
@@ -71,7 +71,7 @@ function BroadsideRecordPage() {
                             -
                             {
                                 recordInfo?.end_page?.permanent_url?
-                                    <Link mr={1} href={recordInfo?.end_page.permanent_url}>
+                                    <Link to={recordInfo?.end_page.permanent_url} style={{marginRight:1}}>
                                         <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{recordInfo?.end_page.number}</Typography>
                                     </Link>
                                     :
@@ -109,9 +109,11 @@ function BroadsideRecordPage() {
                             <Typography variant={"body1"}>Collection</Typography>
                         </Box>
                         <Box>
-                            <Link component="button" onClick={(event) => handleCollectionClick(event, recordInfo?.collection)}>
+                            <Button
+                                style={{textTransform: "none"}}
+                                onClick={(event) => handleCollectionClick(event, recordInfo?.collection)}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{recordInfo?.collection.name}</Typography>
-                            </Link>
+                            </Button>
                         </Box>
                     </Stack>
                 </Stack>

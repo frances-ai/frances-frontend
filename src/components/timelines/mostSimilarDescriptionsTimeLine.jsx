@@ -1,6 +1,7 @@
 import {Fragment} from "react";
 import Box from "@mui/material/Box";
-import {Link, Typography} from "@mui/material";
+import {Typography} from "@mui/material";
+import { Link } from "react-router-dom";
 import Timeline from "@mui/lab/Timeline";
 import TimelineItem from "@mui/lab/TimelineItem";
 import TimelineOppositeContent from "@mui/lab/TimelineOppositeContent";
@@ -28,7 +29,7 @@ function MostSimilarDescriptions(props) {
                                 <TimelineConnector />
                             </TimelineSeparator>
                             <TimelineContent>
-                                <Link href={value._id.substring(value._id.indexOf("/hto/"))}>
+                                <Link to={value._id.substring(value._id.indexOf("/hto/"))}>
                                     {value._source.name}
                                 </Link>
                             </TimelineContent>
