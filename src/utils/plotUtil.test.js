@@ -1,3 +1,4 @@
+import { beforeAll, test } from 'vitest'
 import {get_plot_frequency} from "./plotUtil";
 
 let query_results = {};

@@ -1,3 +1,5 @@
+import config from '../config.json'
+
 export const findTopicModelID = (model_name) => {
     const index = model_name.indexOf('_');
     return model_name.substring(0, index);
@@ -69,4 +71,15 @@ export function getLexiconFileOriginalName(lexiconFilename) {
     const spiltChar = '_';
     const startIndex = lexiconFilename.indexOf(spiltChar) + 1;
     return lexiconFilename.substring(startIndex);
+}
+
+export const withBasePath = (path) => {
+    if (path.startsWith("http")) {
+        // external links
+        return path;
+    }
+    if (!path.startsWith("/")) {
+        path = "/" + path;
+    }
+    return `${config.BASE_PATH}${path}`;
 }

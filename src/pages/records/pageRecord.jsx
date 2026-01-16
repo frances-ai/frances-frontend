@@ -1,5 +1,5 @@
-import {Button, Container, Divider, Stack, Typography} from "@mui/material";
-import {useNavigate, useParams, Link} from "react-router-dom";
+import {Button, Container, Divider, Stack, Typography, Link} from "@mui/material";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import config from "../../config.json";
 import QueryAPI from "../../apis/query";
@@ -68,7 +68,7 @@ function PageRecordPage() {
                             <Typography variant={"body1"}>Volume</Typography>
                         </Box>
                         <Box>
-                            <Link to={pageInfo?.volume.permanent_url} style={{marginRight:1}}>
+                            <Link href={pageInfo?.volume.permanent_url} mr={1}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{pageInfo?.volume.title}</Typography>
                             </Link>
                         </Box>

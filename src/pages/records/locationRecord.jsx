@@ -1,5 +1,5 @@
-import {Button, Container, Divider, Stack, Typography} from "@mui/material";
-import {useNavigate, useParams, Link} from "react-router-dom";
+import {Button, Container, Divider, Stack, Typography, Link} from "@mui/material";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import QueryAPI from "../../apis/query";
 import PageImageDisplay from "../../components/PageImageDisplay";

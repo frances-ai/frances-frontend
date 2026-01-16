@@ -14,7 +14,7 @@ function AnnotatedDescriptionWithMap(props) {
     const [focusLocationIndex, setFocusLocationIndex] = React.useState(0);
 
     const findLocationIndex = (location_uri) => {
-        console.log(location_uri);
+        //console.log(location_uri);
         for (const location_index in locations) {
             if (location_uri === locations[location_index].uri) {
                 return location_index;
