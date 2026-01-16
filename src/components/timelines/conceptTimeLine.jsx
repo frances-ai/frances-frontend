@@ -59,7 +59,7 @@ function TermRecordCard(props) {
 function ConceptTimeLine(props) {
     const {concept_terms, year, entity_label} = props;
 
-    console.log(year)
+    //console.log(concept_terms)
 
     return (
         <Fragment>
