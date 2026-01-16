@@ -1,5 +1,5 @@
-import {Button, Container, Divider, Stack, Typography} from "@mui/material";
-import {useNavigate, useParams, Link} from "react-router-dom";
+import {Button, Container, Divider, Stack, Typography, Link} from "@mui/material";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import QueryAPI from "../../apis/query";
 import PageImageDisplay from "../../components/PageImageDisplay";
@@ -62,7 +62,7 @@ function BroadsideRecordPage() {
                         <Box>
                             {
                                 recordInfo?.start_page?.permanent_url?
-                                    <Link to={recordInfo?.start_page.permanent_url} style={{marginRight:1}}>
+                                    <Link href={recordInfo?.start_page.permanent_url} mr={1}>
                                         <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{recordInfo?.start_page.number}</Typography>
                                     </Link>
                                     :
@@ -71,7 +71,7 @@ function BroadsideRecordPage() {
                             -
                             {
                                 recordInfo?.end_page?.permanent_url?
-                                    <Link to={recordInfo?.end_page.permanent_url} style={{marginRight:1}}>
+                                    <Link href={recordInfo?.end_page.permanent_url} mr={1}>
                                         <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{recordInfo?.end_page.number}</Typography>
                                     </Link>
                                     :

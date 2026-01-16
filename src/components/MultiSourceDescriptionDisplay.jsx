@@ -100,11 +100,11 @@ function MultiSourceDescriptionDisplay(props) {
         let label = quality_uri.split("#")[1]
         // capitalise label
         label = label.toUpperCase()[0] + label.toLowerCase().slice(1)
-        if (label === "Low") {
+        if (label === "Lowquality") {
             label = "Original"
-        } else if (label === "High") {
+        } else if (label === "Highquality") {
             label = "Manual Corrected"
-        } else if (label === "Moderate") {
+        } else if (label === "Moderatequality") {
             label = "Auto Corrected"
         }
         return label

@@ -1,5 +1,5 @@
-import {Button, Container, Divider, Stack, Typography} from "@mui/material";
-import {useNavigate, useParams, Link} from "react-router-dom";
+import {Button, Container, Divider, Stack, Typography, Link} from "@mui/material";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import QueryAPI from "../../apis/query"
 import Box from "@mui/material/Box";
@@ -152,11 +152,11 @@ function TopicTermRecordPage() {
                             <Typography variant={"body1"}>Was recorded in</Typography>
                         </Box>
                         <Box>
-                            <Link to={termInfo?.start_page.permanent_url} style={{marginRight:1}}>
+                            <Link href={termInfo?.start_page.permanent_url} mr={1}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.start_page.number}</Typography>
                             </Link>
                             -
-                            <Link to={termInfo?.end_page.permanent_url} style={{marginRight:1}}>
+                            <Link href={termInfo?.end_page.permanent_url} mr={1}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.end_page.number}</Typography>
                             </Link>
                         </Box>
@@ -179,7 +179,7 @@ function TopicTermRecordPage() {
                             <Typography variant={"body1"}>Volume</Typography>
                         </Box>
                         <Box>
-                            <Link to={termInfo?.volume.permanent_url} style={{marginRight:1}}>
+                            <Link href={termInfo?.volume.permanent_url} =mr={1}>
                                 <Typography component={"span"} variant={"body1"} fontWeight={"bold"}>{termInfo?.volume.title}</Typography>
                             </Link>
                         </Box>

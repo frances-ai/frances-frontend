@@ -9,6 +9,7 @@ import TimelineDot from "@mui/lab/TimelineDot";
 import TimelineConnector from "@mui/lab/TimelineConnector";
 import TimelineContent from "@mui/lab/TimelineContent";
 import ReactWordcloud from "@cyberblast/react-wordcloud";
+import {withBasePath} from "../../utils/stringUtil.js"
 
 function TermRecordCard(props) {
     const {term_info} = props;
@@ -18,7 +19,7 @@ function TermRecordCard(props) {
         <Card elevation={elevation}
               onMouseOver={() => setElevation(3)}
               onMouseOut={() => setElevation(1)}>
-            <CardActionArea href={term_info.uri.substring(term_info.uri.indexOf("/hto/"))} >
+            <CardActionArea href={withBasePath(term_info.uri.substring(term_info.uri.indexOf("/hto/")))} >
                 <CardContent>
                     <Box >
                         <Typography component={"span"} mr={1} variant={"body2"} color={"text.secondary"}>

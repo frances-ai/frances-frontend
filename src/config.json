@@ -2,5 +2,6 @@
   "BACKEND_BASE_URL": "http://127.0.0.1:5000/api/v1",
   "MAPBOX_ACCESS_TOKEN": "your token",
   "hto": "https://w3id.org/hto",
-  "OPENLAYER_API_KEY": "your api key"
+  "OPENLAYER_API_KEY": "your api key",
+  "BASE_PATH": ""
 }

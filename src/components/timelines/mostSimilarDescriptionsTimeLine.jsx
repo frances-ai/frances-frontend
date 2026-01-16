@@ -1,7 +1,6 @@
 import {Fragment} from "react";
 import Box from "@mui/material/Box";
-import {Typography} from "@mui/material";
-import { Link } from "react-router-dom";
+import {Typography, Link} from "@mui/material";
 import Timeline from "@mui/lab/Timeline";
 import TimelineItem from "@mui/lab/TimelineItem";
 import TimelineOppositeContent from "@mui/lab/TimelineOppositeContent";
@@ -9,6 +8,7 @@ import TimelineSeparator from "@mui/lab/TimelineSeparator";
 import TimelineDot from "@mui/lab/TimelineDot";
 import TimelineConnector from "@mui/lab/TimelineConnector";
 import TimelineContent from "@mui/lab/TimelineContent";
+import {withBasePath} from "../../utils/stringUtil.js";
 
 function MostSimilarDescriptions(props) {
     const {similar_descriptions, year, entity_label} = props
@@ -29,7 +29,7 @@ function MostSimilarDescriptions(props) {
                                 <TimelineConnector />
                             </TimelineSeparator>
                             <TimelineContent>
-                                <Link to={value._id.substring(value._id.indexOf("/hto/"))}>
+                                <Link href={withBasePath(value._id.substring(value._id.indexOf("/hto/")))}>
                                     {value._source.name}
                                 </Link>
                             </TimelineContent>
